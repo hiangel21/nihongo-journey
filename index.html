@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>にほんご Journey ✿</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--sakura:#FFB7C5;--sakura-light:#FFE4EC;--sakura-deep:#E8829A;--matcha:#7BAE7F;--matcha-light:#C8E6C9;--yuzu:#FFD966;--yuzu-light:#FFF3C4;--fuji:#B39DDB;--fuji-light:#EDE7F6;--ink:#3D2B1F;--ink-soft:#6B4C3B;--paper:#FFF9F5;--paper-warm:#FFF0E8;--border:#F5D0DC;--shadow:rgba(255,183,197,0.3);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;background-image:radial-gradient(circle at 10% 20%,rgba(255,183,197,.15) 0%,transparent 50%),radial-gradient(circle at 90% 80%,rgba(179,157,219,.15) 0%,transparent 50%);}
+.petal{position:fixed;pointer-events:none;font-size:16px;animation:fall linear infinite;z-index:0;opacity:.6;}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:.7}100%{transform:translateY(100vh) rotate(360deg);opacity:0}}
+.container{max-width:100%;margin:0;padding:20px 28px;position:relative;z-index:1;}
+.top-layout{display:grid;grid-template-columns:1fr 295px;gap:18px;align-items:stretch;}
+@media(max-width:800px){.top-layout{grid-template-columns:1fr;}}
+/* Scorecard — fixed bottom right, 3 cards */
+.scorecard{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:50;}
+.sc-item{background:white;border:2px solid var(--border);border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 16px var(--shadow);min-width:160px;}
+.sc-icon{font-size:18px;}
+.sc-val{font-family:'Zen Maru Gothic',sans-serif;font-size:20px;font-weight:700;line-height:1;}
+.sc-lbl{font-size:11px;color:var(--ink-soft);margin-top:1px;}
+.sc-item.matcha .sc-val{color:var(--matcha);}
+.sc-item.fuji .sc-val{color:#7B5EA7;}
+.sc-item.yuzu .sc-val{color:#B08000;}
+/* Pinned sidebar — stretches to match left column height */
+.pinned-goals-card{background:white;border-radius:20px;border:2px solid var(--border);padding:18px 20px;box-shadow:0 4px 16px var(--shadow);position:sticky;top:20px;align-self:stretch;}
+.pinned-goals-title{font-family:'Zen Maru Gothic',sans-serif;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.pg-item{margin-bottom:10px;padding:8px 10px;background:var(--paper-warm);border-radius:12px;border:1.5px solid var(--border);cursor:grab;user-select:none;transition:border-color .15s,background .15s;position:relative;}
+.pg-item:last-child{margin-bottom:0;}
+.pg-item:active{cursor:grabbing;}
+.pg-item.drag-over{border-color:var(--sakura);background:var(--sakura-light);}
+.pg-item.dragging{opacity:.4;cursor:grabbing;}
+.pg-item-body{pointer-events:none;}
+.pg-remove{position:absolute;top:6px;right:6px;pointer-events:all;background:none;border:none;cursor:pointer;color:#ccc;font-size:13px;padding:2px 4px;line-height:1;border-radius:4px;z-index:2;}
+.pg-remove:hover{color:var(--sakura-deep);background:var(--sakura-light);}
+.pg-drag{font-size:13px;color:var(--border);margin-right:4px;cursor:grab;}
+.pg-name-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;}
+.pg-name{font-size:12px;font-weight:600;color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pg-pct{font-size:11px;color:var(--ink-soft);white-space:nowrap;margin-left:6px;}
+.pg-sub{font-size:10px;color:var(--ink-soft);margin-bottom:4px;}
+.pg-bar{height:6px;background:var(--sakura-light);border-radius:6px;overflow:hidden;}
+.pg-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--sakura),var(--sakura-deep));transition:width .5s;}
+.pg-fill.gdone-fill{background:linear-gradient(90deg,var(--matcha-light),var(--matcha));}
+.pin-btn{background:none;border:1.5px solid var(--border);border-radius:8px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--ink-soft);transition:all .2s;white-space:nowrap;}
+.pin-btn:hover{border-color:var(--sakura);color:var(--sakura-deep);}
+.pin-btn.pinned{background:var(--sakura-light);border-color:var(--sakura);color:var(--sakura-deep);}
+.header{text-align:center;padding:28px 0 18px;}
+.header-badge{display:inline-block;background:var(--sakura);color:white;font-family:'Zen Maru Gothic',sans-serif;font-size:11px;padding:4px 14px;border-radius:20px;margin-bottom:10px;letter-spacing:1px;}
+.header h1{font-family:'Zen Maru Gothic',sans-serif;font-size:34px;font-weight:700;}
+.header h1 span{color:var(--sakura-deep);}
+.header-sub{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+.header-deco{font-size:20px;margin:6px 0;letter-spacing:8px;}
+.nav{display:flex;gap:8px;justify-content:center;margin:14px 0 22px;flex-wrap:wrap;}
+.nav-btn{padding:8px 16px;border-radius:20px;border:2px solid var(--border);background:white;color:var(--ink-soft);font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.nav-btn:hover{border-color:var(--sakura);color:var(--sakura-deep);}
+.nav-btn.active{background:var(--sakura);border-color:var(--sakura);color:white;}
+.card{background:white;border-radius:20px;border:2px solid var(--border);padding:24px;margin-bottom:18px;box-shadow:0 4px 16px var(--shadow);}
+.card-title{font-family:'Zen Maru Gothic',sans-serif;font-size:17px;font-weight:700;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.section{display:none;}.section.active{display:block;}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:18px;}
+.stat-card{background:var(--paper-warm);border-radius:16px;padding:18px 16px;text-align:center;border:2px solid var(--border);}
+.stat-num{font-size:30px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif;}
+.stat-label{font-size:13px;color:var(--ink-soft);margin-top:3px;}
+.stat-card.sakura .stat-num{color:var(--sakura-deep);}.stat-card.matcha .stat-num{color:var(--matcha);}.stat-card.fuji .stat-num{color:var(--fuji);}.stat-card.yuzu .stat-num{color:#C49A00;}
+.prog-wrap{margin-bottom:12px;}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+.prog-bar{height:10px;background:var(--sakura-light);border-radius:10px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--sakura),var(--sakura-deep));transition:width .5s ease;}
+.prog-fill.fuji{background:linear-gradient(90deg,var(--fuji-light),var(--fuji));}
+.prog-fill.matcha{background:linear-gradient(90deg,var(--matcha-light),var(--matcha));}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.form-row.full{grid-template-columns:1fr;}
+label{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:5px;}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;padding:11px 14px;border-radius:12px;border:2px solid var(--border);font-family:'Nunito',sans-serif;font-size:14px;color:var(--ink);background:var(--paper);outline:none;transition:border-color .2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--sakura);}
+textarea{resize:vertical;min-height:70px;}
+.script-picker{display:flex;gap:8px;flex-wrap:wrap;}
+.script-btn{padding:6px 14px;border-radius:12px;border:2px solid var(--border);background:white;font-family:'Zen Maru Gothic',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;color:var(--ink-soft);}
+.script-btn.sel{background:var(--sakura-light);border-color:var(--sakura);color:var(--sakura-deep);}
+.mood-picker{display:flex;gap:8px;}
+.mood-btn{width:38px;height:38px;border-radius:50%;border:2px solid var(--border);background:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.mood-btn.sel{border-color:var(--sakura);background:var(--sakura-light);transform:scale(1.15);}
+.level-select{display:flex;gap:6px;flex-wrap:wrap;}
+.level-btn{padding:5px 12px;border-radius:10px;border:2px solid var(--border);background:white;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--ink-soft);}
+.level-btn.sel{background:var(--fuji-light);border-color:var(--fuji);color:#5E35B1;}
+.btn-primary{width:100%;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--sakura),var(--sakura-deep));color:white;font-family:'Zen Maru Gothic',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--shadow);}
+/* Kana dropdown */
+.kana-dropdown-wrap{margin-bottom:12px;}
+.kana-dd-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:14px;border:2px solid var(--border);background:var(--paper);cursor:pointer;user-select:none;transition:border-color .2s;}
+.kana-dd-header:hover{border-color:var(--sakura);}
+.kana-dd-header.open{border-color:var(--sakura);border-bottom-left-radius:0;border-bottom-right-radius:0;}
+.kana-dd-header-left{font-size:13px;color:var(--ink-soft);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px;}
+.kana-dd-count{background:var(--sakura);color:white;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;flex-shrink:0;}
+.kana-dd-body{display:none;border:2px solid var(--sakura);border-top:none;border-radius:0 0 14px 14px;background:white;padding:16px;}
+.kana-dd-body.open{display:block;}
+.kana-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.kana-tab{padding:5px 14px;border-radius:10px;border:2px solid var(--border);background:white;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-soft);transition:all .2s;}
+.kana-tab.ah{background:var(--sakura-light);border-color:var(--sakura);color:var(--sakura-deep);}
+.kana-tab.ak{background:var(--fuji-light);border-color:var(--fuji);color:#5E35B1;}
+.kana-tab.aj{background:var(--matcha-light);border-color:var(--matcha);color:#2E7D32;}
+.kana-panel{display:none;}.kana-panel.active{display:block;}
+.kana-row-group{margin-bottom:12px;}
+.kana-row-label{font-size:11px;font-weight:700;color:var(--ink-soft);margin-bottom:5px;padding:2px 8px;background:var(--paper-warm);border-radius:6px;display:inline-block;}
+.row-sel-btn{font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid var(--border);background:white;cursor:pointer;color:var(--ink-soft);margin-left:6px;}
+.row-sel-btn:hover{background:var(--sakura-light);border-color:var(--sakura);color:var(--sakura-deep);}
+.kana-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.kana-cell{position:relative;border:2px solid var(--border);border-radius:10px;background:white;cursor:pointer;transition:all .2s;width:62px;}
+.kana-cell:hover{border-color:var(--sakura);}
+.kana-cell.lh{background:var(--sakura-light);border-color:var(--sakura);}
+.kana-cell.lk{background:var(--fuji-light);border-color:var(--fuji);}
+.kana-cell.lj{background:var(--matcha-light);border-color:var(--matcha);}
+.kana-cell-top{display:flex;flex-direction:column;align-items:center;padding:7px 4px 4px;}
+.kana-char{font-family:'Zen Maru Gothic',sans-serif;font-size:22px;line-height:1;color:var(--ink);}
+.kana-rom{font-size:10px;color:var(--ink-soft);margin-top:2px;}
+.kana-chk{width:13px;height:13px;border-radius:50%;background:var(--sakura);position:absolute;top:3px;right:3px;display:none;align-items:center;justify-content:center;font-size:8px;color:white;}
+.kana-cell.lh .kana-chk,.kana-cell.lk .kana-chk,.kana-cell.lj .kana-chk{display:flex;}
+.kana-cell.lk .kana-chk{background:var(--fuji);}
+.kana-cell.lj .kana-chk{background:var(--matcha);}
+.knote-wrap{padding:0 3px 3px;display:none;}
+.kana-cell.lh .knote-wrap,.kana-cell.lk .knote-wrap,.kana-cell.lj .knote-wrap{display:block;}
+.knote-input{width:100%;font-size:9px;border:1px solid var(--border);border-radius:5px;padding:2px 3px;background:white;font-family:'Nunito',sans-serif;color:var(--ink);resize:none;min-height:24px;outline:none;}
+.knote-input:focus{border-color:var(--sakura-deep);}
+/* Vocab */
+.vocab-add-row{display:flex;gap:8px;}
+.vocab-add-row input{flex:1;}
+.btn-small{padding:8px 14px;border-radius:10px;border:2px solid var(--sakura);background:white;color:var(--sakura-deep);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.btn-small:hover{background:var(--sakura-light);}
+.vocab-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.vocab-pill{display:flex;align-items:center;gap:4px;background:var(--yuzu-light);border:1px solid var(--yuzu);border-radius:10px;padding:3px 10px;font-size:12px;color:#6B5000;}
+.vocab-pill button{background:none;border:none;cursor:pointer;color:#aaa;font-size:11px;padding:0;}
+.vocab-pill button:hover{color:var(--sakura-deep);}
+/* Master board */
+.master-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.master-tab{padding:6px 16px;border-radius:12px;border:2px solid var(--border);background:white;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink-soft);transition:all .2s;}
+.master-tab.mh{background:var(--sakura-light);border-color:var(--sakura);color:var(--sakura-deep);}
+.master-tab.mk{background:var(--fuji-light);border-color:var(--fuji);color:#5E35B1;}
+.master-tab.mj{background:var(--matcha-light);border-color:var(--matcha);color:#2E7D32;}
+.mbpanel{display:none;}.mbpanel.active{display:block;}
+.master-grid{display:flex;flex-wrap:wrap;gap:5px;}
+.mcell{width:60px;border-radius:10px;border:2px solid var(--border);background:white;padding:6px 3px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+.mcell:hover{border-color:var(--sakura);}
+.mcell.mch{background:var(--sakura-light);border-color:var(--sakura);}
+.mcell.mck{background:var(--fuji-light);border-color:var(--fuji);}
+.mcell.mcj{background:var(--matcha-light);border-color:var(--matcha);}
+.mcell .mc{font-family:'Zen Maru Gothic',sans-serif;font-size:20px;color:var(--ink);line-height:1;}
+.mcell .mr{font-size:10px;color:var(--ink-soft);margin-top:2px;}
+.mcell .mn{font-size:9px;color:var(--sakura-deep);margin-top:2px;word-break:break-all;line-height:1.3;}
+.mcell.mck .mn{color:#7B5EA7;}.mcell.mcj .mn{color:#4A7A4E;}
+.ndot{width:6px;height:6px;border-radius:50%;background:var(--yuzu);position:absolute;top:2px;right:2px;}
+/* Log entries */
+.log-entry{background:var(--paper-warm);border-radius:14px;border:2px solid var(--border);padding:16px 18px;margin-bottom:12px;animation:slideIn .3s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.log-entry-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.log-date{font-size:13px;color:var(--ink-soft);font-weight:600;}
+.log-scripts{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
+.log-tag{font-size:11px;padding:3px 10px;border-radius:8px;font-weight:600;}
+.tag-h{background:var(--sakura-light);color:var(--sakura-deep);}.tag-k{background:var(--fuji-light);color:#7B5EA7;}.tag-j{background:var(--matcha-light);color:#4A7A4E;}.tag-v{background:var(--yuzu-light);color:#8A6A00;}.tag-g{background:#E3F2FD;color:#1565C0;}
+.log-content{font-size:14px;color:var(--ink);line-height:1.7;}
+.log-meta{display:flex;gap:12px;margin-top:8px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;}
+.log-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:16px;padding:2px 4px;}
+.log-del:hover{color:var(--sakura-deep);}
+/* Goals */
+.goal-item{background:var(--paper-warm);border:2px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+.goal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.goal-name{font-weight:700;font-size:14px;}
+.gbadge{font-size:11px;padding:3px 10px;border-radius:10px;font-weight:700;}
+.gon{background:var(--matcha-light);color:#2E7D32;}.gdone{background:var(--sakura-light);color:var(--sakura-deep);}.glate{background:#FFEBEE;color:#C62828;}
+.chart-wrap{position:relative;height:180px;margin:8px 0;}
+.streak-grid{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.streak-day{width:22px;height:22px;border-radius:6px;background:var(--border);font-size:9px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);}
+.streak-day.hl{background:var(--sakura);color:white;}
+.streak-day.td{border:2px solid var(--sakura-deep);}
+.empty{text-align:center;padding:28px 16px;color:var(--ink-soft);font-size:13px;}
+.empty .ico{font-size:32px;margin-bottom:8px;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--sakura-deep);color:white;padding:12px 24px;border-radius:20px;font-family:'Zen Maru Gothic',sans-serif;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:1000;animation:tIn .3s ease,tOut .3s ease 2.5s forwards;pointer-events:none;}
+@keyframes tIn{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes tOut{to{opacity:0;transform:translateX(-50%) translateY(16px)}}
+.sec-header{font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700;margin-bottom:16px;color:var(--ink);}
+.divider{border:none;border-top:2px dashed var(--border);margin:20px 0;}
+.tip-box{background:var(--yuzu-light);border:2px solid var(--yuzu);border-radius:14px;padding:12px 16px;font-size:13px;color:#6B5000;margin-top:12px;line-height:1.6;}
+.gform-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+@media(max-width:600px){.gform-row,.form-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="petal" style="left:5%;animation-duration:8s;animation-delay:0s">🌸</div>
+<div class="petal" style="left:18%;animation-duration:11s;animation-delay:2s">✿</div>
+<div class="petal" style="left:35%;animation-duration:9s;animation-delay:5s">🌸</div>
+<div class="petal" style="left:58%;animation-duration:12s;animation-delay:1s">✿</div>
+<div class="petal" style="left:75%;animation-duration:10s;animation-delay:4s">🌸</div>
+<div class="petal" style="left:90%;animation-duration:8s;animation-delay:3s">✿</div>
+
+<div class="container">
+<div class="header" style="text-align:center;padding:8px 0 14px;">
+  <h1>Angel's <span>Nihongo</span> Journey</h1>
+  <div class="header-sub">頑張れ！Keep going, Angel! You've got this ～</div>
+  <div class="header-deco">🌸 ✿ 🌸</div>
+</div>
+
+<!-- Fixed scorecard bottom-right, 3 cards -->
+<div class="scorecard">
+  <div class="sc-item matcha"><span class="sc-icon">📅</span><div><div class="sc-val" id="st">0</div><div class="sc-lbl">Total Days</div></div></div>
+  <div class="sc-item fuji"><span class="sc-icon">📚</span><div><div class="sc-val" id="sw">0</div><div class="sc-lbl">Total Words</div></div></div>
+  <div class="sc-item yuzu"><span class="sc-icon">⏱</span><div><div class="sc-val" id="sm">0</div><div class="sc-lbl">Minutes</div></div></div>
+</div>
+
+<!-- MAIN LAYOUT: left = study area, right = pinned goals sidebar -->
+<div class="top-layout">
+
+  <!-- LEFT: nav + all sections -->
+  <div id="main-col">
+
+<div class="nav" style="margin:0 0 16px;justify-content:flex-start;">
+  <button class="nav-btn active" onclick="showSec('log',this)">📝 Today's Log</button>
+  <button class="nav-btn" onclick="showSec('board',this)">🔤 Character Board</button>
+  <button class="nav-btn" onclick="showSec('history',this)">📖 History</button>
+  <button class="nav-btn" onclick="showSec('report',this)">📊 Report</button>
+  <button class="nav-btn" onclick="showSec('goals',this)">🎯 Goals</button>
+</div>
+
+<!-- LOG -->
+<div class="section active" id="sec-log">
+  <div class="card">
+    <div class="card-title"><span>✏️</span> Log Today's Study</div>
+    <div style="display:grid;grid-template-columns:150px 120px 1fr;gap:12px;margin-bottom:14px;align-items:start;">
+      <div><label>📅 Study Date</label><input type="date" id="ld"></div>
+      <div><label>⏱ Minutes</label>
+        <input type="number" id="lm" placeholder="30" min="1" list="mins-list" style="width:100%;">
+        <datalist id="mins-list">
+          <option value="15">
+          <option value="30">
+          <option value="60">
+          <option value="90">
+        </datalist>
+      </div>
+      <div>
+        <label>📚 Topics studied today</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;" id="topic-picker">
+          <button type="button" class="script-btn" data-val="hiragana" onclick="togTopic2(this)">🌸 Hiragana</button>
+          <button type="button" class="script-btn" data-val="katakana" onclick="togTopic2(this)">💜 Katakana</button>
+          <button type="button" class="script-btn" data-val="kanji" onclick="togTopic2(this)">漢 Kanji</button>
+          <button type="button" class="script-btn" data-val="grammar" onclick="togTopic2(this)">🔤 Grammar</button>
+          <button type="button" class="script-btn" data-val="vocabulary" onclick="togTopic2(this)">📝 Vocabulary</button>
+          <button type="button" class="script-btn" data-val="anime" onclick="togTopic2(this)">📺 Anime</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vocab + Notes in same row -->
+    <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:14px;margin-bottom:14px;align-items:start;">
+      <div>
+        <label>📝 New vocabulary</label>
+        <div class="vocab-add-row" style="margin-top:4px;">
+          <input type="text" id="vi" placeholder="e.g. 食べる - to eat..." onkeydown="if(event.key==='Enter')addV()">
+          <button class="btn-small" onclick="addV()">+ Add</button>
+        </div>
+        <div class="vocab-list" id="vl"></div>
+      </div>
+      <div>
+        <label>✍️ Notes</label>
+        <textarea id="ln" placeholder="What did you learn? Any thoughts..." style="margin-top:4px;min-height:42px;height:42px;width:100%;"></textarea>
+      </div>
+    </div>
+
+    <!-- Kana picker -->
+    <div class="kana-dropdown-wrap">
+      <label>🔤 Characters learned today (tick to select)</label>
+      <div class="kana-dd-header" id="kddh" onclick="togDD()">
+        <div class="kana-dd-header-left" id="kdds">Click to select characters learned today...</div>
+        <div class="kana-dd-count" id="kddc">0</div>
+      </div>
+      <div class="kana-dd-body" id="kddb">
+        <div class="kana-tabs">
+          <button class="kana-tab ah" onclick="swKTab('h',this)">🌸 Hiragana</button>
+          <button class="kana-tab" onclick="swKTab('k',this)">💜 Katakana</button>
+          <button class="kana-tab" onclick="swKTab('j',this)">🍃 Kanji N5</button>
+        </div>
+        <div class="kana-panel active" id="kph"></div>
+        <div class="kana-panel" id="kpk"></div>
+        <div class="kana-panel" id="kpj"></div>
+      </div>
+    </div>
+
+    <!-- Per-goal unit inputs (excludes hira/kata type goals) -->
+    <div style="margin-bottom:14px;" id="goal-unit-section">
+      <label>🎯 Units completed today (per goal)</label>
+      <div style="margin-top:8px;" id="goal-unit-inputs"></div>
+    </div>
+    <button type="button" class="btn-primary" onclick="saveLog()">✿ Save Log ✿</button>
+    <p id="save-debug" style="font-size:11px;color:var(--ink-soft);text-align:center;margin-top:8px;"></p>
+  </div>
+  <div class="tip-box">💡 <b>Tip:</b> Angel, tick characters in the dropdown to auto-update your progress bars above! 頑張って～ 🌸</div>
+</div>
+
+<!-- BOARD -->
+<div class="section" id="sec-board">
+  <div class="sec-header">🔤 My Character Board</div>
+  <div class="card">
+    <div class="card-title"><span>📊</span> Tiến độ</div>
+    <div class="prog-wrap"><div class="prog-label"><span>🌸 Hiragana <b id="bhc">0</b>/46</span><span id="bhp">0%</span></div><div class="prog-bar"><div class="prog-fill" id="bhb" style="width:0%"></div></div></div>
+    <div class="prog-wrap"><div class="prog-label"><span>💜 Katakana <b id="bkc">0</b>/46</span><span id="bkp">0%</span></div><div class="prog-bar"><div class="prog-fill fuji" id="bkb" style="width:0%"></div></div></div>
+    <div class="prog-wrap" style="margin-bottom:0"><div class="prog-label"><span>🍃 Kanji N5 <b id="bjc">0</b>/103</span><span id="bjp">0%</span></div><div class="prog-bar"><div class="prog-fill matcha" id="bjb" style="width:0%"></div></div></div>
+  </div>
+  <div class="card">
+    <div class="master-tabs">
+      <button class="master-tab mh" onclick="swMTab('h',this)">🌸 Hiragana</button>
+      <button class="master-tab" onclick="swMTab('k',this)">💜 Katakana</button>
+      <button class="master-tab" onclick="swMTab('j',this)">🍃 Kanji N5</button>
+    </div>
+    <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">Click a character to mark as learned ✓ · Add a note below each · Click again to uncheck</div>
+    <div class="mbpanel active" id="mbh"></div>
+    <div class="mbpanel" id="mbk"></div>
+    <div class="mbpanel" id="mbj"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="section" id="sec-history">
+  <div class="sec-header">📖 Study History</div>
+  <div class="card"><div class="card-title"><span>🗓️</span> Last 30 Days</div><div class="streak-grid" id="sgrid"></div></div>
+  <div class="card"><div class="card-title"><span>📝</span> Detailed Journal</div><div id="llist"></div></div>
+</div>
+
+<!-- REPORT -->
+<div class="section" id="sec-report">
+  <div class="sec-header">📊 Journey Report</div>
+  <div class="stats-row">
+    <div class="stat-card sakura"><div class="stat-num" id="rs">0</div><div class="stat-label">🔥 Streak</div></div>
+    <div class="stat-card matcha"><div class="stat-num" id="rt">0</div><div class="stat-label">📅 Total Days</div></div>
+    <div class="stat-card fuji"><div class="stat-num" id="rw">0</div><div class="stat-label">📚 Total Words</div></div>
+    <div class="stat-card yuzu"><div class="stat-num" id="rh">0</div><div class="stat-label">⏱ Total Hours</div></div>
+  </div>
+  <div class="card"><div class="card-title"><span>📈</span> Minutes studied (last 7 days)</div><div class="chart-wrap"><canvas id="cmin" role="img" aria-label="Minutes studied last 7 days"></canvas></div></div>
+  <div class="card"><div class="card-title"><span>🎯</span> Goal Progress</div><div id="gpl"></div></div>
+  <div class="card"><div class="card-title"><span>📊</span> Content breakdown</div><div class="chart-wrap" style="height:200px;"><canvas id="cscr" role="img" aria-label="Study content breakdown"></canvas></div></div>
+  <div class="card"><div class="card-title"><span>😊</span> Study mood tracker</div><div id="mrep"></div></div>
+</div>
+
+<!-- GOALS -->
+<div class="section" id="sec-goals">
+  <div class="sec-header">🎯 Study Goals</div>
+  <div class="card">
+    <div class="card-title"><span>✨</span> Add a new goal</div>
+    <div class="form-row full"><div><label>Goal name</label><input type="text" id="gn" placeholder="e.g. Finish Ngoc Tiep course, Watch 30 anime eps, Learn N5..."></div></div>
+    <div class="gform-row">
+      <div><label>Goal type</label>
+        <select id="gt">
+          <option value="custom">Custom (track manually)</option>
+          <option value="days">Study days</option>
+          <option value="words">Vocabulary words</option>
+          <option value="mins">Study minutes</option>
+          <option value="hira">Hiragana (46)</option>
+          <option value="kata">Katakana (46)</option>
+          <option value="kanji">Kanji N5 (103)</option>
+        </select>
+      </div>
+      <div><label>Target amount</label><input type="number" id="gtg" placeholder="e.g. 30" min="1"></div>
+      <div><label>Unit label <span style="font-weight:400;color:var(--ink-soft);">(e.g. videos, eps, hours)</span></label><input type="text" id="gu" placeholder="e.g. videos"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Deadline</label><input type="date" id="gd"></div>
+      <div></div>
+    </div>
+    <button class="btn-primary" onclick="saveGoal()">🌸 Add Goal</button>
+  </div>
+  <hr class="divider">
+  <div class="sec-header" style="font-size:15px;">Active goals</div>
+  <div id="golist"></div>
+</div>
+
+  </div><!-- /main-col -->
+
+  <!-- RIGHT: pinned goals sidebar -->
+  <div class="pinned-goals-card" id="pinned-sidebar">
+    <div class="pinned-goals-title">📌 Pinned Goals</div>
+    <div style="font-size:11px;color:var(--ink-soft);margin-bottom:10px;">Drag to reorder priority ↕</div>
+    <div id="pinned-goals-list"><div style="font-size:12px;color:var(--ink-soft);text-align:center;padding:16px 0;line-height:1.6;">No pinned goals yet.<br>Go to 🎯 Goals and click Pin.</div></div>
+  </div>
+
+</div><!-- /top-layout -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const HIRA=[
+  {r:'あ行',c:[{c:'あ',r:'a'},{c:'い',r:'i'},{c:'う',r:'u'},{c:'え',r:'e'},{c:'お',r:'o'}]},
+  {r:'か行',c:[{c:'か',r:'ka'},{c:'き',r:'ki'},{c:'く',r:'ku'},{c:'け',r:'ke'},{c:'こ',r:'ko'}]},
+  {r:'さ行',c:[{c:'さ',r:'sa'},{c:'し',r:'shi'},{c:'す',r:'su'},{c:'せ',r:'se'},{c:'そ',r:'so'}]},
+  {r:'た行',c:[{c:'た',r:'ta'},{c:'ち',r:'chi'},{c:'つ',r:'tsu'},{c:'て',r:'te'},{c:'と',r:'to'}]},
+  {r:'な行',c:[{c:'な',r:'na'},{c:'に',r:'ni'},{c:'ぬ',r:'nu'},{c:'ね',r:'ne'},{c:'の',r:'no'}]},
+  {r:'は行',c:[{c:'は',r:'ha'},{c:'ひ',r:'hi'},{c:'ふ',r:'fu'},{c:'へ',r:'he'},{c:'ほ',r:'ho'}]},
+  {r:'ま行',c:[{c:'ま',r:'ma'},{c:'み',r:'mi'},{c:'む',r:'mu'},{c:'め',r:'me'},{c:'も',r:'mo'}]},
+  {r:'や行',c:[{c:'や',r:'ya'},{c:'ゆ',r:'yu'},{c:'よ',r:'yo'}]},
+  {r:'ら行',c:[{c:'ら',r:'ra'},{c:'り',r:'ri'},{c:'る',r:'ru'},{c:'れ',r:'re'},{c:'ろ',r:'ro'}]},
+  {r:'わ行',c:[{c:'わ',r:'wa'},{c:'を',r:'wo'}]},
+  {r:'ん',c:[{c:'ん',r:'n'}]},
+  {r:'濁音',c:[{c:'が',r:'ga'},{c:'ぎ',r:'gi'},{c:'ぐ',r:'gu'},{c:'げ',r:'ge'},{c:'ご',r:'go'},{c:'ざ',r:'za'},{c:'じ',r:'ji'},{c:'ず',r:'zu'},{c:'ぜ',r:'ze'},{c:'ぞ',r:'zo'},{c:'だ',r:'da'},{c:'で',r:'de'},{c:'ど',r:'do'},{c:'ば',r:'ba'},{c:'び',r:'bi'},{c:'ぶ',r:'bu'},{c:'べ',r:'be'},{c:'ぼ',r:'bo'},{c:'ぱ',r:'pa'},{c:'ぴ',r:'pi'},{c:'ぷ',r:'pu'},{c:'ぺ',r:'pe'},{c:'ぽ',r:'po'}]},
+];
+const KATA=[
+  {r:'ア行',c:[{c:'ア',r:'a'},{c:'イ',r:'i'},{c:'ウ',r:'u'},{c:'エ',r:'e'},{c:'オ',r:'o'}]},
+  {r:'カ行',c:[{c:'カ',r:'ka'},{c:'キ',r:'ki'},{c:'ク',r:'ku'},{c:'ケ',r:'ke'},{c:'コ',r:'ko'}]},
+  {r:'サ行',c:[{c:'サ',r:'sa'},{c:'シ',r:'shi'},{c:'ス',r:'su'},{c:'セ',r:'se'},{c:'ソ',r:'so'}]},
+  {r:'タ行',c:[{c:'タ',r:'ta'},{c:'チ',r:'chi'},{c:'ツ',r:'tsu'},{c:'テ',r:'te'},{c:'ト',r:'to'}]},
+  {r:'ナ行',c:[{c:'ナ',r:'na'},{c:'ニ',r:'ni'},{c:'ヌ',r:'nu'},{c:'ネ',r:'ne'},{c:'ノ',r:'no'}]},
+  {r:'ハ行',c:[{c:'ハ',r:'ha'},{c:'ヒ',r:'hi'},{c:'フ',r:'fu'},{c:'ヘ',r:'he'},{c:'ホ',r:'ho'}]},
+  {r:'マ行',c:[{c:'マ',r:'ma'},{c:'ミ',r:'mi'},{c:'ム',r:'mu'},{c:'メ',r:'me'},{c:'モ',r:'mo'}]},
+  {r:'ヤ行',c:[{c:'ヤ',r:'ya'},{c:'ユ',r:'yu'},{c:'ヨ',r:'yo'}]},
+  {r:'ラ行',c:[{c:'ラ',r:'ra'},{c:'リ',r:'ri'},{c:'ル',r:'ru'},{c:'レ',r:'re'},{c:'ロ',r:'ro'}]},
+  {r:'ワ行',c:[{c:'ワ',r:'wa'},{c:'ヲ',r:'wo'}]},
+  {r:'ン',c:[{c:'ン',r:'n'}]},
+  {r:'濁音',c:[{c:'ガ',r:'ga'},{c:'ギ',r:'gi'},{c:'グ',r:'gu'},{c:'ゲ',r:'ge'},{c:'ゴ',r:'go'},{c:'ザ',r:'za'},{c:'ジ',r:'ji'},{c:'ズ',r:'zu'},{c:'ゼ',r:'ze'},{c:'ゾ',r:'zo'},{c:'ダ',r:'da'},{c:'デ',r:'de'},{c:'ド',r:'do'},{c:'バ',r:'ba'},{c:'ビ',r:'bi'},{c:'ブ',r:'bu'},{c:'ベ',r:'be'},{c:'ボ',r:'bo'},{c:'パ',r:'pa'},{c:'ピ',r:'pi'},{c:'プ',r:'pu'},{c:'ペ',r:'pe'},{c:'ポ',r:'po'}]},
+];
+const KANJI=[
+  {r:'Số & Thời gian',c:[{c:'一',r:'ichi'},{c:'二',r:'ni'},{c:'三',r:'san'},{c:'四',r:'shi'},{c:'五',r:'go'},{c:'六',r:'roku'},{c:'七',r:'shichi'},{c:'八',r:'hachi'},{c:'九',r:'ku'},{c:'十',r:'juu'},{c:'百',r:'hyaku'},{c:'千',r:'sen'},{c:'万',r:'man'},{c:'年',r:'nen'},{c:'月',r:'tsuki'},{c:'日',r:'hi'},{c:'時',r:'toki'},{c:'分',r:'fun'},{c:'半',r:'han'}]},
+  {r:'Thiên nhiên',c:[{c:'山',r:'yama'},{c:'川',r:'kawa'},{c:'火',r:'hi'},{c:'水',r:'mizu'},{c:'木',r:'ki'},{c:'金',r:'kin'},{c:'土',r:'tsuchi'},{c:'空',r:'sora'},{c:'天',r:'ten'},{c:'雨',r:'ame'},{c:'花',r:'hana'}]},
+  {r:'Con người',c:[{c:'人',r:'hito'},{c:'男',r:'otoko'},{c:'女',r:'onna'},{c:'子',r:'ko'},{c:'父',r:'chichi'},{c:'母',r:'haha'},{c:'友',r:'tomo'},{c:'先',r:'saki'},{c:'生',r:'sei'}]},
+  {r:'Cơ thể',c:[{c:'目',r:'me'},{c:'耳',r:'mimi'},{c:'口',r:'kuchi'},{c:'手',r:'te'},{c:'足',r:'ashi'}]},
+  {r:'Vị trí',c:[{c:'上',r:'ue'},{c:'下',r:'shita'},{c:'中',r:'naka'},{c:'大',r:'dai'},{c:'小',r:'shou'},{c:'右',r:'migi'},{c:'左',r:'hidari'},{c:'外',r:'soto'},{c:'北',r:'kita'},{c:'南',r:'minami'},{c:'東',r:'higashi'},{c:'西',r:'nishi'}]},
+  {r:'Trường học',c:[{c:'学',r:'gaku'},{c:'校',r:'kou'},{c:'語',r:'go'},{c:'文',r:'bun'},{c:'字',r:'ji'},{c:'書',r:'sho'},{c:'読',r:'doku'},{c:'聞',r:'bun'},{c:'話',r:'hanashi'},{c:'言',r:'gen'}]},
+  {r:'Cuộc sống',c:[{c:'家',r:'ie'},{c:'車',r:'kuruma'},{c:'電',r:'den'},{c:'気',r:'ki'},{c:'食',r:'shoku'},{c:'飲',r:'in'},{c:'買',r:'kai'},{c:'見',r:'mi'},{c:'行',r:'kou'},{c:'来',r:'rai'},{c:'出',r:'de'},{c:'入',r:'nyuu'},{c:'休',r:'kyuu'},{c:'立',r:'ritsu'},{c:'帰',r:'ki'},{c:'起',r:'ki'},{c:'寝',r:'shin'}]},
+  {r:'Màu & Tính từ',c:[{c:'白',r:'shiro'},{c:'黒',r:'kuro'},{c:'赤',r:'aka'},{c:'青',r:'ao'},{c:'高',r:'taka'},{c:'安',r:'an'},{c:'新',r:'shin'},{c:'古',r:'ko'},{c:'長',r:'naga'},{c:'多',r:'ta'},{c:'少',r:'shou'},{c:'好',r:'kou'},{c:'悪',r:'aku'}]},
+  {r:'Khác',c:[{c:'国',r:'kuni'},{c:'何',r:'nani'},{c:'今',r:'ima'},{c:'毎',r:'mai'},{c:'週',r:'shuu'},{c:'午',r:'go'},{c:'前',r:'mae'},{c:'後',r:'go'},{c:'間',r:'ma'},{c:'円',r:'en'},{c:'名',r:'na'},{c:'本',r:'hon'},{c:'店',r:'mise'},{c:'駅',r:'eki'}]},
+];
+
+// Fresh start — only use current keys, no migration from old versions
+function loadAndMigrate(){
+  const logs=JSON.parse(localStorage.getItem('njl')||'[]');
+  const goals=JSON.parse(localStorage.getItem('njg')||'[]');
+  const curM=JSON.parse(localStorage.getItem('njm')||'{"h":{},"k":{},"j":{}}');
+  return {logs,goals,ML:curM};
+}
+
+const migrated=loadAndMigrate();
+let logs=migrated.logs;
+let goals=migrated.goals;
+let ML=migrated.ML;
+let sScripts=[],sMood='',sLevel='';
+let tK={h:{},k:{},j:{}},tV=[];
+let ddOpen=false,curKT='h',curMT='h';
+let cMin=null,cScr=null;
+
+// Declare these early so renderAll() can access them
+const SL={hiragana:'🌸 Hiragana',katakana:'💜 Katakana',kanji:'漢 Kanji',grammar:'🔤 Grammar',vocabulary:'📝 Vocabulary',listening:'👂 Listening',anime:'📺 Anime',reading:'📖 Reading'};
+const SC={hiragana:'tag-h',katakana:'tag-k',kanji:'tag-j',vocab:'tag-v',grammar:'tag-g',listening:'tag-v',anime:'tag-j'};
+
+// Declare before renderAll so inline oninput handlers can reference them
+let goalInputVals={};
+let pgDragId=null;
+
+document.getElementById('ld').valueAsDate=new Date();
+buildPickers();buildMaster();renderAll();
+
+function renderAll(){updStats();updProg();renderLog();renderStreak();renderGoals();renderMasterBoard();renderPinnedGoals();renderGoalLogInputs();}
+function showSec(n,btn){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('sec-'+n).classList.add('active');btn.classList.add('active');if(n==='report')renderReport();}
+function togScript(btn){btn.classList.toggle('sel');const v=btn.dataset.val;sScripts.includes(v)?sScripts=sScripts.filter(x=>x!==v):sScripts.push(v);}
+function pickM(btn){document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');sMood=btn.dataset.val;}
+function pickLv(btn){document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');sLevel=btn.dataset.val;}
+
+// Per-goal unit input rows (replaces goal-log-section)
+function renderGoalLogInputs(){
+  const el=document.getElementById('goal-unit-inputs');if(!el)return;
+  const filtered=goals.filter(g=>g.type!=='hira'&&g.type!=='kata'&&Math.min(100,Math.round(getGC(g)/g.target*100))<100);
+  if(!filtered.length){el.innerHTML='<div style="font-size:13px;color:var(--ink-soft);padding:6px 0;">All goals done! 🎉 Add new goals in 🎯 Goals tab.</div>';return;}
+  el.innerHTML=filtered.map(g=>`
+    <div style="display:grid;grid-template-columns:1fr 140px;gap:10px;align-items:center;margin-bottom:8px;padding:10px 14px;background:var(--paper-warm);border-radius:12px;border:1.5px solid var(--border);">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--ink);">${g.name}</div>
+        <div style="font-size:11px;color:var(--ink-soft);margin-top:2px;">Total: ${getGC(g)} / ${g.target}${g.unit?' '+g.unit:''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input type="number" min="0" id="gi-${g.id}" placeholder="0"
+          style="width:70px;padding:8px 8px;border-radius:10px;border:2px solid var(--border);font-size:14px;text-align:center;"
+          oninput="goalInputVals[${g.id}]=parseInt(this.value)||0">
+        <span style="font-size:12px;color:var(--ink-soft);">${g.unit||'units'}</span>
+      </div>
+    </div>`).join('');
+  goalInputVals={};
+}
+
+// Topic picker for report analysis
+function togTopic2(btn){
+  btn.classList.toggle('sel');
+  const v=btn.dataset.val;
+  sScripts.includes(v)?sScripts=sScripts.filter(x=>x!==v):sScripts.push(v);
+}
+
+// DD
+function togDD(){ddOpen=!ddOpen;document.getElementById('kddh').classList.toggle('open',ddOpen);document.getElementById('kddb').classList.toggle('open',ddOpen);}
+function swKTab(t,btn){curKT=t;document.querySelectorAll('.kana-tab').forEach(b=>{b.className='kana-tab';});btn.className='kana-tab '+(t==='h'?'ah':t==='k'?'ak':'aj');document.querySelectorAll('.kana-panel').forEach(p=>p.classList.remove('active'));document.getElementById('kp'+t).classList.add('active');}
+
+function ec(c){return c.codePointAt(0).toString(16);}
+
+function buildPickers(){
+  buildKPanel('h',HIRA);buildKPanel('k',KATA);buildKPanel('j',KANJI);
+}
+function buildKPanel(type,data){
+  const panel=document.getElementById('kp'+type);
+  const cls=type==='h'?'lh':type==='k'?'lk':'lj';
+  panel.innerHTML=data.map(row=>`
+    <div class="kana-row-group">
+      <span class="kana-row-label">${row.r}</span>
+      <button class="row-sel-btn" onclick="selRow('${type}','${row.r}')">全選択</button>
+      <div class="kana-grid">
+        ${row.c.map(ch=>`
+          <div class="kana-cell ${tK[type][ch.c]?cls:''}" id="kc${type}${ec(ch.c)}" onclick="togKC('${type}','${ch.c}','${ch.r}')">
+            <div class="kana-chk">✓</div>
+            <div class="kana-cell-top"><div class="kana-char">${ch.c}</div><div class="kana-rom">${ch.r}</div></div>
+            <div class="knote-wrap"><textarea class="knote-input" placeholder="note..." oninput="saveTN('${type}','${ch.c}',this.value)" onclick="event.stopPropagation()">${tK[type][ch.c]?.note||''}</textarea></div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+  updKCount();
+}
+function togKC(type,char,rom){
+  if(tK[type][char])delete tK[type][char];else tK[type][char]={note:'',rom};
+  const cls=type==='h'?'lh':type==='k'?'lk':'lj';
+  const el=document.getElementById('kc'+type+ec(char));
+  if(el){el.className='kana-cell '+(tK[type][char]?cls:'');}
+  updKCount();
+}
+function saveTN(type,char,val){if(tK[type][char])tK[type][char].note=val;}
+function selRow(type,rowName){
+  const data=type==='h'?HIRA:type==='k'?KATA:KANJI;
+  const row=data.find(r=>r.r===rowName);if(!row)return;
+  const cls=type==='h'?'lh':type==='k'?'lk':'lj';
+  const all=row.c.every(ch=>tK[type][ch.c]);
+  row.c.forEach(ch=>{if(all)delete tK[type][ch.c];else if(!tK[type][ch.c])tK[type][ch.c]={note:'',rom:ch.r};
+    const el=document.getElementById('kc'+type+ec(ch.c));if(el)el.className='kana-cell '+(tK[type][ch.c]?cls:'');});
+  updKCount();
+}
+function updKCount(){
+  const total=Object.keys(tK.h).length+Object.keys(tK.k).length+Object.keys(tK.j).length;
+  document.getElementById('kddc').textContent=total;
+  const parts=[];
+  if(Object.keys(tK.h).length)parts.push('ひ '+Object.keys(tK.h).join(''));
+  if(Object.keys(tK.k).length)parts.push('カ '+Object.keys(tK.k).join(''));
+  if(Object.keys(tK.j).length)parts.push('漢 '+Object.keys(tK.j).join(''));
+  document.getElementById('kdds').textContent=parts.length?parts.join(' · '):'Click to select characters learned today...';
+}
+
+// Vocab
+function addV(){const i=document.getElementById('vi');const v=i.value.trim();if(!v)return;tV.push(v);i.value='';renderVL();}
+function remV(i){tV.splice(i,1);renderVL();}
+function renderVL(){document.getElementById('vl').innerHTML=tV.map((v,i)=>`<div class="vocab-pill">${v}<button onclick="remV(${i})">✕</button></div>`).join('');}
+
+// Save log
+function saveLog(){
+  const dbg=document.getElementById('save-debug');
+  try {
+    const date=document.getElementById('ld').value;
+    const mins=parseInt(document.getElementById('lm').value)||0;
+    const note=document.getElementById('ln').value.trim();
+    if(dbg)dbg.textContent='Attempting save... date='+date;
+    if(!date){showToast('❗ Please select a study date!');if(dbg)dbg.textContent='Failed: no date';return;}
+    ['h','k','j'].forEach(type=>{
+      Object.entries(tK[type]).forEach(([char,data])=>{
+        if(!ML[type][char])ML[type][char]={learned:true,note:data.note};
+        else if(data.note)ML[type][char].note=data.note;
+      });
+    });
+    localStorage.setItem('njm',JSON.stringify(ML));
+    // Capture goal progress inputs
+    const goalProgress={};
+    goals.forEach(g=>{
+      const inp=document.getElementById('gi-'+g.id);
+      const val=inp?parseInt(inp.value)||0:0;
+      if(val>0)goalProgress[g.id]=val;
+    });
+    const entry={
+      id:Date.now(),date,mins,
+      words:tV.length,
+      vocab:[...tV],
+      note,
+      scripts:[...sScripts],
+      mood:sMood,
+      level:sLevel,
+      goalProgress,
+      kana:{h:Object.keys(tK.h),k:Object.keys(tK.k),j:Object.keys(tK.j)}
+    };
+    logs.unshift(entry);
+    localStorage.setItem('njl',JSON.stringify(logs));
+    if(dbg)dbg.textContent='Saved! Total logs: '+logs.length;
+    resetF();
+    renderAll();
+    showToast('🌸 Saved! Keep going, Angel～ '+(sMood||'😊'));
+  } catch(e) {
+    if(dbg)dbg.textContent='ERROR: '+e.message;
+    showToast('❗ Error: '+e.message);
+    console.error('saveLog error:',e);
+  }
+}
+function resetF(){
+  document.getElementById('ld').valueAsDate=new Date();
+  document.getElementById('lm').value='';
+  document.getElementById('ln').value='';
+  document.querySelectorAll('.mood-btn,.level-btn').forEach(b=>b.classList.remove('sel'));
+  document.querySelectorAll('#topic-picker .script-btn').forEach(b=>b.classList.remove('sel'));
+  sScripts=[];sMood='';sLevel='';tK={h:{},k:{},j:{}};tV=[];
+  goalInputVals={};
+  document.getElementById('vl').innerHTML='';
+  buildPickers();
+  ddOpen=false;
+  const kddh=document.getElementById('kddh');if(kddh)kddh.classList.remove('open');
+  const kddb=document.getElementById('kddb');if(kddb)kddb.classList.remove('open');
+  renderGoalLogInputs();
+}
+function delLog(id){
+  if(!confirm('Delete this log entry? This cannot be undone.'))return;
+  logs=logs.filter(l=>l.id!==id);
+  localStorage.setItem('njl',JSON.stringify(logs));
+  renderAll();
+  showToast('🗑 Entry deleted');
+}
+
+// Stats
+function updStats(){
+  const td=new Set(logs.map(l=>l.date)).size;
+  const tw=logs.reduce((s,l)=>s+(l.words||0),0);
+  const tm=logs.reduce((s,l)=>s+(l.mins||0),0);
+  const set=(ids,v)=>ids.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+  set(['st','rt'],td);set(['sw','rw'],tw);
+  set(['sm'],tm);
+  const rh=document.getElementById('rh');if(rh)rh.textContent=Math.round(tm/60);
+}
+function calcStreak(){
+  const dates=[...new Set(logs.map(l=>l.date))].sort().reverse();
+  if(!dates.length)return 0;
+  const today=new Date().toISOString().split('T')[0];
+  const yesterday=new Date(Date.now()-86400000).toISOString().split('T')[0];
+  if(dates[0]!==today&&dates[0]!==yesterday)return 0;
+  let s=1,cur=new Date(dates[0]);
+  for(let i=1;i<dates.length;i++){const p=new Date(cur-86400000).toISOString().split('T')[0];if(dates[i]===p){s++;cur=new Date(dates[i]);}else break;}
+  return s;
+}
+function updProg(){
+  const hc=Object.keys(ML.h).length,kc=Object.keys(ML.k).length,jc=Object.keys(ML.j).length;
+  const hp=Math.round(hc/46*100),kp=Math.round(kc/46*100),jp=Math.round(jc/103*100);
+  const pairs=[['hc','hp','hb',hc,hp,'bhc','bhp','bhb'],['kc','kp','kb',kc,kp,'bkc','bkp','bkb'],['jc','jp','jb',jc,jp,'bjc','bjp','bjb']];
+  pairs.forEach(([c1,p1,b1,cv,pv,c2,p2,b2])=>{
+    [c1,c2].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=cv;});
+    [p1,p2].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=pv+'%';});
+    [b1,b2].forEach(id=>{const el=document.getElementById(id);if(el)el.style.width=pv+'%';});
+  });
+}
+
+// Master board
+function buildMaster(){buildMP('h',HIRA);buildMP('k',KATA);buildMP('j',KANJI);}
+function buildMP(type,data){
+  const panel=document.getElementById('mb'+type);
+  const dcls=type==='h'?'mch':type==='k'?'mck':'mcj';
+  panel.innerHTML=data.map(row=>`
+    <div class="kana-row-group">
+      <span class="kana-row-label">${row.r}</span>
+      <button class="row-sel-btn" onclick="mSelRow('${type}','${row.r}')">全選択</button>
+      <div class="master-grid">
+        ${row.c.map(ch=>{
+          const learned=ML[type][ch.c];const note=learned?.note||'';
+          return `<div class="mcell ${learned?dcls:''}" id="mc${type}${ec(ch.c)}" onclick="togMC('${type}','${ch.c}','${ch.r}')">
+            ${note?'<div class="ndot"></div>':''}
+            <div class="mc">${ch.c}</div><div class="mr">${ch.r}</div>
+            ${learned&&note?`<div class="mn">${note}</div>`:''}
+            ${learned?`<div class="knote-wrap" style="display:block;padding:2px 3px 3px;" onclick="event.stopPropagation()"><textarea class="knote-input" placeholder="note..." oninput="saveMN('${type}','${ch.c}',this.value)">${note}</textarea></div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+function renderMasterBoard(){buildMP('h',HIRA);buildMP('k',KATA);buildMP('j',KANJI);}
+function togMC(type,char,rom){
+  if(ML[type][char])delete ML[type][char];else ML[type][char]={learned:true,note:''};
+  localStorage.setItem('njm',JSON.stringify(ML));updProg();
+  buildMP(type,type==='h'?HIRA:type==='k'?KATA:KANJI);
+}
+function saveMN(type,char,val){if(ML[type][char]){ML[type][char].note=val;localStorage.setItem('njm',JSON.stringify(ML));}}
+function mSelRow(type,rowName){
+  const data=type==='h'?HIRA:type==='k'?KATA:KANJI;
+  const row=data.find(r=>r.r===rowName);if(!row)return;
+  const all=row.c.every(ch=>ML[type][ch.c]);
+  row.c.forEach(ch=>{if(all)delete ML[type][ch.c];else if(!ML[type][ch.c])ML[type][ch.c]={learned:true,note:''};});
+  localStorage.setItem('njm',JSON.stringify(ML));updProg();buildMP(type,data);
+}
+function swMTab(t,btn){
+  curMT=t;
+  document.querySelectorAll('.master-tab').forEach(b=>b.className='master-tab');
+  btn.className='master-tab m'+t;
+  document.querySelectorAll('.mbpanel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('mb'+t).classList.add('active');
+}
+
+// Log list
+function getCharNote(type,char){const ml=type==='h'?ML.h:type==='k'?ML.k:ML.j;return ml[char]?.note||'';}
+
+function renderLog(){
+  const el=document.getElementById('llist');
+  if(!logs.length){el.innerHTML='<div class="empty"><div class="ico">🌸</div>No journal entries yet. Start logging today!</div>';return;}
+  el.innerHTML=logs.slice(0,40).map(l=>{
+    let kanaHTML='';
+    if(l.kana?.h?.length){
+      const cells=l.kana.h.map(char=>{const note=getCharNote('h',char);return`<div style="display:inline-flex;flex-direction:column;align-items:center;background:var(--sakura-light);border:1.5px solid var(--sakura);border-radius:8px;padding:5px 7px;min-width:42px;"><span style="font-family:'Zen Maru Gothic',sans-serif;font-size:20px;color:var(--ink);line-height:1;">${char}</span>${note?`<span style="font-size:9px;color:var(--sakura-deep);margin-top:3px;max-width:58px;word-break:break-all;text-align:center;line-height:1.3;">${note}</span>`:''}</div>`;}).join('');
+      kanaHTML+=`<div style="margin-bottom:8px;"><div style="font-size:12px;font-weight:700;color:var(--sakura-deep);margin-bottom:6px;">🌸 Hiragana (${l.kana.h.length})</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${cells}</div></div>`;
+    }
+    if(l.kana?.k?.length){
+      const cells=l.kana.k.map(char=>{const note=getCharNote('k',char);return`<div style="display:inline-flex;flex-direction:column;align-items:center;background:var(--fuji-light);border:1.5px solid var(--fuji);border-radius:8px;padding:5px 7px;min-width:42px;"><span style="font-family:'Zen Maru Gothic',sans-serif;font-size:20px;color:var(--ink);line-height:1;">${char}</span>${note?`<span style="font-size:9px;color:#7B5EA7;margin-top:3px;max-width:58px;word-break:break-all;text-align:center;line-height:1.3;">${note}</span>`:''}</div>`;}).join('');
+      kanaHTML+=`<div style="margin-bottom:8px;"><div style="font-size:12px;font-weight:700;color:#7B5EA7;margin-bottom:6px;">💜 Katakana (${l.kana.k.length})</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${cells}</div></div>`;
+    }
+    if(l.kana?.j?.length){
+      const cells=l.kana.j.map(char=>{const note=getCharNote('j',char);return`<div style="display:inline-flex;flex-direction:column;align-items:center;background:var(--matcha-light);border:1.5px solid var(--matcha);border-radius:8px;padding:5px 7px;min-width:42px;"><span style="font-family:'Zen Maru Gothic',sans-serif;font-size:20px;color:var(--ink);line-height:1;">${char}</span>${note?`<span style="font-size:9px;color:#4A7A4E;margin-top:3px;max-width:58px;word-break:break-all;text-align:center;line-height:1.3;">${note}</span>`:''}</div>`;}).join('');
+      kanaHTML+=`<div style="margin-bottom:8px;"><div style="font-size:12px;font-weight:700;color:#4A7A4E;margin-bottom:6px;">🍃 Kanji (${l.kana.j.length})</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${cells}</div></div>`;
+    }
+    return `<div class="log-entry">
+      <div class="log-entry-top">
+        <div><div class="log-date">${fmtDate(l.date)} ${l.level?`<b style="background:var(--fuji-light);color:#5E35B1;padding:1px 8px;border-radius:6px;font-size:12px;">${l.level}</b>`:''}</div>
+          <div class="log-scripts">${(l.scripts||[]).map(s=>`<span class="log-tag ${SC[s]||'tag-v'}">${SL[s]||s}</span>`).join('')}</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:22px;">${l.mood||''}</span><button class="log-del" onclick="delLog(${l.id})">✕</button></div>
+      </div>
+      ${(()=>{
+        const gp=l.goalProgress||{};
+        const entries=Object.entries(gp).filter(([id,val])=>val>0);
+        if(!entries.length)return '';
+        const items=entries.map(([id,val])=>{
+          const g=goals.find(x=>String(x.id)===String(id));
+          if(!g)return '';
+          return `<div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:12px;font-weight:600;color:var(--ink);">${g.name}</span>
+            <span style="font-size:12px;background:var(--sakura-light);color:var(--sakura-deep);padding:2px 10px;border-radius:8px;font-weight:700;">+${val} ${g.unit||'units'}</span>
+            <span style="font-size:11px;color:var(--ink-soft);">→ total ${getGC(g)}/${g.target}</span>
+          </div>`;
+        }).filter(Boolean).join('');
+        return items?`<div style="background:var(--paper-warm);border-radius:10px;padding:8px 12px;margin-bottom:8px;border:1.5px solid var(--border);display:flex;flex-direction:column;gap:5px;">
+          <div style="font-size:11px;font-weight:700;color:var(--ink-soft);margin-bottom:2px;">🎯 Goal progress</div>${items}</div>`:'';
+      })()}
+      ${kanaHTML?`<div style="background:white;border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--border);">${kanaHTML}</div>`:''}
+      ${l.vocab?.length?`<div style="font-size:13px;color:#8A6A00;margin-bottom:8px;background:var(--yuzu-light);padding:7px 12px;border-radius:8px;">📝 <b>Vocab:</b> ${l.vocab.join(' · ')}</div>`:''}
+      ${l.note?`<div class="log-content">${l.note}</div>`:''}
+      <div class="log-meta">${l.mins?`⏱ ${l.mins} min`:''} ${l.words?`· 📚 ${l.words} words`:''}</div>
+    </div>`;
+  }).join('');
+}
+
+// Streak
+function renderStreak(){
+  const el=document.getElementById('sgrid');
+  const ld=new Set(logs.map(l=>l.date));
+  const today=new Date();let html='';
+  for(let i=29;i>=0;i--){
+    const d=new Date(today-i*86400000).toISOString().split('T')[0];
+    const day=new Date(d+'T00:00:00').getDate();
+    html+=`<div class="streak-day ${ld.has(d)?'hl':''} ${i===0?'td':''}" title="${d}">${day}</div>`;
+  }
+  el.innerHTML=html;
+}
+
+// Goals
+function saveGoal(){
+  const name=document.getElementById('gn').value.trim();
+  const type=document.getElementById('gt').value;
+  const target=parseInt(document.getElementById('gtg').value);
+  const unit=document.getElementById('gu').value.trim();
+  const deadline=document.getElementById('gd').value;
+  if(!name||!target){showToast('❗ Please fill in name and target amount!');return;}
+  goals.push({id:Date.now(),name,type,target,unit,deadline,created:new Date().toISOString().split('T')[0],pinned:true});
+  localStorage.setItem('njg',JSON.stringify(goals));
+  document.getElementById('gn').value='';document.getElementById('gtg').value='';document.getElementById('gu').value='';document.getElementById('gd').value='';
+  renderGoals();renderPinnedGoals();renderGoalLogInputs();showToast('🎯 Goal added & pinned!');
+}
+function delGoal(id){
+  if(!confirm('Delete this goal permanently?'))return;
+  goals=goals.filter(g=>g.id!==id);
+  localStorage.setItem('njg',JSON.stringify(goals));
+  renderGoals();renderPinnedGoals();renderGoalLogInputs();
+  showToast('🗑 Goal deleted');
+}
+function togglePin(id){
+  goals=goals.map(g=>g.id===id?{...g,pinned:!g.pinned}:g);
+  localStorage.setItem('njg',JSON.stringify(goals));
+  renderGoals();renderPinnedGoals();
+}
+function renderPinnedGoals(){
+  const el=document.getElementById('pinned-goals-list');
+  if(!el)return;
+  const pinned=goals.filter(g=>g.pinned);
+  if(!pinned.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--ink-soft);text-align:center;padding:16px 0;line-height:1.6;">No pinned goals yet.<br>Go to 🎯 Goals and click Pin.</div>';
+    return;
+  }
+  const TL={days:'days',words:'words',mins:'mins',hira:'hiragana',kata:'katakana',kanji:'kanji',custom:''};
+  el.innerHTML=pinned.map(g=>{
+    const cur=getGC(g);const pct=Math.min(100,Math.round(cur/g.target*100));
+    const done=pct>=100;
+    const unitLabel=g.unit||(TL[g.type]||'');
+    return `<div class="pg-item" draggable="true" data-id="${g.id}">
+      <button class="pg-remove" onclick="togglePin(${g.id})" title="Remove from pinned">✕</button>
+      <div class="pg-item-body">
+        <div class="pg-name-row">
+          <span class="pg-drag">⠿</span>
+          <span class="pg-name">${g.name}</span>
+          <span class="pg-pct">${pct}%</span>
+        </div>
+        <div class="pg-sub">${cur}/${g.target}${unitLabel?' '+unitLabel:''}</div>
+        <div class="pg-bar"><div class="pg-fill ${done?'gdone-fill':''}" style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+  // Attach drag events via JS — never inline, so they always work after re-render
+  el.querySelectorAll('.pg-item').forEach(item=>{
+    item.addEventListener('dragstart',pgDragStart);
+    item.addEventListener('dragover',pgDragOver);
+    item.addEventListener('drop',pgDrop);
+    item.addEventListener('dragend',pgDragEnd);
+  });
+}
+
+// Drag and drop for pinned goals — attached via addEventListener, always reliable
+function pgDragStart(e){
+  pgDragId=this.dataset.id;
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',pgDragId);
+}
+function pgDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  document.querySelectorAll('.pg-item').forEach(el=>el.classList.remove('drag-over'));
+  this.classList.add('drag-over');
+}
+function pgDrop(e){
+  e.preventDefault();
+  const toId=this.dataset.id;
+  const fromId=pgDragId;
+  if(!fromId||fromId===toId)return;
+  const fromIdx=goals.findIndex(g=>String(g.id)===fromId);
+  const toIdx=goals.findIndex(g=>String(g.id)===toId);
+  if(fromIdx<0||toIdx<0)return;
+  const moved=goals.splice(fromIdx,1)[0];
+  goals.splice(toIdx,0,moved);
+  localStorage.setItem('njg',JSON.stringify(goals));
+  renderPinnedGoals();renderGoals();
+}
+function pgDragEnd(e){
+  document.querySelectorAll('.pg-item').forEach(el=>el.classList.remove('dragging','drag-over'));
+  pgDragId=null;
+}
+function getGC(g){
+  const td=new Set(logs.map(l=>l.date)).size;
+  const tw=logs.reduce((s,l)=>s+(l.words||0),0);
+  const tm=logs.reduce((s,l)=>s+(l.mins||0),0);
+  if(g.type==='days')return td;
+  if(g.type==='words')return tw;
+  if(g.type==='mins')return tm;
+  if(g.type==='hira')return Object.keys(ML.h).length;
+  if(g.type==='kata')return Object.keys(ML.k).length;
+  if(g.type==='kanji')return Object.keys(ML.j).length;
+  // custom goal: sum goalProgress[g.id] from each log entry
+  if(g.type==='custom'){
+    return logs.reduce((s,l)=>{
+      const gp=l.goalProgress||{};
+      return s+(gp[g.id]||0);
+    },0);
+  }
+  return 0;
+}
+function renderGoals(){
+  const el=document.getElementById('golist');
+  if(!goals.length){el.innerHTML='<div class="empty"><div class="ico">🎯</div>No goals yet. Add your first goal above!</div>';return;}
+  const today=new Date().toISOString().split('T')[0];
+  const TL={days:'days',words:'words',mins:'mins',hira:'hiragana',kata:'katakana',kanji:'kanji',custom:''};
+  el.innerHTML=goals.map(g=>{
+    const cur=getGC(g);const pct=Math.min(100,Math.round(cur/g.target*100));
+    const done=pct>=100,late=g.deadline&&g.deadline<today&&!done;
+    const pinned=g.pinned||false;
+    const unitLabel=g.unit||(TL[g.type]||'');
+    return `<div class="goal-item" id="gi-wrap-${g.id}">
+      <div class="goal-top">
+        <div class="goal-name">${g.name} ${g.unit?`<span style="font-size:11px;color:var(--ink-soft);font-weight:400;">· ${g.unit}</span>`:''}</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="pin-btn ${pinned?'pinned':''}" onclick="togglePin(${g.id})">${pinned?'📌 Pinned':'📌 Pin'}</button>
+          <button class="pin-btn" onclick="openEditGoal(${g.id})" title="Edit">✏️ Edit</button>
+          <span class="gbadge ${done?'gdone':late?'glate':'gon'}">${done?'✓ Done':late?'⚠ Late':'In progress'}</span>
+          <button class="log-del" onclick="delGoal(${g.id})">✕</button>
+        </div>
+      </div>
+      <div class="prog-label"><span>${cur} / ${g.target} ${unitLabel}</span><span>${pct}%</span></div>
+      <div class="prog-bar"><div class="prog-fill ${done?'matcha':''}" style="width:${pct}%"></div></div>
+      ${g.deadline?`<div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">Deadline: ${fmtDate(g.deadline)}</div>`:'<div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">No deadline set</div>'}
+      <div id="ge-${g.id}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div><label style="font-size:12px;color:var(--ink-soft);display:block;margin-bottom:3px;">Goal name</label>
+            <input type="text" id="ge-name-${g.id}" value="${g.name}" style="width:100%;padding:7px 10px;border-radius:10px;border:2px solid var(--border);font-size:13px;"></div>
+          <div><label style="font-size:12px;color:var(--ink-soft);display:block;margin-bottom:3px;">Target</label>
+            <input type="number" id="ge-target-${g.id}" value="${g.target}" min="1" style="width:100%;padding:7px 10px;border-radius:10px;border:2px solid var(--border);font-size:13px;"></div>
+          <div><label style="font-size:12px;color:var(--ink-soft);display:block;margin-bottom:3px;">Deadline</label>
+            <input type="date" id="ge-dl-${g.id}" value="${g.deadline||''}" style="width:100%;padding:7px 10px;border-radius:10px;border:2px solid var(--border);font-size:13px;"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="saveEditGoal(${g.id})" style="padding:7px 18px;border-radius:10px;border:none;background:var(--sakura);color:white;font-size:13px;font-weight:700;cursor:pointer;">Save</button>
+          <button onclick="closeEditGoal(${g.id})" style="padding:7px 14px;border-radius:10px;border:2px solid var(--border);background:white;font-size:13px;cursor:pointer;">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEditGoal(id){
+  document.getElementById('ge-'+id).style.display='block';
+}
+function closeEditGoal(id){
+  document.getElementById('ge-'+id).style.display='none';
+}
+function saveEditGoal(id){
+  const g=goals.find(x=>x.id===id);if(!g)return;
+  const name=document.getElementById('ge-name-'+id).value.trim();
+  const target=parseInt(document.getElementById('ge-target-'+id).value);
+  const deadline=document.getElementById('ge-dl-'+id).value;
+  if(!name||!target){showToast('❗ Name and target required');return;}
+  g.name=name;g.target=target;g.deadline=deadline;
+  localStorage.setItem('njg',JSON.stringify(goals));
+  renderGoals();renderPinnedGoals();renderGoalLogInputs();
+  showToast('✅ Goal updated!');
+}
+
+// Report
+function renderReport(){
+  updStats();
+  const labels=[],data=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(Date.now()-i*86400000).toISOString().split('T')[0];
+    labels.push(new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',day:'2-digit'}));
+    data.push(logs.filter(l=>l.date===d).reduce((s,l)=>s+(l.mins||0),0));
+  }
+  if(cMin)cMin.destroy();
+  cMin=new Chart(document.getElementById('cmin'),{type:'bar',data:{labels,datasets:[{label:'Minutes',data,backgroundColor:data.map(v=>v>0?'#FFB7C5':'#F5D0DC'),borderColor:data.map(v=>v>0?'#E8829A':'#F5D0DC'),borderWidth:2,borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6B4C3B',font:{size:12}},grid:{display:false}},y:{ticks:{color:'#6B4C3B',font:{size:12}},grid:{color:'rgba(255,183,197,.2)'},beginAtZero:true}}}});
+  const counts={};logs.forEach(l=>(l.scripts||[]).forEach(s=>{counts[s]=(counts[s]||0)+1;}));
+  const slabels=Object.keys(counts).map(k=>SL[k]||k),sdata=Object.values(counts);
+  if(cScr)cScr.destroy();
+  if(sdata.length)cScr=new Chart(document.getElementById('cscr'),{type:'doughnut',data:{labels:slabels,datasets:[{data:sdata,backgroundColor:['#FFB7C5','#B39DDB','#7BAE7F','#FFD966','#81C784','#F48FB1','#90CAF9'],borderWidth:3,borderColor:'#FFF9F5',hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#3D2B1F',font:{size:13},padding:14}}}}});
+  const gpl=document.getElementById('gpl');
+  if(!goals.length){gpl.innerHTML='<div style="font-size:14px;color:var(--ink-soft);text-align:center;padding:12px;">No goals yet — add some in the 🎯 Goals tab!</div>';}
+  else{const TL={days:'days',words:'words',mins:'mins',hira:'hiragana',kata:'katakana',kanji:'kanji'};gpl.innerHTML=goals.map(g=>{const cur=getGC(g);const pct=Math.min(100,Math.round(cur/g.target*100));return`<div class="prog-wrap"><div class="prog-label"><span>🎯 ${g.name}</span><span>${pct}% · ${cur}/${g.target} ${TL[g.type]||''}</span></div><div class="prog-bar"><div class="prog-fill ${pct>=100?'matcha':''}" style="width:${pct}%"></div></div></div>`;}).join('');}
+  const mc={};logs.forEach(l=>{if(l.mood)mc[l.mood]=(mc[l.mood]||0)+1;});
+  const mrep=document.getElementById('mrep');
+  if(!Object.keys(mc).length)mrep.innerHTML='<div style="font-size:14px;color:var(--ink-soft);text-align:center;padding:12px;">No mood data yet.</div>';
+  else{const total=Object.values(mc).reduce((a,b)=>a+b,0);mrep.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:14px;padding:4px 0;">${Object.entries(mc).sort((a,b)=>b[1]-a[1]).map(([m,c])=>`<div style="text-align:center;"><div style="font-size:32px;">${m}</div><div style="font-size:12px;color:var(--ink-soft);">${c} times (${Math.round(c/total*100)}%)</div></div>`).join('')}</div>`;}
+}
+
+function fmtDate(d){const date=new Date(d+'T00:00:00');return date.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'2-digit',year:'numeric'});}
+function showToast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
+</script>
+</body>
+</html>
