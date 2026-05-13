@@ -7,6 +7,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--sakura:#FFB7C5;--sakura-light:#FFE4EC;--sakura-deep:#E8829A;--matcha:#7BAE7F;--matcha-light:#C8E6C9;--yuzu:#FFD966;--yuzu-light:#FFF3C4;--fuji:#B39DDB;--fuji-light:#EDE7F6;--ink:#3D2B1F;--ink-soft:#6B4C3B;--paper:#FFF9F5;--paper-warm:#FFF0E8;--border:#F5D0DC;--shadow:rgba(255,183,197,0.3);}
+/* Ocean theme — deep blue/cyan */
+.theme-ocean{--sakura:#0EA5C4;--sakura-light:#E0F7FC;--sakura-deep:#0B7A94;--matcha:#1A8C6E;--matcha-light:#D4F0E8;--yuzu:#F5A623;--yuzu-light:#FEF3DC;--fuji:#4A6FA5;--fuji-light:#E2EAF6;--ink:#0D2137;--ink-soft:#2E5470;--paper:#F0F8FB;--paper-warm:#E6F4F8;--border:#B0D8E8;--shadow:rgba(14,165,196,0.2);}
+/* Frieren theme — soft purple/silver mage aesthetic */
+.theme-frieren{--sakura:#9B8EC4;--sakura-light:#EDE8F8;--sakura-deep:#6B5BA0;--matcha:#7BA8A0;--matcha-light:#D8EDEB;--yuzu:#C4A882;--yuzu-light:#F5EEE0;--fuji:#B8A0D0;--fuji-light:#F0EBF8;--ink:#1E1830;--ink-soft:#4A3F6B;--paper:#F8F6FC;--paper-warm:#F2EEF9;--border:#D0C8E8;--shadow:rgba(155,142,196,0.25);}
+/* Preset date buttons */
+.fc-preset-btn{padding:6px 10px;border-radius:9px;border:1.5px solid var(--border);background:var(--paper-warm);font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-soft);transition:all .15s;text-align:center;}
+.fc-preset-btn:hover,.fc-preset-btn.active{background:var(--sakura-light);border-color:var(--sakura);color:var(--sakura-deep);}
+/* Settings */
+.settings-btn{position:fixed;top:16px;right:20px;z-index:200;background:white;border:2px solid var(--border);border-radius:50%;width:40px;height:40px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px var(--shadow);transition:all .2s;}
+.settings-btn:hover{border-color:var(--sakura);transform:rotate(30deg);}
+.settings-dropdown{position:fixed;top:64px;right:20px;z-index:200;background:white;border:2px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 8px 24px var(--shadow);min-width:220px;display:none;}
+.settings-dropdown.open{display:block;}
+.settings-title{font-family:'Zen Maru Gothic',sans-serif;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+.settings-row{margin-bottom:14px;}
+.settings-row:last-child{margin-bottom:0;}
+.settings-opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.settings-opt{padding:5px 12px;border-radius:10px;border:2px solid var(--border);background:white;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-soft);transition:all .2s;}
+.settings-opt:hover{border-color:var(--sakura);}
+.settings-opt.active{background:var(--sakura-light);border-color:var(--sakura);color:var(--sakura-deep);}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Nunito',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;background-image:radial-gradient(circle at 10% 20%,rgba(255,183,197,.15) 0%,transparent 50%),radial-gradient(circle at 90% 80%,rgba(179,157,219,.15) 0%,transparent 50%);}
 .petal{position:fixed;pointer-events:none;font-size:16px;animation:fall linear infinite;z-index:0;opacity:.6;}
@@ -23,6 +42,7 @@ body{font-family:'Nunito',sans-serif;background:var(--paper);color:var(--ink);mi
 .sc-item.matcha .sc-val{color:var(--matcha);}
 .sc-item.fuji .sc-val{color:#7B5EA7;}
 .sc-item.yuzu .sc-val{color:#B08000;}
+.sc-item.sakura .sc-val{color:var(--sakura-deep);}
 /* Pinned sidebar — stretches to match left column height */
 .pinned-goals-card{background:white;border-radius:20px;border:2px solid var(--border);padding:18px 20px;box-shadow:0 4px 16px var(--shadow);position:sticky;top:20px;align-self:stretch;}
 .pinned-goals-title{font-family:'Zen Maru Gothic',sans-serif;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
@@ -175,6 +195,14 @@ textarea{resize:vertical;min-height:70px;}
 .empty{text-align:center;padding:28px 16px;color:var(--ink-soft);font-size:13px;}
 .empty .ico{font-size:32px;margin-bottom:8px;}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--sakura-deep);color:white;padding:12px 24px;border-radius:20px;font-family:'Zen Maru Gothic',sans-serif;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:1000;animation:tIn .3s ease,tOut .3s ease 2.5s forwards;pointer-events:none;}
+/* Celebration overlay */
+.celebrate-overlay{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);backdrop-filter:blur(4px);cursor:pointer;}
+.celebrate-overlay.fade-out{animation:celebFadeOut .5s ease forwards;}
+@keyframes celebFadeOut{to{opacity:0;pointer-events:none;}}
+.celebrate-card{background:white;border-radius:28px;padding:48px 56px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.25);position:relative;z-index:2;animation:celebPop .45s cubic-bezier(.34,1.56,.64,1);}
+@keyframes celebPop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.celebrate-petal{position:fixed;pointer-events:none;animation:celebFall linear forwards;z-index:901;}
+@keyframes celebFall{0%{transform:translateY(-40px) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(540deg);opacity:0;}}
 @keyframes tIn{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes tOut{to{opacity:0;transform:translateX(-50%) translateY(16px)}}
 .fc-card-row{display:grid;grid-template-columns:1fr 1fr 80px 80px 60px;gap:10px;align-items:center;padding:10px 12px;background:var(--paper-warm);border-radius:10px;border:1.5px solid var(--border);margin-bottom:6px;font-size:13px;}
@@ -200,17 +228,37 @@ textarea{resize:vertical;min-height:70px;}
 <div class="petal" style="left:75%;animation-duration:10s;animation-delay:4s">🌸</div>
 <div class="petal" style="left:90%;animation-duration:8s;animation-delay:3s">✿</div>
 
+<!-- Settings button -->
+<button class="settings-btn" onclick="toggleSettings()" title="Settings">⚙️</button>
+<div class="settings-dropdown" id="settings-dd">
+  <div class="settings-row">
+    <div class="settings-title" data-i18n="lang_label">🌐 Language</div>
+    <div class="settings-opts">
+      <button class="settings-opt active" id="lang-en" onclick="setLang('en')">English</button>
+      <button class="settings-opt" id="lang-vi" onclick="setLang('vi')">Tiếng Việt</button>
+    </div>
+  </div>
+  <div class="settings-row">
+    <div class="settings-title" data-i18n="theme_label">🎨 Theme</div>
+    <div class="settings-opts">
+      <button class="settings-opt active" id="theme-girl" onclick="setTheme('girl')">🌸 Sakura</button>
+      <button class="settings-opt" id="theme-ocean" onclick="setTheme('ocean')">🌊 Ocean</button>
+      <button class="settings-opt" id="theme-frieren" onclick="setTheme('frieren')">🧝 Frieren</button>
+    </div>
+  </div>
+</div>
+
 <div class="container">
 <div class="header" style="text-align:center;padding:8px 0 14px;">
-  <h1>Angel's <span>Nihongo</span> Journey</h1>
-  <div class="header-sub">頑張れ！Keep going, Angel! You've got this ～</div>
+  <h1 id="app-title">My <span>Nihongo</span> Journey</h1>
+  <div class="header-sub" id="app-sub">頑張れ！Keep going! You've got this ～</div>
   <div class="header-deco">🌸 ✿ 🌸</div>
 </div>
 
-<!-- Fixed scorecard bottom-right, 3 cards -->
+<!-- Fixed scorecard bottom-right -->
 <div class="scorecard">
   <div class="sc-item matcha"><span class="sc-icon">📅</span><div><div class="sc-val" id="st">0</div><div class="sc-lbl">Total Days</div></div></div>
-  <div class="sc-item fuji"><span class="sc-icon">📚</span><div><div class="sc-val" id="sw">0</div><div class="sc-lbl">Total Words</div></div></div>
+  <div class="sc-item sakura"><span class="sc-icon">🃏</span><div><div class="sc-val" id="sc-cards">0</div><div class="sc-lbl">Flashcards</div></div></div>
   <div class="sc-item yuzu"><span class="sc-icon">⏱</span><div><div class="sc-val" id="sm">0</div><div class="sc-lbl">Minutes</div></div></div>
 </div>
 
@@ -221,16 +269,16 @@ textarea{resize:vertical;min-height:70px;}
   <div id="main-col">
 
 <div class="nav" style="margin:0 0 16px;justify-content:flex-start;">
-  <button class="nav-btn active" onclick="showSec('log',this)">📝 Today's Log</button>
-  <button class="nav-btn" onclick="showSec('board',this)">🔤 Character Board</button>
-  <button class="nav-btn" onclick="showSec('flash',this)">🃏 Flashcards</button>
+  <button class="nav-btn active" onclick="showSec('flash',this)">🃏 Flashcards</button>
+  <button class="nav-btn" onclick="showSec('goals',this)">🎯 Goals</button>
+  <button class="nav-btn" onclick="showSec('log',this)">📝 Today's Log</button>
   <button class="nav-btn" onclick="showSec('history',this)">📖 History</button>
   <button class="nav-btn" onclick="showSec('report',this)">📊 Report</button>
-  <button class="nav-btn" onclick="showSec('goals',this)">🎯 Goals</button>
+  <button class="nav-btn" onclick="showSec('board',this)">🔤 Character Board</button>
 </div>
 
 <!-- LOG -->
-<div class="section active" id="sec-log">
+<div class="section" id="sec-log">
   <div class="card">
     <div class="card-title"><span>✏️</span> Log Today's Study</div>
     <div style="display:grid;grid-template-columns:150px 120px 1fr;gap:12px;margin-bottom:14px;align-items:start;">
@@ -257,20 +305,10 @@ textarea{resize:vertical;min-height:70px;}
       </div>
     </div>
 
-    <!-- Vocab + Notes in same row -->
-    <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:14px;margin-bottom:14px;align-items:start;">
-      <div>
-        <label>📝 New vocabulary</label>
-        <div class="vocab-add-row" style="margin-top:4px;">
-          <input type="text" id="vi" placeholder="e.g. 食べる - to eat..." onkeydown="if(event.key==='Enter')addV()">
-          <button class="btn-small" onclick="addV()">+ Add</button>
-        </div>
-        <div class="vocab-list" id="vl"></div>
-      </div>
-      <div>
-        <label>✍️ Notes</label>
-        <textarea id="ln" placeholder="What did you learn? Any thoughts..." style="margin-top:4px;min-height:42px;height:42px;width:100%;"></textarea>
-      </div>
+    <!-- Notes only -->
+    <div style="margin-bottom:14px;">
+      <label>✍️ Notes</label>
+      <textarea id="ln" placeholder="What did you learn? Any thoughts..." style="margin-top:4px;min-height:42px;height:42px;width:100%;"></textarea>
     </div>
 
     <!-- Kana picker -->
@@ -380,73 +418,79 @@ textarea{resize:vertical;min-height:70px;}
 </div>
 
 <!-- FLASHCARDS -->
-<div class="section" id="sec-flash">
+<div class="section active" id="sec-flash">
   <div class="sec-header">🃏 Flashcards</div>
 
   <!-- 1. Add new card — bigger -->
   <div class="card">
     <div class="card-title" style="font-size:18px;"><span>➕</span> Add new card</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
-      <div><label style="font-size:14px;">Japanese (front)</label><input type="text" id="fc-in-front" placeholder="e.g. 食べる" style="font-size:16px;padding:12px 14px;"></div>
-      <div><label style="font-size:14px;">Meaning (back)</label><input type="text" id="fc-in-back" placeholder="e.g. to eat" style="font-size:16px;padding:12px 14px;"></div>
-      <div><label style="font-size:14px;">Reading — shown on back</label><input type="text" id="fc-in-read" placeholder="e.g. たべる" style="font-size:16px;padding:12px 14px;"></div>
+      <div><label style="font-size:14px;">Japanese (front)</label><input type="text" id="fc-in-front" placeholder="e.g. 食べる" style="font-size:16px;padding:12px 14px;" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
+      <div><label style="font-size:14px;">Meaning (back)</label><input type="text" id="fc-in-back" placeholder="e.g. to eat" style="font-size:16px;padding:12px 14px;" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
+      <div><label style="font-size:14px;">Reading — shown on back</label><input type="text" id="fc-in-read" placeholder="e.g. たべる" style="font-size:16px;padding:12px 14px;" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
     </div>
     <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:end;">
       <button class="btn-primary" onclick="fcAddCard()" style="height:48px;font-size:16px;">+ Add Card</button>
-      <div><label style="font-size:14px;">Note (optional)</label><input type="text" id="fc-in-note" placeholder="e.g. Group 2 verb, て-form: 食べて" style="font-size:15px;padding:12px 14px;"></div>
+      <div><label style="font-size:14px;">Note (optional)</label><input type="text" id="fc-in-note" placeholder="e.g. Group 2 verb, て-form: 食べて" style="font-size:15px;padding:12px 14px;" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
     </div>
   </div>
 
   <!-- 2. Review area with play mode inside -->
   <div class="card" id="fc-review-card">
-    <!-- Play mode row -->
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--border);">
-      <button class="script-btn sel" id="pm-due"  onclick="fcSetMode('due',this)">📬 Due today</button>
-      <button class="script-btn"    id="pm-all"  onclick="fcSetMode('all',this)">📚 All</button>
-      <button class="script-btn"    id="pm-date" onclick="fcSetMode('date',this)">🗓 Date range</button>
-      <button class="script-btn"    id="pm-pick" onclick="fcSetMode('pick',this)">✋ Pick words</button>
-      <button onclick="fcLaunchSession()" style="padding:9px 24px;border-radius:12px;border:none;background:linear-gradient(135deg,#FF85A1,var(--sakura-deep));color:white;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(232,130,154,0.5);letter-spacing:.3px;">▶ Start 🌸</button>
-      <span id="fc-mode-count" style="font-size:13px;color:var(--ink-soft);font-weight:600;"></span>
-    </div>
+    <!-- Play mode row — wrapper for popup alignment -->
+    <div style="position:relative;margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--border);">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;" id="fc-filter-row">
+        <button class="script-btn" id="pm-due"  onclick="fcSetMode('due',this)">📬 Due today</button>
+        <button class="script-btn sel" id="pm-all"  onclick="fcSetMode('all',this)">📚 All</button>
+        <button class="script-btn"    id="pm-date" onclick="fcSetMode('date',this)">🗓 Date range</button>
+        <button class="script-btn"    id="pm-pick" onclick="fcSetMode('pick',this)">✋ Pick words</button>
+        <button onclick="fcLaunchSession()" style="padding:9px 24px;border-radius:12px;border:none;background:linear-gradient(135deg,#FF85A1,var(--sakura-deep));color:white;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(232,130,154,0.5);letter-spacing:.3px;">▶ Start 🌸</button>
+        <span id="fc-mode-count" style="font-size:13px;color:var(--ink-soft);font-weight:600;"></span>
+      </div>
 
-    <!-- Date range picker — cute style -->
-    <div id="fc-date-row" style="display:none;margin-bottom:14px;">
-      <div style="background:var(--paper-warm);border-radius:14px;border:1.5px solid var(--border);padding:14px 18px;">
-        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:12px;">🗓 Filter by date range</div>
-        <!-- Quick picks -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-          <button class="script-btn" onclick="fcQuickDate('today')">Today</button>
-          <button class="script-btn" onclick="fcQuickDate('yesterday')">Yesterday</button>
-          <button class="script-btn" onclick="fcQuickDate('7days')">Last 7 days</button>
-          <button class="script-btn" onclick="fcQuickDate('30days')">Last 30 days</button>
-          <button class="script-btn" onclick="fcQuickDate('thismonth')">This month</button>
-          <button class="script-btn" onclick="fcQuickDate('all')">All time</button>
-        </div>
-        <!-- Custom range -->
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <span style="font-size:13px;color:var(--ink-soft);font-weight:600;">Custom:</span>
-          <input type="date" id="fc-date-from" style="padding:7px 10px;border-radius:10px;border:2px solid var(--border);font-size:13px;" onchange="fcDateRangeChange()">
-          <span style="font-size:13px;color:var(--ink-soft);">→</span>
-          <input type="date" id="fc-date-to" style="padding:7px 10px;border-radius:10px;border:2px solid var(--border);font-size:13px;" onchange="fcDateRangeChange()">
-          <span id="fc-date-preview" style="font-size:12px;color:var(--sakura-deep);font-weight:600;"></span>
+      <!-- Date range popup — aligned under button -->
+      <div id="fc-date-row" style="display:none;position:absolute;top:100%;z-index:200;margin-top:6px;">
+        <div style="background:white;border:2px solid var(--sakura);border-radius:16px;padding:14px 16px;box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:340px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;">
+            <button class="fc-preset-btn" onclick="fcQuickDate('today')">📅 Today</button>
+            <button class="fc-preset-btn" onclick="fcQuickDate('yesterday')">Yesterday</button>
+            <button class="fc-preset-btn" onclick="fcQuickDate('7days')">Last 7 days</button>
+            <button class="fc-preset-btn" onclick="fcQuickDate('30days')">Last 30 days</button>
+            <button class="fc-preset-btn" onclick="fcQuickDate('thismonth')">This month</button>
+            <button class="fc-preset-btn" onclick="fcQuickDate('all')">All time</button>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:10px;">
+            <div style="font-size:11px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Custom range</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="flex:1;"><div style="font-size:10px;color:var(--ink-soft);margin-bottom:2px;">From</div><input type="date" id="fc-date-from" style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;" onchange="fcDateRangeChange()"></div>
+              <span style="font-size:16px;color:var(--ink-soft);margin-top:16px;">→</span>
+              <div style="flex:1;"><div style="font-size:10px;color:var(--ink-soft);margin-bottom:2px;">To</div><input type="date" id="fc-date-to" style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;" onchange="fcDateRangeChange()"></div>
+            </div>
+            <div id="fc-date-preview" style="font-size:12px;color:var(--sakura-deep);font-weight:600;margin-top:6px;"></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Word picker -->
-    <div id="fc-pick-row" style="display:none;margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <label style="font-size:12px;color:var(--ink-soft);">Select words to include</label>
-        <div style="display:flex;gap:8px;">
-          <button onclick="fcPickAll(true)"  style="font-size:11px;padding:3px 10px;border-radius:8px;border:1.5px solid var(--sakura);background:var(--sakura-light);color:var(--sakura-deep);cursor:pointer;">Select all</button>
-          <button onclick="fcPickAll(false)" style="font-size:11px;padding:3px 10px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--ink-soft);cursor:pointer;">Clear</button>
+      <!-- Word picker popup — aligned under button, with Apply -->
+      <div id="fc-pick-row" style="display:none;position:absolute;top:100%;z-index:200;margin-top:6px;">
+        <div style="background:white;border:2px solid var(--sakura);border-radius:16px;padding:14px 16px;box-shadow:0 8px 28px rgba(0,0,0,.18);width:360px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span id="fc-pick-count" style="font-size:12px;color:var(--ink-soft);font-weight:600;"></span>
+            <div style="display:flex;gap:6px;">
+              <button onclick="fcPickAll(true)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--sakura);background:var(--sakura-light);color:var(--sakura-deep);cursor:pointer;">All</button>
+              <button onclick="fcPickAll(false)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--border);background:white;color:var(--ink-soft);cursor:pointer;">Clear</button>
+            </div>
+          </div>
+          <input type="text" id="fc-pick-search" placeholder="🔍 Search Japanese or meaning..." oninput="fcRenderPickList()"
+            style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;outline:none;margin-bottom:6px;box-sizing:border-box;">
+          <div id="fc-pick-list" style="max-height:180px;overflow-y:auto;border:1.5px solid var(--border);border-radius:10px;background:white;margin-bottom:8px;"></div>
+          <button onclick="fcApplyPick()" style="width:100%;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--sakura),var(--sakura-deep));color:white;font-size:13px;font-weight:700;cursor:pointer;">✓ Apply selection</button>
         </div>
       </div>
-      <div id="fc-pick-list" style="display:flex;flex-wrap:wrap;gap:6px;max-height:160px;overflow-y:auto;padding:4px 0;"></div>
     </div>
 
     <div class="card-title" style="margin-bottom:12px;"><span>🎴</span> Review <span id="fc-queue-label" style="font-size:13px;color:var(--ink-soft);font-weight:400;"></span></div>
-    <div id="fc-empty" style="text-align:center;padding:40px 0;color:var(--ink-soft);font-size:14px;">
+    <div id="fc-empty" style="display:none;text-align:center;padding:40px 0;color:var(--ink-soft);font-size:14px;">
       <div style="font-size:48px;margin-bottom:12px;">🌸</div>
       No cards match this filter. Try a different play mode!
     </div>
@@ -468,6 +512,7 @@ textarea{resize:vertical;min-height:70px;}
                 <div id="fc-back-text" style="font-size:64px;font-weight:700;color:var(--ink);text-align:center;line-height:1.2;"></div>
                 <div id="fc-back-reading" style="font-family:'Zen Maru Gothic',sans-serif;font-size:36px;font-weight:500;color:var(--sakura-deep);margin-top:12px;text-align:center;"></div>
                 <div id="fc-back-note" style="font-size:15px;color:var(--ink-soft);margin-top:10px;text-align:center;"></div>
+                <button onclick="fcSpeak(event)" style="margin-top:16px;padding:8px 20px;border-radius:12px;border:2px solid var(--fuji);background:white;color:var(--fuji);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;" onmouseover="this.style.background='var(--fuji-light)'" onmouseout="this.style.background='white'">🔊 <span>Listen</span></button>
               </div>
             </div>
           </div>
@@ -577,13 +622,24 @@ let cMin=null,cScr=null;
 // Declare these early so renderAll() can access them
 const SL={hiragana:'🌸 Hiragana',katakana:'💜 Katakana',kanji:'漢 Kanji',grammar:'🔤 Grammar',vocabulary:'📝 Vocabulary',listening:'👂 Listening',anime:'📺 Anime',reading:'📖 Reading'};
 const SC={hiragana:'tag-h',katakana:'tag-k',kanji:'tag-j',vocab:'tag-v',grammar:'tag-g',listening:'tag-v',anime:'tag-j'};
+const SRS_STEPS = [1,2,3,7,14,30,60,120];
 
 // Declare before renderAll so inline oninput handlers can reference them
 let goalInputVals={};
 let pgDragId=null;
+let flashcards = JSON.parse(localStorage.getItem('njfc')||'[]');
+let fcSession = [];
+let fcIdx = 0;
+let fcFlipped = false;
+let fcFilter = 'all';
+let fcSortCol='', fcSortDir=1;
+let fcPlayMode = 'all';
+let fcPickedIds = new Set();
+let fcCurrentWord = '';
 
 document.getElementById('ld').valueAsDate=new Date();
 buildPickers();buildMaster();renderAll();
+setTimeout(()=>{ if(typeof fcRenderAll==='function') fcRenderAll(); }, 0);
 
 function renderAll(){updStats();updProg();renderLog();renderStreak();renderGoals();renderMasterBoard();renderPinnedGoals();renderGoalLogInputs();}
 function showSec(n,btn){
@@ -757,12 +813,12 @@ function delLog(id){
 // Stats
 function updStats(){
   const td=new Set(logs.map(l=>l.date)).size;
-  const tw=logs.reduce((s,l)=>s+(l.words||0),0);
   const tm=logs.reduce((s,l)=>s+(l.mins||0),0);
   const set=(ids,v)=>ids.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=v;});
-  set(['st','rt'],td);set(['sw','rw'],tw);
+  set(['st','rt'],td);
   set(['sm'],tm);
   const rh=document.getElementById('rh');if(rh)rh.textContent=Math.round(tm/60);
+  const fc=document.getElementById('sc-cards');if(fc)fc.textContent=flashcards.length;
 }
 function calcStreak(){
   const dates=[...new Set(logs.map(l=>l.date))].sort().reverse();
@@ -1086,15 +1142,6 @@ function renderReport(){
 
 
 // ===== SRS FLASHCARD ENGINE =====
-// Intervals in days: [Again=0, Hard=same, Good=next, Easy=skip ahead]
-// SRS schedule: new→1→2→3→7→14→30→60→...
-const SRS_STEPS = [1,2,3,7,14,30,60,120];
-let flashcards = JSON.parse(localStorage.getItem('njfc')||'[]');
-let fcSession = []; // cards due in this session
-let fcIdx = 0;
-let fcFlipped = false;
-let fcFilter = 'all';
-
 function saveFC(){ localStorage.setItem('njfc', JSON.stringify(flashcards)); }
 
 function fcToday(){ return new Date().toISOString().split('T')[0]; }
@@ -1111,11 +1158,18 @@ function fcAddCard(){
   const note  = document.getElementById('fc-in-note').value.trim();
   const tag   = '';
   if(!front||!back){ showToast('❗ Japanese and Meaning are required'); return; }
+  // Duplicate check
+  const dup = flashcards.find(c=>c.front.trim()===front||c.back.trim().toLowerCase()===back.toLowerCase());
+  if(dup){
+    const ok = confirm(`⚠️ "${front}" already exists in your deck (${dup.front} = ${dup.back}).\n\nAdd anyway?`);
+    if(!ok) return;
+  }
   flashcards.push({ id:Date.now(), front, back, read, note, tag,
     interval:0, step:0, nextReview:null, reviewCount:0, created:fcToday() });
   saveFC();
   ['fc-in-front','fc-in-back','fc-in-read','fc-in-note']
     .forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+  document.getElementById('fc-in-front')?.focus();
   fcRenderAll();
   showToast('🃏 Card added!');
 }
@@ -1138,6 +1192,7 @@ function fcStartSession(){
 function fcShowCard(){
   if(fcIdx >= fcSession.length){ fcEndSession(); return; }
   const card = fcSession[fcIdx];
+  fcCurrentWord = card.front; // store for audio
   document.getElementById('fc-front-text').textContent = card.front;
   document.getElementById('fc-back-text').textContent = card.back;
   document.getElementById('fc-back-reading').textContent = card.read||'';
@@ -1202,6 +1257,70 @@ function fcEndSession(){
   document.getElementById('fc-session').style.display = 'none';
   document.getElementById('fc-done').style.display = 'block';
   fcRenderAll();
+  // Show celebration!
+  setTimeout(showCelebration, 300);
+}
+
+// ===== CELEBRATION =====
+const CELEBRATE_MODES = ['petals', 'cat'];
+function showCelebration(){
+  const mode = CELEBRATE_MODES[Math.floor(Math.random()*CELEBRATE_MODES.length)];
+  const modeLabel = {due:'Due Today',all:'All Cards',date:'Date Range',pick:'Picked Words'}[fcPlayMode]||'All Cards';
+  const overlay = document.createElement('div');
+  overlay.className = 'celebrate-overlay';
+  overlay.onclick = ()=>{
+    overlay.classList.add('fade-out');
+    setTimeout(()=>overlay.remove(), 500);
+    document.querySelectorAll('.celebrate-petal').forEach(p=>p.remove());
+  };
+
+  if(mode==='petals'){
+    // Flower blossom — petals rain
+    overlay.innerHTML = `
+      <div class="celebrate-card">
+        <div style="font-size:56px;margin-bottom:12px;">🌸</div>
+        <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:26px;font-weight:700;color:var(--ink);margin-bottom:8px;">Session Complete!</div>
+        <div style="font-size:15px;color:var(--ink-soft);margin-bottom:6px;">${fcSession.length} cards · ${modeLabel}</div>
+        <div style="font-size:14px;color:var(--sakura-deep);font-weight:600;margin-top:8px;">頑張りました！You did great ✨</div>
+        <div style="font-size:12px;color:var(--ink-soft);margin-top:16px;">Tap anywhere to close</div>
+      </div>`;
+    document.body.appendChild(overlay);
+    // Spawn petals
+    const petals = ['🌸','✿','🌺','🌼','💮','🌷'];
+    for(let i=0;i<28;i++){
+      setTimeout(()=>{
+        const p = document.createElement('div');
+        p.className = 'celebrate-petal';
+        p.textContent = petals[Math.floor(Math.random()*petals.length)];
+        p.style.left = Math.random()*100+'vw';
+        p.style.top = '-40px';
+        p.style.fontSize = (18+Math.random()*20)+'px';
+        const dur = 2.5+Math.random()*2;
+        p.style.animationDuration = dur+'s';
+        p.style.animationDelay = '0s';
+        document.body.appendChild(p);
+        setTimeout(()=>p.remove(), dur*1000+100);
+      }, i*120);
+    }
+  } else {
+    // Cute cat congratulation
+    const cats = ['😸','🐱','😻','🙀'];
+    const msgs = [
+      'Nyaa~ You crushed it! 🐾',
+      'Purrfect session! 🐟',
+      'Meow-velous work! ⭐',
+      '*purrs proudly* 🐈'
+    ];
+    overlay.innerHTML = `
+      <div class="celebrate-card">
+        <div style="font-size:80px;margin-bottom:10px;animation:celebPop .6s cubic-bezier(.34,1.56,.64,1);">${cats[Math.floor(Math.random()*cats.length)]}</div>
+        <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:24px;font-weight:700;color:var(--ink);margin-bottom:8px;">Session Complete!</div>
+        <div style="font-size:16px;color:var(--sakura-deep);font-weight:600;margin-bottom:6px;">${msgs[Math.floor(Math.random()*msgs.length)]}</div>
+        <div style="font-size:14px;color:var(--ink-soft);">${fcSession.length} cards · ${modeLabel}</div>
+        <div style="font-size:12px;color:var(--ink-soft);margin-top:16px;">Tap anywhere to close</div>
+      </div>`;
+    document.body.appendChild(overlay);
+  }
 }
 
 // Filter
@@ -1230,6 +1349,12 @@ function fcRenderAll(){
   fcRenderList();
 }
 
+function fcSort(col){
+  if(fcSortCol===col) fcSortDir*=-1; else{fcSortCol=col;fcSortDir=1;}
+  fcRenderList();
+}
+function fcSortArrow(col){return fcSortCol===col?(fcSortDir===1?' ↑':' ↓'):' ↕';}
+
 function fcRenderList(){
   const el = document.getElementById('fc-list');
   if(!el) return;
@@ -1237,10 +1362,22 @@ function fcRenderList(){
   if(fcFilter==='due') cards = cards.filter(fcIsDue);
   else if(fcFilter==='new') cards = cards.filter(c=>!c.nextReview);
   else if(fcFilter==='learned') cards = cards.filter(c=>c.reviewCount>0&&!fcIsDue(c));
-  // Shuffle randomly
-  cards.sort(()=>Math.random()-0.5);
 
-  // Update header count
+  // Sort or shuffle
+  if(fcSortCol){
+    cards.sort((a,b)=>{
+      let av,bv;
+      if(fcSortCol==='front'){av=a.front;bv=b.front;}
+      else if(fcSortCol==='back'){av=a.back;bv=b.back;}
+      else if(fcSortCol==='played'){av=a.reviewCount||0;bv=b.reviewCount||0;return(av-bv)*fcSortDir;}
+      else if(fcSortCol==='next'){av=a.nextReview||'0';bv=b.nextReview||'0';}
+      else if(fcSortCol==='date'){av=a.created||'0';bv=b.created||'0';}
+      return av<bv?-fcSortDir:av>bv?fcSortDir:0;
+    });
+  } else {
+    cards.sort(()=>Math.random()-0.5);
+  }
+
   const lbl = document.getElementById('fc-filter-label');
   if(lbl) lbl.textContent = `${cards.length} words in total`;
 
@@ -1249,9 +1386,13 @@ function fcRenderList(){
     return;
   }
   const lastRatingEmoji = ['😫','😓','🙂','🤩'];
-  // Table header
-  const header = `<div style="display:grid;grid-template-columns:1fr 1fr 80px 90px 50px 44px;gap:10px;align-items:center;padding:6px 12px;font-size:11px;font-weight:700;color:var(--ink-soft);letter-spacing:.5px;text-transform:uppercase;border-bottom:2px solid var(--border);margin-bottom:6px;">
-    <div>Japanese</div><div>Meaning</div><div>Tag</div><div>Next review</div><div style="text-align:center;">Played</div><div></div>
+  const hStyle='cursor:pointer;user-select:none;font-size:11px;font-weight:700;color:var(--ink-soft);letter-spacing:.5px;text-transform:uppercase;';
+  const header = `<div style="display:grid;grid-template-columns:1fr 1fr 90px 50px 44px;gap:10px;align-items:center;padding:6px 12px;border-bottom:2px solid var(--border);margin-bottom:6px;">
+    <div style="${hStyle}" onclick="fcSort('front')">Japanese${fcSortArrow('front')}</div>
+    <div style="${hStyle}" onclick="fcSort('back')">Meaning${fcSortArrow('back')}</div>
+    <div style="${hStyle}" onclick="fcSort('next')">Next review${fcSortArrow('next')}</div>
+    <div style="${hStyle};text-align:center;" onclick="fcSort('played')">Played${fcSortArrow('played')}</div>
+    <div></div>
   </div>`;
   const rows = cards.map(c=>{
     const due = fcIsDue(c);
@@ -1263,13 +1404,12 @@ function fcRenderList(){
         : `<span class="fc-due-badge fc-due-ok">${c.nextReview}</span>`;
     const playedCount = c.reviewCount||0;
     const lastEmoji = playedCount>0&&c.lastRating!=null ? lastRatingEmoji[c.lastRating] : '';
-    return `<div style="display:grid;grid-template-columns:1fr 1fr 80px 90px 50px 44px;gap:10px;align-items:center;padding:9px 12px;background:var(--paper-warm);border-radius:10px;border:1.5px solid var(--border);margin-bottom:6px;">
+    return `<div style="display:grid;grid-template-columns:1fr 1fr 90px 50px 44px;gap:10px;align-items:center;padding:9px 12px;background:var(--paper-warm);border-radius:10px;border:1.5px solid var(--border);margin-bottom:6px;">
       <div>
         <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700;">${c.front}</div>
         ${c.read?`<div style="font-size:11px;color:var(--sakura-deep);">${c.read}</div>`:''}
       </div>
       <div style="font-size:13px;color:var(--ink);">${c.back}${c.note?`<div style="font-size:11px;color:var(--ink-soft);margin-top:2px;">${c.note}</div>`:''}</div>
-      <div>${c.tag?`<span class="fc-tag">${c.tag}</span>`:''}</div>
       <div>${dueLabel}</div>
       <div style="text-align:center;font-size:14px;font-weight:700;color:var(--matcha);">${playedCount>0?playedCount+' '+lastEmoji:'—'}</div>
       <div><button onclick="fcDeleteCard(${c.id})" class="log-del" style="font-size:15px;">✕</button></div>
@@ -1279,8 +1419,6 @@ function fcRenderList(){
 }
 
 // ===== PLAY MODES =====
-let fcPlayMode = 'due';
-let fcPickedIds = new Set();
 
 function fcSetMode(mode, btn){
   const dateRow = document.getElementById('fc-date-row');
@@ -1288,9 +1426,9 @@ function fcSetMode(mode, btn){
   if(fcPlayMode===mode && (mode==='date'||mode==='pick')){
     dateRow.style.display='none';
     pickRow.style.display='none';
-    fcPlayMode='due';
+    fcPlayMode='all';
     document.querySelectorAll('[id^="pm-"]').forEach(b=>b.classList.remove('sel'));
-    document.getElementById('pm-due').classList.add('sel');
+    document.getElementById('pm-all').classList.add('sel');
     fcUpdateModeCount(); return;
   }
   fcPlayMode=mode;
@@ -1354,14 +1492,21 @@ function fcUpdateModeCount(){
 function fcRenderPickList(){
   const el=document.getElementById('fc-pick-list');
   if(!el)return;
-  const pool=flashcards;
-  if(!pool.length){el.innerHTML='<div style="font-size:13px;color:var(--ink-soft);">No cards found.</div>';return;}
+  const q=(document.getElementById('fc-pick-search')?.value||'').toLowerCase().trim();
+  const pool=flashcards.filter(c=>{
+    if(!q)return true;
+    return c.front.toLowerCase().includes(q)||c.back.toLowerCase().includes(q)||(c.read&&c.read.toLowerCase().includes(q));
+  });
+  const countEl=document.getElementById('fc-pick-count');
+  if(countEl)countEl.textContent=`${fcPickedIds.size} selected · ${pool.length} shown`;
+  if(!pool.length){el.innerHTML='<div style="padding:12px;font-size:13px;color:var(--ink-soft);text-align:center;">No cards found</div>';return;}
   el.innerHTML=pool.map(c=>{
     const picked=fcPickedIds.has(c.id);
-    return `<div onclick="fcTogglePick(${c.id},this)" style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:10px;border:1.5px solid ${picked?'var(--sakura)':'var(--border)'};background:${picked?'var(--sakura-light)':'white'};cursor:pointer;user-select:none;" id="fcp-${c.id}">
-      <span style="font-size:11px;color:${picked?'var(--sakura-deep)':'#aaa'};">${picked?'✓':'○'}</span>
-      <span style="font-family:'Zen Maru Gothic',sans-serif;font-size:15px;font-weight:700;">${c.front}</span>
-      <span style="font-size:12px;color:var(--ink-soft);">${c.back}</span>
+    return `<div onclick="fcTogglePick(${c.id},this)" style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:0.5px solid var(--border);background:${picked?'var(--sakura-light)':'white'};transition:background .1s;" id="fcp-${c.id}">
+      <div style="width:18px;height:18px;border-radius:4px;border:1.5px solid ${picked?'var(--sakura)':'var(--border)'};background:${picked?'var(--sakura)':'white'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:white;font-weight:700;">${picked?'✓':''}</div>
+      <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:16px;font-weight:700;min-width:60px;">${c.front}</div>
+      <div style="font-size:13px;color:var(--ink-soft);">${c.back}</div>
+      ${c.read?`<div style="font-size:11px;color:var(--sakura-deep);margin-left:auto;">${c.read}</div>`:''}
     </div>`;
   }).join('');
   fcUpdateModeCount();
@@ -1370,15 +1515,18 @@ function fcRenderPickList(){
 function fcTogglePick(id,el){
   fcPickedIds.has(id)?fcPickedIds.delete(id):fcPickedIds.add(id);
   const picked=fcPickedIds.has(id);
-  el.style.borderColor=picked?'var(--sakura)':'var(--border)';
   el.style.background=picked?'var(--sakura-light)':'white';
-  el.querySelector('span').textContent=picked?'✓':'○';
-  el.querySelector('span').style.color=picked?'var(--sakura-deep)':'#aaa';
+  const chk=el.querySelector('div');
+  if(chk){chk.style.background=picked?'var(--sakura)':'white';chk.style.borderColor=picked?'var(--sakura)':'var(--border)';chk.textContent=picked?'✓':'';}
+  const countEl=document.getElementById('fc-pick-count');
+  if(countEl){const q=(document.getElementById('fc-pick-search')?.value||'').toLowerCase();const pool=flashcards.filter(c=>!q||c.front.toLowerCase().includes(q)||c.back.toLowerCase().includes(q));countEl.textContent=`${fcPickedIds.size} selected · ${pool.length} shown`;}
   fcUpdateModeCount();
 }
 
 function fcPickAll(val){
-  flashcards.forEach(c=>val?fcPickedIds.add(c.id):fcPickedIds.delete(c.id));
+  const q=(document.getElementById('fc-pick-search')?.value||'').toLowerCase().trim();
+  const pool=flashcards.filter(c=>!q||c.front.toLowerCase().includes(q)||c.back.toLowerCase().includes(q)||(c.read&&c.read.toLowerCase().includes(q)));
+  pool.forEach(c=>val?fcPickedIds.add(c.id):fcPickedIds.delete(c.id));
   fcRenderPickList();
 }
 
@@ -1395,7 +1543,208 @@ function fcLaunchSession(){
   // Scroll to review card
   document.getElementById('fc-review-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
-// end of SRS engine
+// ===== AUDIO =====
+function fcSpeak(e){
+  e.stopPropagation();
+  if(!fcCurrentWord){ showToast('No word to play'); return; }
+  if(!window.speechSynthesis){ showToast('Audio not supported in this browser'); return; }
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(fcCurrentWord);
+  utter.lang = 'ja-JP'; utter.rate = 0.85;
+  const voices = window.speechSynthesis.getVoices();
+  const jpVoice = voices.find(v=>v.lang==='ja-JP'||v.lang==='ja');
+  if(jpVoice) utter.voice = jpVoice;
+  window.speechSynthesis.speak(utter);
+}
+
+// ===== SETTINGS =====
+let currentLang = localStorage.getItem('njlang')||'en';
+let currentTheme = localStorage.getItem('njtheme')||'girl';
+
+const I18N = {
+  en:{
+    app_title:'My <span>Nihongo</span> Journey',
+    app_sub:'頑張れ！Keep going! You\'ve got this ～',
+    lang_label:'🌐 Language',
+    theme_label:'🎨 Theme',
+    nav_log:'📝 Today\'s Log',nav_board:'🔤 Character Board',nav_flash:'🃏 Flashcards',
+    nav_history:'📖 History',nav_report:'📊 Report',nav_goals:'🎯 Goals',
+  },
+  vi:{
+    app_title:'Hành Trình <span>Tiếng Nhật</span>',
+    app_sub:'頑張れ！Cố lên! Bạn làm được ～',
+    lang_label:'🌐 Ngôn ngữ',
+    theme_label:'🎨 Giao diện',
+    nav_log:'📝 Ghi hôm nay',nav_board:'🔤 Bảng chữ cái',nav_flash:'🃏 Flashcard',
+    nav_history:'📖 Lịch sử',nav_report:'📊 Báo cáo',nav_goals:'🎯 Mục tiêu',
+  }
+};
+
+function toggleSettings(){
+  document.getElementById('settings-dd').classList.toggle('open');
+}
+
+function setLang(lang){
+  currentLang=lang;
+  localStorage.setItem('njlang',lang);
+  document.getElementById('lang-en').classList.toggle('active',lang==='en');
+  document.getElementById('lang-vi').classList.toggle('active',lang==='vi');
+  applyLang();
+}
+
+function applyLang(){
+  const t=I18N[currentLang]||I18N.en;
+  const h1=document.getElementById('app-title');
+  if(h1) h1.innerHTML=t.app_title;
+  const sub=document.getElementById('app-sub');
+  if(sub) sub.textContent=t.app_sub;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.dataset.i18n;
+    if(t[key]) el.textContent=t[key];
+  });
+  // Nav buttons
+  const navMap={log:'nav_log',board:'nav_board',flash:'nav_flash',history:'nav_history',report:'nav_report',goals:'nav_goals'};
+  document.querySelectorAll('.nav-btn').forEach(btn=>{
+    const m=btn.getAttribute('onclick')?.match(/showSec\('(\w+)'/);
+    const sec=m?.[1];
+    if(sec&&navMap[sec]&&t[navMap[sec]]) btn.textContent=t[navMap[sec]];
+  });
+}
+
+function setTheme(theme){
+  currentTheme=theme;
+  localStorage.setItem('njtheme',theme);
+  ['girl','ocean','frieren'].forEach(t=>{
+    const btn=document.getElementById('theme-'+t);
+    if(btn) btn.classList.toggle('active',t===theme);
+  });
+  applyTheme();
+}
+
+function applyTheme(){
+  document.documentElement.classList.remove('theme-ocean','theme-country','theme-frieren');
+  if(currentTheme==='ocean') document.documentElement.classList.add('theme-ocean');
+  else if(currentTheme==='frieren') document.documentElement.classList.add('theme-frieren');
+  const isGirl=currentTheme==='girl';
+  document.querySelectorAll('.petal').forEach(p=>p.style.display=isGirl?'block':'none');
+  const bgMap={
+    girl:'radial-gradient(circle at 10% 20%,rgba(255,183,197,.15) 0%,transparent 50%),radial-gradient(circle at 90% 80%,rgba(179,157,219,.15) 0%,transparent 50%)',
+    ocean:'radial-gradient(circle at 10% 20%,rgba(14,165,196,.12) 0%,transparent 50%),radial-gradient(circle at 90% 80%,rgba(26,140,110,.12) 0%,transparent 50%)',
+    frieren:'radial-gradient(circle at 20% 30%,rgba(155,142,196,.15) 0%,transparent 55%),radial-gradient(circle at 80% 70%,rgba(123,168,160,.12) 0%,transparent 50%)',
+  };
+  document.body.style.backgroundImage=bgMap[currentTheme]||bgMap.girl;
+  // Frieren character
+  const existing=document.getElementById('frieren-char');
+  if(currentTheme==='frieren'){
+    if(!existing){
+      const el=document.createElement('div');
+      el.id='frieren-char';
+      el.style.cssText='position:fixed;bottom:0;right:320px;z-index:10;pointer-events:none;width:160px;';
+      el.innerHTML=`<svg viewBox="0 0 160 260" xmlns="http://www.w3.org/2000/svg" width="160" height="260">
+        <!-- Body / cloak -->
+        <ellipse cx="80" cy="210" rx="55" ry="60" fill="#E8E4F0"/>
+        <rect x="30" y="160" width="100" height="80" rx="20" fill="#D8D0EC"/>
+        <!-- Cape clasp -->
+        <circle cx="80" cy="165" r="7" fill="#9B8EC4"/>
+        <circle cx="80" cy="165" r="4" fill="#6B5BA0"/>
+        <!-- Arms resting on ledge -->
+        <ellipse cx="52" cy="185" rx="18" ry="10" fill="#E8E4F0" transform="rotate(-15 52 185)"/>
+        <ellipse cx="108" cy="185" rx="18" ry="10" fill="#E8E4F0" transform="rotate(15 108 185)"/>
+        <!-- Hands propped up -->
+        <ellipse cx="55" cy="174" rx="12" ry="9" fill="#FAE8D8"/>
+        <ellipse cx="105" cy="174" rx="12" ry="9" fill="#FAE8D8"/>
+        <!-- Chin resting on hands -->
+        <!-- Neck -->
+        <rect x="72" y="130" width="16" height="18" rx="6" fill="#FAE8D8"/>
+        <!-- Head -->
+        <ellipse cx="80" cy="118" rx="36" ry="34" fill="#FAE8D8"/>
+        <!-- Long white/silver hair - left -->
+        <path d="M46 108 Q20 140 28 200" stroke="#F0EEF8" stroke-width="18" fill="none" stroke-linecap="round"/>
+        <path d="M50 106 Q18 145 24 210" stroke="#E8E5F5" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <!-- Long white/silver hair - right -->
+        <path d="M114 108 Q140 140 132 200" stroke="#F0EEF8" stroke-width="18" fill="none" stroke-linecap="round"/>
+        <path d="M110 106 Q142 145 136 210" stroke="#E8E5F5" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <!-- Hair top -->
+        <ellipse cx="80" cy="90" rx="36" ry="20" fill="#EEEAF8"/>
+        <!-- Bangs -->
+        <path d="M46 100 Q52 78 80 84 Q108 78 114 100" fill="#E8E4F4"/>
+        <path d="M56 106 Q60 90 70 92" stroke="#D8D2F0" stroke-width="3" fill="none"/>
+        <path d="M104 106 Q100 90 90 92" stroke="#D8D2F0" stroke-width="3" fill="none"/>
+        <!-- Eyes — slightly droopy, bored expression -->
+        <ellipse cx="66" cy="118" rx="9" ry="7" fill="white"/>
+        <ellipse cx="94" cy="118" rx="9" ry="7" fill="white"/>
+        <ellipse cx="67" cy="120" rx="6" ry="5" fill="#4A3A6A"/>
+        <ellipse cx="95" cy="120" rx="6" ry="5" fill="#4A3A6A"/>
+        <ellipse cx="68" cy="119" rx="3" ry="3" fill="#2A1A4A"/>
+        <ellipse cx="96" cy="119" rx="3" ry="3" fill="#2A1A4A"/>
+        <!-- Eyelids — half closed / bored -->
+        <path d="M57 115 Q66 112 75 115" stroke="#C8A878" stroke-width="2" fill="none"/>
+        <path d="M85 115 Q94 112 103 115" stroke="#C8A878" stroke-width="2" fill="none"/>
+        <!-- Small nose -->
+        <ellipse cx="80" cy="126" rx="3" ry="2" fill="#E8C8A8" opacity=".5"/>
+        <!-- Neutral mouth — slight pout -->
+        <path d="M71 134 Q80 138 89 134" stroke="#C8A878" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Small blush -->
+        <ellipse cx="60" cy="128" rx="8" ry="4" fill="#FFB7C5" opacity=".3"/>
+        <ellipse cx="100" cy="128" rx="8" ry="4" fill="#FFB7C5" opacity=".3"/>
+        <!-- Ear accessories -->
+        <circle cx="44" cy="120" r="4" fill="#9B8EC4"/>
+        <circle cx="116" cy="120" r="4" fill="#9B8EC4"/>
+      </svg>`;
+      document.body.appendChild(el);
+    }
+  } else if(existing){
+    existing.remove();
+  }
+}
+
+// Pick words apply
+function fcApplyPick(){
+  const dateRow=document.getElementById('fc-date-row');
+  const pickRow=document.getElementById('fc-pick-row');
+  if(pickRow) pickRow.style.display='none';
+  fcPlayMode='pick';
+  fcUpdateModeCount();
+  showToast(`✋ ${fcPickedIds.size} word${fcPickedIds.size!==1?'s':''} selected`);
+}
+
+// Close filter popups on outside click
+document.addEventListener('click',function(e){
+  const dateRow=document.getElementById('fc-date-row');
+  const pickRow=document.getElementById('fc-pick-row');
+  const datBtn=document.getElementById('pm-date');
+  const picBtn=document.getElementById('pm-pick');
+  const settDD=document.getElementById('settings-dd');
+  const settBtn=document.querySelector('.settings-btn');
+  // Close date popup
+  if(dateRow&&dateRow.style.display!=='none'){
+    if(!dateRow.contains(e.target)&&e.target!==datBtn){
+      dateRow.style.display='none';
+    }
+  }
+  // Close pick popup
+  if(pickRow&&pickRow.style.display!=='none'){
+    if(!pickRow.contains(e.target)&&e.target!==picBtn){
+      pickRow.style.display='none';
+    }
+  }
+  // Close settings
+  if(settDD&&settDD.classList.contains('open')){
+    if(!settDD.contains(e.target)&&e.target!==settBtn&&!settBtn?.contains(e.target)){
+      settDD.classList.remove('open');
+    }
+  }
+},{capture:true});
+
+// Init settings on load
+(function initSettings(){
+  const savedTheme=localStorage.getItem('njtheme')||'girl';
+  const savedLang=localStorage.getItem('njlang')||'en';
+  currentTheme=savedTheme; currentLang=savedLang;
+  ['girl','ocean','frieren'].forEach(t=>{const btn=document.getElementById('theme-'+t);if(btn)btn.classList.toggle('active',t===savedTheme);});
+  ['en','vi'].forEach(l=>{const btn=document.getElementById('lang-'+l);if(btn)btn.classList.toggle('active',l===savedLang);});
+  applyTheme(); applyLang();
+})();
 
 function fmtDate(d){const date=new Date(d+'T00:00:00');return date.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'2-digit',year:'numeric'});}
 function showToast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
