@@ -421,17 +421,17 @@ textarea{resize:vertical;min-height:70px;}
 <div class="section active" id="sec-flash">
   <div class="sec-header">🃏 Flashcards</div>
 
-  <!-- 1. Add new card — bigger -->
+  <!-- 1. Add new card -->
   <div class="card">
-    <div class="card-title" style="font-size:18px;"><span>➕</span> Add new card</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
-      <div><label style="font-size:14px;">Japanese (front)</label><input type="text" id="fc-in-front" placeholder="e.g. 食べる" style="font-size:16px;padding:12px 14px;" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
-      <div><label style="font-size:14px;">Meaning (back)</label><input type="text" id="fc-in-back" placeholder="e.g. to eat" style="font-size:16px;padding:12px 14px;" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
-      <div><label style="font-size:14px;">Reading — shown on back</label><input type="text" id="fc-in-read" placeholder="e.g. たべる" style="font-size:16px;padding:12px 14px;" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
+    <div class="card-title"><span>➕</span> Add new card</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div><label>Japanese (front)</label><input type="text" id="fc-in-front" placeholder="e.g. 食べる" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
+      <div><label>Meaning (back)</label><input type="text" id="fc-in-back" placeholder="e.g. to eat" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
+      <div><label>Reading — shown on back</label><input type="text" id="fc-in-read" placeholder="e.g. たべる" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
     </div>
-    <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:end;">
+    <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:end;">
       <button class="btn-primary" onclick="fcAddCard()" style="height:48px;font-size:16px;">+ Add Card</button>
-      <div><label style="font-size:14px;">Note (optional)</label><input type="text" id="fc-in-note" placeholder="e.g. Group 2 verb, て-form: 食べて" style="font-size:15px;padding:12px 14px;" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
+      <div><label>Note (optional)</label><input type="text" id="fc-in-note" placeholder="e.g. Group 2 verb, て-form: 食べて" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
     </div>
   </div>
 
@@ -494,7 +494,7 @@ textarea{resize:vertical;min-height:70px;}
       <div style="font-size:48px;margin-bottom:12px;">🌸</div>
       No cards match this filter. Try a different play mode!
     </div>
-    <div id="fc-session" style="display:none;">
+    <div id="fc-session" style="display:block;">
       <div style="display:grid;grid-template-columns:1fr 120px;gap:16px;align-items:start;">
         <!-- Left: flip card -->
         <div>
@@ -503,14 +503,14 @@ textarea{resize:vertical;min-height:70px;}
               <!-- FRONT: 88 * 1.4 = ~123px -->
               <div id="fc-front" style="position:absolute;width:100%;min-height:340px;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:linear-gradient(135deg,var(--sakura-light),white);border:2.5px solid var(--sakura);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;box-sizing:border-box;">
                 <div style="font-size:12px;color:var(--ink-soft);margin-bottom:20px;letter-spacing:2px;text-transform:uppercase;">Japanese</div>
-                <div id="fc-front-text" style="font-family:'Zen Maru Gothic',sans-serif;font-size:123px;font-weight:700;color:var(--ink);line-height:1;text-align:center;text-shadow:0 3px 16px rgba(232,130,154,0.3);"></div>
+                <div id="fc-front-text" style="font-family:'Zen Maru Gothic',sans-serif;font-size:123px;font-weight:700;color:var(--ink);line-height:1;text-align:center;text-shadow:0 3px 16px rgba(232,130,154,0.3);">おはよう</div>
                 <div style="font-size:14px;color:var(--sakura-deep);margin-top:28px;font-weight:600;">Tap to reveal ↓</div>
               </div>
               <!-- BACK: 46 * 1.4 = ~64px, reading 26*1.4=~36px -->
               <div id="fc-back" style="position:absolute;width:100%;min-height:340px;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:rotateY(180deg);background:linear-gradient(135deg,var(--fuji-light),white);border:2.5px solid var(--fuji);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;box-sizing:border-box;">
                 <div style="font-size:12px;color:var(--ink-soft);margin-bottom:14px;letter-spacing:2px;text-transform:uppercase;">Meaning</div>
-                <div id="fc-back-text" style="font-size:64px;font-weight:700;color:var(--ink);text-align:center;line-height:1.2;"></div>
-                <div id="fc-back-reading" style="font-family:'Zen Maru Gothic',sans-serif;font-size:36px;font-weight:500;color:var(--sakura-deep);margin-top:12px;text-align:center;"></div>
+                <div id="fc-back-text" style="font-size:64px;font-weight:700;color:var(--ink);text-align:center;line-height:1.2;">Good morning</div>
+                <div id="fc-back-reading" style="font-family:'Zen Maru Gothic',sans-serif;font-size:36px;font-weight:500;color:var(--sakura-deep);margin-top:12px;text-align:center;">Ohayou</div>
                 <div id="fc-back-note" style="font-size:15px;color:var(--ink-soft);margin-top:10px;text-align:center;"></div>
                 <button onclick="fcSpeak(event)" style="margin-top:16px;padding:8px 20px;border-radius:12px;border:2px solid var(--fuji);background:white;color:var(--fuji);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;" onmouseover="this.style.background='var(--fuji-light)'" onmouseout="this.style.background='white'">🔊 <span>Listen</span></button>
               </div>
@@ -538,12 +538,27 @@ textarea{resize:vertical;min-height:70px;}
 
   <!-- 3. Card list -->
   <div class="card">
-    <div class="card-title"><span>📋</span> All cards &nbsp;<span id="fc-filter-label" style="font-size:14px;color:var(--ink-soft);font-weight:600;"></span></div>
-    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-      <button class="script-btn sel" onclick="fcFilterSet('all',this)">All</button>
-      <button class="script-btn" onclick="fcFilterSet('due',this)">Due today</button>
-      <button class="script-btn" onclick="fcFilterSet('new',this)">New</button>
-      <button class="script-btn" onclick="fcFilterSet('learned',this)">Learned</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-family:'Zen Maru Gothic',sans-serif;font-size:16px;font-weight:700;">📋 All cards</span>
+        <span id="fc-filter-label" style="font-size:13px;color:var(--ink-soft);font-weight:600;"></span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input type="text" id="fc-list-search" placeholder="🔍 Search..." oninput="fcRenderList()"
+          style="padding:6px 12px;border-radius:10px;border:1.5px solid var(--border);font-size:13px;width:180px;outline:none;">
+        <button class="script-btn sel" onclick="fcFilterSet('all',this)">All</button>
+        <button class="script-btn" onclick="fcFilterSet('due',this)">Due</button>
+        <button class="script-btn" onclick="fcFilterSet('new',this)">New</button>
+        <button class="script-btn" onclick="fcFilterSet('learned',this)">Learned</button>
+      </div>
+    </div>
+    <!-- Selected play bar -->
+    <div id="fc-list-sel-bar" style="display:none;background:var(--sakura-light);border:1.5px solid var(--sakura);border-radius:12px;padding:8px 14px;margin-bottom:10px;display:none;align-items:center;justify-content:space-between;">
+      <span id="fc-list-sel-count" style="font-size:13px;font-weight:700;color:var(--sakura-deep);"></span>
+      <div style="display:flex;gap:8px;">
+        <button onclick="fcPlaySelectedList()" style="padding:6px 16px;border-radius:10px;border:none;background:var(--sakura-deep);color:white;font-size:13px;font-weight:700;cursor:pointer;">▶ Play selected</button>
+        <button onclick="fcClearListSel()" style="padding:6px 12px;border-radius:10px;border:1.5px solid var(--border);background:white;font-size:13px;cursor:pointer;color:var(--ink-soft);">Clear</button>
+      </div>
     </div>
     <div id="fc-list"></div>
   </div>
@@ -635,7 +650,7 @@ let fcFilter = 'all';
 let fcSortCol='', fcSortDir=1;
 let fcPlayMode = 'all';
 let fcPickedIds = new Set();
-let fcCurrentWord = '';
+let fcCurrentWord = 'おはよう';
 
 document.getElementById('ld').valueAsDate=new Date();
 buildPickers();buildMaster();renderAll();
@@ -1214,7 +1229,23 @@ function fcFlip(){
   if(fcFlipped) return;
   fcFlipped = true;
   document.getElementById('fc-card-inner').classList.add('flipped');
-  document.getElementById('fc-ratings').style.display = 'flex';
+  // Only show ratings if we're in an active session
+  if(fcSession.length > 0 && fcIdx < fcSession.length){
+    document.getElementById('fc-ratings').style.display = 'flex';
+  }
+  // Auto-play audio on flip
+  if(fcCurrentWord){
+    setTimeout(()=>{
+      if(!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(fcCurrentWord);
+      utter.lang = 'ja-JP'; utter.rate = 0.85;
+      const voices = window.speechSynthesis.getVoices();
+      const jpVoice = voices.find(v=>v.lang==='ja-JP'||v.lang==='ja');
+      if(jpVoice) utter.voice = jpVoice;
+      window.speechSynthesis.speak(utter);
+    }, 400);
+  }
 }
 
 function fcRate(rating){
@@ -1332,20 +1363,35 @@ function fcFilterSet(f, btn){
 }
 
 function fcRenderAll(){
-  const today = fcToday();
   const due = flashcards.filter(fcIsDue);
   const learned = flashcards.filter(c=>c.reviewCount>0&&!fcIsDue(c));
   const newCards = flashcards.filter(c=>!c.nextReview);
   const el = id => document.getElementById(id);
-  if(el('fc-due')) el('fc-due').textContent = due.length;
-  if(el('fc-total')) el('fc-total').textContent = flashcards.length;
-  if(el('fc-learned')) el('fc-learned').textContent = learned.length;
-  if(el('fc-new')) el('fc-new').textContent = newCards.length;
   if(el('fc-queue-label')){
     const d=flashcards.filter(fcIsDue).length;
     el('fc-queue-label').textContent = d>0?`(${d} due)`:'';
   }
   fcUpdateModeCount();
+  // Always keep card visible — show default if no active session
+  const sessionDiv = document.getElementById('fc-session');
+  const emptyDiv = document.getElementById('fc-empty');
+  const doneDiv = document.getElementById('fc-done');
+  if(sessionDiv && sessionDiv.style.display==='none' && doneDiv && doneDiv.style.display==='none'){
+    emptyDiv && (emptyDiv.style.display='none');
+    sessionDiv.style.display='block';
+    const frontEl=document.getElementById('fc-front-text');
+    const backEl=document.getElementById('fc-back-text');
+    const readEl=document.getElementById('fc-back-reading');
+    if(frontEl&&!frontEl.textContent.trim()){ frontEl.textContent='おはよう'; fcCurrentWord='おはよう'; }
+    if(backEl&&!backEl.textContent.trim()) backEl.textContent='Good morning';
+    if(readEl&&!readEl.textContent.trim()) readEl.textContent='Ohayou';
+    document.getElementById('fc-progress-text').textContent='Press ▶ Start to begin! 🌸';
+    const ratings=document.getElementById('fc-ratings');
+    if(ratings) ratings.style.display='none';
+    document.getElementById('fc-card-inner')?.classList.remove('flipped');
+    fcFlipped=false;
+  }
+  updStats();
   fcRenderList();
 }
 
@@ -1355,15 +1401,17 @@ function fcSort(col){
 }
 function fcSortArrow(col){return fcSortCol===col?(fcSortDir===1?' ↑':' ↓'):' ↕';}
 
-function fcRenderList(){
-  const el = document.getElementById('fc-list');
-  if(!el) return;
-  let cards = [...flashcards];
-  if(fcFilter==='due') cards = cards.filter(fcIsDue);
-  else if(fcFilter==='new') cards = cards.filter(c=>!c.nextReview);
-  else if(fcFilter==='learned') cards = cards.filter(c=>c.reviewCount>0&&!fcIsDue(c));
+let fcListSelected = new Set();
 
-  // Sort or shuffle
+function fcRenderList(){
+  const el=document.getElementById('fc-list');
+  if(!el)return;
+  const q=(document.getElementById('fc-list-search')?.value||'').toLowerCase().trim();
+  let cards=[...flashcards];
+  if(fcFilter==='due') cards=cards.filter(fcIsDue);
+  else if(fcFilter==='new') cards=cards.filter(c=>!c.nextReview);
+  else if(fcFilter==='learned') cards=cards.filter(c=>c.reviewCount>0&&!fcIsDue(c));
+  if(q) cards=cards.filter(c=>c.front.toLowerCase().includes(q)||c.back.toLowerCase().includes(q)||(c.read&&c.read.toLowerCase().includes(q)));
   if(fcSortCol){
     cards.sort((a,b)=>{
       let av,bv;
@@ -1371,51 +1419,73 @@ function fcRenderList(){
       else if(fcSortCol==='back'){av=a.back;bv=b.back;}
       else if(fcSortCol==='played'){av=a.reviewCount||0;bv=b.reviewCount||0;return(av-bv)*fcSortDir;}
       else if(fcSortCol==='next'){av=a.nextReview||'0';bv=b.nextReview||'0';}
-      else if(fcSortCol==='date'){av=a.created||'0';bv=b.created||'0';}
       return av<bv?-fcSortDir:av>bv?fcSortDir:0;
     });
-  } else {
-    cards.sort(()=>Math.random()-0.5);
-  }
-
-  const lbl = document.getElementById('fc-filter-label');
-  if(lbl) lbl.textContent = `${cards.length} words in total`;
-
-  if(!cards.length){
-    el.innerHTML='<div style="text-align:center;padding:20px;color:var(--ink-soft);font-size:13px;">No cards in this filter.</div>';
-    return;
-  }
-  const lastRatingEmoji = ['😫','😓','🙂','🤩'];
-  const hStyle='cursor:pointer;user-select:none;font-size:11px;font-weight:700;color:var(--ink-soft);letter-spacing:.5px;text-transform:uppercase;';
-  const header = `<div style="display:grid;grid-template-columns:1fr 1fr 90px 50px 44px;gap:10px;align-items:center;padding:6px 12px;border-bottom:2px solid var(--border);margin-bottom:6px;">
-    <div style="${hStyle}" onclick="fcSort('front')">Japanese${fcSortArrow('front')}</div>
-    <div style="${hStyle}" onclick="fcSort('back')">Meaning${fcSortArrow('back')}</div>
-    <div style="${hStyle}" onclick="fcSort('next')">Next review${fcSortArrow('next')}</div>
-    <div style="${hStyle};text-align:center;" onclick="fcSort('played')">Played${fcSortArrow('played')}</div>
+  } else { cards.sort(()=>Math.random()-0.5); }
+  const lbl=document.getElementById('fc-filter-label');
+  if(lbl)lbl.textContent=`${cards.length} words`;
+  fcUpdListSelBar();
+  if(!cards.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--ink-soft);font-size:13px;">No cards match.</div>';return;}
+  const re=['😫','😓','🙂','🤩'];
+  const hs='cursor:pointer;user-select:none;font-size:11px;font-weight:700;color:var(--ink-soft);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;';
+  const cols='32px 1.2fr 1.2fr 110px 72px 40px';
+  const header=`<div style="display:grid;grid-template-columns:${cols};gap:14px;align-items:center;padding:6px 12px;border-bottom:2px solid var(--border);margin-bottom:6px;">
+    <div></div>
+    <div style="${hs}" onclick="fcSort('front')">Japanese${fcSortArrow('front')}</div>
+    <div style="${hs}" onclick="fcSort('back')">Meaning${fcSortArrow('back')}</div>
+    <div style="${hs}" onclick="fcSort('next')">Next review${fcSortArrow('next')}</div>
+    <div style="${hs};text-align:center;" onclick="fcSort('played')">Played${fcSortArrow('played')}</div>
     <div></div>
   </div>`;
-  const rows = cards.map(c=>{
-    const due = fcIsDue(c);
-    const isNew = !c.nextReview;
-    const dueLabel = isNew
-      ? '<span class="fc-due-badge fc-due-new">New</span>'
-      : due
-        ? '<span class="fc-due-badge fc-due-now">Due</span>'
-        : `<span class="fc-due-badge fc-due-ok">${c.nextReview}</span>`;
-    const playedCount = c.reviewCount||0;
-    const lastEmoji = playedCount>0&&c.lastRating!=null ? lastRatingEmoji[c.lastRating] : '';
-    return `<div style="display:grid;grid-template-columns:1fr 1fr 90px 50px 44px;gap:10px;align-items:center;padding:9px 12px;background:var(--paper-warm);border-radius:10px;border:1.5px solid var(--border);margin-bottom:6px;">
-      <div>
-        <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700;">${c.front}</div>
-        ${c.read?`<div style="font-size:11px;color:var(--sakura-deep);">${c.read}</div>`:''}
-      </div>
-      <div style="font-size:13px;color:var(--ink);">${c.back}${c.note?`<div style="font-size:11px;color:var(--ink-soft);margin-top:2px;">${c.note}</div>`:''}</div>
+  const rows=cards.map(c=>{
+    const due=fcIsDue(c),isNew=!c.nextReview,sel=fcListSelected.has(c.id);
+    const dueLabel=isNew?'<span class="fc-due-badge fc-due-new">New</span>':due?'<span class="fc-due-badge fc-due-now">Due</span>':`<span class="fc-due-badge fc-due-ok" style="font-size:11px;">${c.nextReview}</span>`;
+    const pc=c.reviewCount||0,le=pc>0&&c.lastRating!=null?re[c.lastRating]:'';
+    return `<div onclick="fcToggleListSel(${c.id},event)" style="display:grid;grid-template-columns:${cols};gap:14px;align-items:center;padding:10px 12px;background:${sel?'var(--sakura-light)':'var(--paper-warm)'};border-radius:10px;border:1.5px solid ${sel?'var(--sakura)':'var(--border)'};margin-bottom:6px;cursor:pointer;transition:all .12s;">
+      <div style="width:20px;height:20px;border-radius:5px;border:2px solid ${sel?'var(--sakura)':'var(--border)'};background:${sel?'var(--sakura)':'white'};display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;">${sel?'✓':''}</div>
+      <div><div style="font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700;">${c.front}</div>${c.read?`<div style="font-size:11px;color:var(--sakura-deep);">${c.read}</div>`:''}</div>
+      <div style="font-size:13px;color:var(--ink);">${c.back}${c.note?`<div style="font-size:11px;color:var(--ink-soft);margin-top:1px;">${c.note}</div>`:''}</div>
       <div>${dueLabel}</div>
-      <div style="text-align:center;font-size:14px;font-weight:700;color:var(--matcha);">${playedCount>0?playedCount+' '+lastEmoji:'—'}</div>
+      <div style="text-align:center;font-size:14px;font-weight:700;color:var(--matcha);white-space:nowrap;">${pc>0?pc+' '+le:'—'}</div>
       <div><button onclick="fcDeleteCard(${c.id})" class="log-del" style="font-size:15px;">✕</button></div>
     </div>`;
   }).join('');
-  el.innerHTML = header + rows;
+  el.innerHTML=header+rows;
+}
+
+function fcToggleListSel(id,e){
+  if(e.target.classList.contains('log-del')||e.target.closest?.('.log-del')) return;
+  fcListSelected.has(id)?fcListSelected.delete(id):fcListSelected.add(id);
+  // Update just this row visually without re-rendering (preserves order)
+  const sel=fcListSelected.has(id);
+  const row=e.currentTarget;
+  row.style.background=sel?'var(--sakura-light)':'var(--paper-warm)';
+  row.style.borderColor=sel?'var(--sakura)':'var(--border)';
+  const chk=row.querySelector('div'); // first child = checkbox div
+  if(chk){chk.style.background=sel?'var(--sakura)':'white';chk.style.borderColor=sel?'var(--sakura)':'var(--border)';chk.textContent=sel?'✓':'';}
+  fcUpdListSelBar();
+}
+function fcUpdListSelBar(){
+  const bar=document.getElementById('fc-list-sel-bar');
+  const cnt=document.getElementById('fc-list-sel-count');
+  if(!bar)return;
+  const n=fcListSelected.size;
+  bar.style.display=n>0?'flex':'none';
+  if(cnt)cnt.textContent=`${n} word${n!==1?'s':''} selected`;
+}
+function fcClearListSel(){ fcListSelected.clear(); fcRenderList(); }
+function fcPlaySelectedList(){
+  if(!fcListSelected.size){showToast('No words selected');return;}
+  const cards=flashcards.filter(c=>fcListSelected.has(c.id));
+  if(!cards.length){showToast('❗ Selected cards not found');return;}
+  fcSession=[...cards].sort(()=>Math.random()-0.5);
+  fcIdx=0;fcFlipped=false;
+  document.getElementById('fc-empty').style.display='none';
+  document.getElementById('fc-session').style.display='block';
+  document.getElementById('fc-done').style.display='none';
+  fcShowCard();
+  document.getElementById('fc-review-card').scrollIntoView({behavior:'smooth',block:'start'});
+  showToast(`▶ Playing ${cards.length} selected word${cards.length!==1?'s':''}!`);
 }
 
 // ===== PLAY MODES =====
