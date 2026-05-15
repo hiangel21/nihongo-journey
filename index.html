@@ -256,11 +256,15 @@ textarea{resize:vertical;min-height:70px;}
 </div>
 
 <!-- Fixed scorecard bottom-right -->
-<div class="scorecard">
+<div class="scorecard" id="scorecard-wrap">
   <div class="sc-item matcha"><span class="sc-icon">📅</span><div><div class="sc-val" id="st">0</div><div class="sc-lbl">Total Days</div></div></div>
+  <div class="sc-item yuzu"><span class="sc-icon">⏱</span><div><div class="sc-val" id="sc-hours">0</div><div class="sc-lbl">Total Hours</div></div></div>
+  <div class="sc-item fuji"><span class="sc-icon">📊</span><div><div class="sc-val" id="sm">0</div><div class="sc-lbl">Avg min/day</div></div></div>
   <div class="sc-item sakura"><span class="sc-icon">🃏</span><div><div class="sc-val" id="sc-cards">0</div><div class="sc-lbl">Flashcards</div></div></div>
-  <div class="sc-item yuzu"><span class="sc-icon">⏱</span><div><div class="sc-val" id="sm">0</div><div class="sc-lbl">Minutes</div></div></div>
 </div>
+<!-- Hide/show scorecard -->
+<button id="scorecard-x" onclick="document.getElementById('scorecard-wrap').style.display='none';document.getElementById('scorecard-x').style.display='none';document.getElementById('scorecard-show').style.display='flex';" style="position:fixed;bottom:calc(24px + 4 * 58px + 4px);right:16px;z-index:51;width:20px;height:20px;border-radius:50%;border:1px solid var(--border);background:white;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);box-shadow:0 1px 4px var(--shadow);opacity:.7;" title="Hide">✕</button>
+<button id="scorecard-show" onclick="document.getElementById('scorecard-wrap').style.display='flex';document.getElementById('scorecard-x').style.display='flex';document.getElementById('scorecard-show').style.display='none';" style="display:none;position:fixed;bottom:24px;right:24px;z-index:50;width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:white;cursor:pointer;font-size:16px;box-shadow:0 4px 12px var(--shadow);" title="Show stats">📊</button>
 
 <!-- MAIN LAYOUT: left = study area, right = pinned goals sidebar -->
 <div class="top-layout">
@@ -374,15 +378,13 @@ textarea{resize:vertical;min-height:70px;}
 <div class="section" id="sec-report">
   <div class="sec-header">📊 Journey Report</div>
   <div class="stats-row">
-    <div class="stat-card sakura"><div class="stat-num" id="rs">0</div><div class="stat-label">🔥 Streak</div></div>
     <div class="stat-card matcha"><div class="stat-num" id="rt">0</div><div class="stat-label">📅 Total Days</div></div>
-    <div class="stat-card fuji"><div class="stat-num" id="rw">0</div><div class="stat-label">📚 Total Words</div></div>
     <div class="stat-card yuzu"><div class="stat-num" id="rh">0</div><div class="stat-label">⏱ Total Hours</div></div>
+    <div class="stat-card fuji"><div class="stat-num" id="ravg">0</div><div class="stat-label">📊 Avg min/day</div></div>
   </div>
   <div class="card"><div class="card-title"><span>📈</span> Minutes studied (last 7 days)</div><div class="chart-wrap"><canvas id="cmin" role="img" aria-label="Minutes studied last 7 days"></canvas></div></div>
   <div class="card"><div class="card-title"><span>🎯</span> Goal Progress</div><div id="gpl"></div></div>
   <div class="card"><div class="card-title"><span>📊</span> Content breakdown</div><div class="chart-wrap" style="height:200px;"><canvas id="cscr" role="img" aria-label="Study content breakdown"></canvas></div></div>
-  <div class="card"><div class="card-title"><span>😊</span> Study mood tracker</div><div id="mrep"></div></div>
 </div>
 
 <!-- GOALS -->
@@ -440,34 +442,47 @@ textarea{resize:vertical;min-height:70px;}
     <!-- Play mode row — wrapper for popup alignment -->
     <div style="position:relative;margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--border);">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;" id="fc-filter-row">
-        <button class="script-btn" id="pm-due"  onclick="fcSetMode('due',this)">📬 Due today</button>
+        <div style="position:relative;display:inline-block;">
+          <button class="script-btn" id="pm-due" onclick="fcSetMode('due',this)" style="display:flex;align-items:center;gap:5px;">📬 Due today
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;border:1.5px solid currentColor;font-size:9px;font-weight:700;flex-shrink:0;cursor:help;opacity:.7;" title="Shows My Cards due today. Easy cards follow 1→2→3→7→14→30 day schedule. Hard cards repeat daily until marked Easy.">i</span>
+          </button>
+        </div>
         <button class="script-btn sel" id="pm-all"  onclick="fcSetMode('all',this)">📚 All</button>
-        <button class="script-btn"    id="pm-date" onclick="fcSetMode('date',this)">🗓 Date range</button>
+        <button class="script-btn" id="pm-mine" onclick="fcSetMode('mine',this)">✍️ My Cards</button>
+        <button class="script-btn" id="pm-hira" onclick="fcSetMode('hira',this)">🌸 Hiragana</button>
+        <button class="script-btn" id="pm-kata" onclick="fcSetMode('kata',this)">💜 Katakana</button>
         <button class="script-btn"    id="pm-pick" onclick="fcSetMode('pick',this)">✋ Pick words</button>
         <button onclick="fcLaunchSession()" style="padding:9px 24px;border-radius:12px;border:none;background:linear-gradient(135deg,#FF85A1,var(--sakura-deep));color:white;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(232,130,154,0.5);letter-spacing:.3px;">▶ Start 🌸</button>
         <span id="fc-mode-count" style="font-size:13px;color:var(--ink-soft);font-weight:600;"></span>
       </div>
 
-      <!-- Date range popup — aligned under button -->
-      <div id="fc-date-row" style="display:none;position:absolute;top:100%;z-index:200;margin-top:6px;">
-        <div style="background:white;border:2px solid var(--sakura);border-radius:16px;padding:14px 16px;box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:340px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;">
-            <button class="fc-preset-btn" onclick="fcQuickDate('today')">📅 Today</button>
-            <button class="fc-preset-btn" onclick="fcQuickDate('yesterday')">Yesterday</button>
-            <button class="fc-preset-btn" onclick="fcQuickDate('7days')">Last 7 days</button>
-            <button class="fc-preset-btn" onclick="fcQuickDate('30days')">Last 30 days</button>
-            <button class="fc-preset-btn" onclick="fcQuickDate('thismonth')">This month</button>
-            <button class="fc-preset-btn" onclick="fcQuickDate('all')">All time</button>
-          </div>
-          <div style="border-top:1px solid var(--border);padding-top:10px;">
-            <div style="font-size:11px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Custom range</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <div style="flex:1;"><div style="font-size:10px;color:var(--ink-soft);margin-bottom:2px;">From</div><input type="date" id="fc-date-from" style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;" onchange="fcDateRangeChange()"></div>
-              <span style="font-size:16px;color:var(--ink-soft);margin-top:16px;">→</span>
-              <div style="flex:1;"><div style="font-size:10px;color:var(--ink-soft);margin-bottom:2px;">To</div><input type="date" id="fc-date-to" style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;" onchange="fcDateRangeChange()"></div>
+      <!-- Hiragana picker popup -->
+      <div id="fc-hira-row" style="display:none;position:absolute;top:100%;z-index:200;margin-top:6px;">
+        <div style="background:white;border:2px solid var(--sakura);border-radius:16px;padding:14px 16px;box-shadow:0 8px 28px rgba(0,0,0,.18);width:400px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:13px;font-weight:700;color:var(--ink);">🌸 Pick Hiragana to practice</span>
+            <div style="display:flex;gap:6px;">
+              <button onclick="fcPickAlpha('hira',true)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--sakura);background:var(--sakura-light);color:var(--sakura-deep);cursor:pointer;">All 46</button>
+              <button onclick="fcPickAlpha('hira',false)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--border);background:white;color:var(--ink-soft);cursor:pointer;">Clear</button>
             </div>
-            <div id="fc-date-preview" style="font-size:12px;color:var(--sakura-deep);font-weight:600;margin-top:6px;"></div>
           </div>
+          <div id="fc-hira-list" style="display:flex;flex-wrap:wrap;gap:6px;max-height:220px;overflow-y:auto;margin-bottom:10px;"></div>
+          <button onclick="fcApplyAlpha('hira')" style="width:100%;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--sakura),var(--sakura-deep));color:white;font-size:13px;font-weight:700;cursor:pointer;">✓ Start practice</button>
+        </div>
+      </div>
+
+      <!-- Katakana picker popup -->
+      <div id="fc-kata-row" style="display:none;position:absolute;top:100%;z-index:200;margin-top:6px;">
+        <div style="background:white;border:2px solid var(--fuji);border-radius:16px;padding:14px 16px;box-shadow:0 8px 28px rgba(0,0,0,.18);width:400px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:13px;font-weight:700;color:var(--ink);">💜 Pick Katakana to practice</span>
+            <div style="display:flex;gap:6px;">
+              <button onclick="fcPickAlpha('kata',true)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--fuji);background:var(--fuji-light);color:var(--fuji);cursor:pointer;">All 46</button>
+              <button onclick="fcPickAlpha('kata',false)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--border);background:white;color:var(--ink-soft);cursor:pointer;">Clear</button>
+            </div>
+          </div>
+          <div id="fc-kata-list" style="display:flex;flex-wrap:wrap;gap:6px;max-height:220px;overflow-y:auto;margin-bottom:10px;"></div>
+          <button onclick="fcApplyAlpha('kata')" style="width:100%;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--fuji-light),var(--fuji));color:white;font-size:13px;font-weight:700;cursor:pointer;">✓ Start practice</button>
         </div>
       </div>
 
@@ -512,18 +527,20 @@ textarea{resize:vertical;min-height:70px;}
                 <div id="fc-back-text" style="font-size:64px;font-weight:700;color:var(--ink);text-align:center;line-height:1.2;">Good morning</div>
                 <div id="fc-back-reading" style="font-family:'Zen Maru Gothic',sans-serif;font-size:36px;font-weight:500;color:var(--sakura-deep);margin-top:12px;text-align:center;">Ohayou</div>
                 <div id="fc-back-note" style="font-size:15px;color:var(--ink-soft);margin-top:10px;text-align:center;"></div>
-                <button onclick="fcSpeak(event)" style="margin-top:16px;padding:8px 20px;border-radius:12px;border:2px solid var(--fuji);background:white;color:var(--fuji);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;" onmouseover="this.style.background='var(--fuji-light)'" onmouseout="this.style.background='white'">🔊 <span>Listen</span></button>
+                <div style="font-size:12px;color:var(--fuji);margin-top:20px;font-weight:500;opacity:.7;">Choose Easy or Hard to continue</div>
+                <button onclick="fcSpeak(event)" style="margin-top:10px;padding:7px 18px;border-radius:12px;border:2px solid var(--fuji);background:white;color:var(--fuji);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='var(--fuji-light)'" onmouseout="this.style.background='white'">🔊 Listen</button>
               </div>
             </div>
           </div>
           <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--ink-soft);" id="fc-progress-text"></div>
         </div>
-        <!-- Right: rating buttons -->
+        <!-- Right: 2 ratings + replay + skip -->
         <div id="fc-ratings" style="display:none;flex-direction:column;gap:8px;">
-          <button onclick="fcRate(3)" style="width:100%;padding:10px 6px;border-radius:12px;border:2px solid var(--fuji);background:white;color:#5E35B1;font-size:13px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">🤩<br>Easy<br><span style="font-size:10px;font-weight:400;color:#5E35B1;" id="fc-easy-label">+4 days</span></button>
-          <button onclick="fcRate(2)" style="width:100%;padding:10px 6px;border-radius:12px;border:2px solid var(--matcha);background:white;color:#2E7D32;font-size:13px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">🙂<br>Good<br><span style="font-size:10px;font-weight:400;color:#2E7D32;" id="fc-good-label">+1 day</span></button>
-          <button onclick="fcRate(1)" style="width:100%;padding:10px 6px;border-radius:12px;border:2px solid #FAC775;background:white;color:#854F0B;font-size:13px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">😓<br>Hard<br><span style="font-size:10px;font-weight:400;color:#854F0B;">same day</span></button>
-          <button onclick="fcRate(0)" style="width:100%;padding:10px 6px;border-radius:12px;border:2px solid #F09595;background:white;color:#A32D2D;font-size:13px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">😫<br>Again<br><span style="font-size:10px;font-weight:400;color:#A32D2D;">+1 min</span></button>
+          <button onclick="fcRate('easy')" style="width:100%;padding:12px 6px;border-radius:12px;border:2px solid var(--matcha);background:white;color:#2E7D32;font-size:13px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">🙂<br>Easy<br><span id="fc-easy-label" style="font-size:10px;font-weight:400;color:#2E7D32;"></span></button>
+          <button onclick="fcRate('hard')" style="width:100%;padding:12px 6px;border-radius:12px;border:2px solid #F09595;background:white;color:#A32D2D;font-size:13px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">😓<br>Hard<br><span style="font-size:10px;font-weight:400;color:#A32D2D;">daily until Easy</span></button>
+          <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+          <button onclick="fcReplay()" style="width:100%;padding:8px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper-warm);color:var(--ink-soft);font-size:12px;font-weight:600;cursor:pointer;text-align:center;" title="Add to end of this session">🔁 See again later</button>
+          <button onclick="fcSkip()" style="width:100%;padding:8px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper-warm);color:var(--ink-soft);font-size:12px;font-weight:600;cursor:pointer;text-align:center;">⏭ Skip</button>
         </div>
       </div>
     </div>
@@ -544,19 +561,22 @@ textarea{resize:vertical;min-height:70px;}
         <span id="fc-filter-label" style="font-size:13px;color:var(--ink-soft);font-weight:600;"></span>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <input type="text" id="fc-list-search" placeholder="🔍 Search..." oninput="fcRenderList()"
+        <input type="text" id="fc-list-search" placeholder="🔍 Search..." oninput="fcPage=0;fcRenderList()"
           style="padding:6px 12px;border-radius:10px;border:1.5px solid var(--border);font-size:13px;width:180px;outline:none;">
-        <button class="script-btn sel" onclick="fcFilterSet('all',this)">All</button>
-        <button class="script-btn" onclick="fcFilterSet('due',this)">Due</button>
-        <button class="script-btn" onclick="fcFilterSet('new',this)">New</button>
-        <button class="script-btn" onclick="fcFilterSet('learned',this)">Learned</button>
+        <button class="script-btn sel" id="flt-all" onclick="fcFilterSet('all',this)">All</button>
+        <button class="script-btn" id="flt-mine" onclick="fcFilterSet('mine',this)">✍️ My Cards</button>
+        <button class="script-btn" id="flt-n5" onclick="fcFilterSet('n5',this)">📚 N5</button>
+        <button class="script-btn" id="flt-due" onclick="fcFilterSet('due',this)">Due</button>
+        <button class="script-btn" id="flt-new" onclick="fcFilterSet('new',this)">New</button>
+        <button class="script-btn" id="flt-learned" onclick="fcFilterSet('learned',this)">Learned</button>
       </div>
     </div>
     <!-- Selected play bar -->
-    <div id="fc-list-sel-bar" style="display:none;background:var(--sakura-light);border:1.5px solid var(--sakura);border-radius:12px;padding:8px 14px;margin-bottom:10px;display:none;align-items:center;justify-content:space-between;">
+    <div id="fc-list-sel-bar" style="display:none;background:var(--sakura-light);border:1.5px solid var(--sakura);border-radius:12px;padding:8px 14px;margin-bottom:10px;align-items:center;justify-content:space-between;">
       <span id="fc-list-sel-count" style="font-size:13px;font-weight:700;color:var(--sakura-deep);"></span>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button onclick="fcPlaySelectedList()" style="padding:6px 16px;border-radius:10px;border:none;background:var(--sakura-deep);color:white;font-size:13px;font-weight:700;cursor:pointer;">▶ Play selected</button>
+        <button onclick="fcAddToMyCards()" style="padding:6px 16px;border-radius:10px;border:none;background:var(--matcha);color:white;font-size:13px;font-weight:700;cursor:pointer;">✍️ Add to My Cards</button>
         <button onclick="fcClearListSel()" style="padding:6px 12px;border-radius:10px;border:1.5px solid var(--border);background:white;font-size:13px;cursor:pointer;color:var(--ink-soft);">Clear</button>
       </div>
     </div>
@@ -638,6 +658,123 @@ let cMin=null,cScr=null;
 const SL={hiragana:'🌸 Hiragana',katakana:'💜 Katakana',kanji:'漢 Kanji',grammar:'🔤 Grammar',vocabulary:'📝 Vocabulary',listening:'👂 Listening',anime:'📺 Anime',reading:'📖 Reading'};
 const SC={hiragana:'tag-h',katakana:'tag-k',kanji:'tag-j',vocab:'tag-v',grammar:'tag-g',listening:'tag-v',anime:'tag-j'};
 const SRS_STEPS = [1,2,3,7,14,30,60,120];
+const SRS_INTERVALS = [1,2,3,7,14,30]; // Easy schedule: new→D1→2→3→7→14→30
+
+// ===== N5 BUILT-IN DECK (100 words) =====
+// Each card: front=hiragana, back=EN meaning, backVi=VN meaning, read=romaji, note=category
+const N5_DECK = [
+  // People & family
+  {id:'n5_01',front:'おとうさん',read:'otousan',back:'father',backVi:'bố / cha',note:'Family'},
+  {id:'n5_02',front:'おかあさん',read:'okaasan',back:'mother',backVi:'mẹ',note:'Family'},
+  {id:'n5_03',front:'おにいさん',read:'oniisan',back:'older brother',backVi:'anh trai',note:'Family'},
+  {id:'n5_04',front:'おねえさん',read:'oneesan',back:'older sister',backVi:'chị gái',note:'Family'},
+  {id:'n5_05',front:'ともだち',read:'tomodachi',back:'friend',backVi:'bạn bè',note:'People'},
+  {id:'n5_06',front:'せんせい',read:'sensei',back:'teacher',backVi:'giáo viên',note:'People'},
+  {id:'n5_07',front:'がくせい',read:'gakusei',back:'student',backVi:'học sinh',note:'People'},
+  {id:'n5_08',front:'ひと',read:'hito',back:'person',backVi:'người',note:'People'},
+  {id:'n5_09',front:'こども',read:'kodomo',back:'child',backVi:'trẻ em',note:'People'},
+  {id:'n5_10',front:'おとこ',read:'otoko',back:'man / male',backVi:'đàn ông / nam',note:'People'},
+  // Body
+  {id:'n5_11',front:'め',read:'me',back:'eye',backVi:'mắt',note:'Body'},
+  {id:'n5_12',front:'みみ',read:'mimi',back:'ear',backVi:'tai',note:'Body'},
+  {id:'n5_13',front:'くち',read:'kuchi',back:'mouth',backVi:'miệng',note:'Body'},
+  {id:'n5_14',front:'て',read:'te',back:'hand',backVi:'tay',note:'Body'},
+  {id:'n5_15',front:'あし',read:'ashi',back:'leg / foot',backVi:'chân',note:'Body'},
+  {id:'n5_16',front:'あたま',read:'atama',back:'head',backVi:'đầu',note:'Body'},
+  {id:'n5_17',front:'はな',read:'hana',back:'nose',backVi:'mũi',note:'Body'},
+  {id:'n5_18',front:'かお',read:'kao',back:'face',backVi:'khuôn mặt',note:'Body'},
+  // Numbers & time
+  {id:'n5_19',front:'いち',read:'ichi',back:'one',backVi:'một',note:'Number'},
+  {id:'n5_20',front:'に',read:'ni',back:'two',backVi:'hai',note:'Number'},
+  {id:'n5_21',front:'さん',read:'san',back:'three',backVi:'ba',note:'Number'},
+  {id:'n5_22',front:'よん',read:'yon',back:'four',backVi:'bốn',note:'Number'},
+  {id:'n5_23',front:'ご',read:'go',back:'five',backVi:'năm',note:'Number'},
+  {id:'n5_24',front:'いま',read:'ima',back:'now',backVi:'bây giờ',note:'Time'},
+  {id:'n5_25',front:'きょう',read:'kyou',back:'today',backVi:'hôm nay',note:'Time'},
+  {id:'n5_26',front:'あした',read:'ashita',back:'tomorrow',backVi:'ngày mai',note:'Time'},
+  {id:'n5_27',front:'きのう',read:'kinou',back:'yesterday',backVi:'hôm qua',note:'Time'},
+  {id:'n5_28',front:'まいにち',read:'mainichi',back:'every day',backVi:'mỗi ngày',note:'Time'},
+  // Places
+  {id:'n5_29',front:'がっこう',read:'gakkou',back:'school',backVi:'trường học',note:'Place'},
+  {id:'n5_30',front:'いえ',read:'ie',back:'house / home',backVi:'nhà',note:'Place'},
+  {id:'n5_31',front:'えき',read:'eki',back:'train station',backVi:'ga tàu',note:'Place'},
+  {id:'n5_32',front:'みせ',read:'mise',back:'shop / store',backVi:'cửa hàng',note:'Place'},
+  {id:'n5_33',front:'としょかん',read:'toshokan',back:'library',backVi:'thư viện',note:'Place'},
+  {id:'n5_34',front:'びょういん',read:'byouin',back:'hospital',backVi:'bệnh viện',note:'Place'},
+  {id:'n5_35',front:'ぎんこう',read:'ginkou',back:'bank',backVi:'ngân hàng',note:'Place'},
+  {id:'n5_36',front:'こうえん',read:'kouen',back:'park',backVi:'công viên',note:'Place'},
+  {id:'n5_37',front:'レストラン',read:'resutoran',back:'restaurant',backVi:'nhà hàng',note:'Place'},
+  {id:'n5_38',front:'トイレ',read:'toire',back:'toilet / restroom',backVi:'nhà vệ sinh',note:'Place'},
+  // Food & drink
+  {id:'n5_39',front:'みず',read:'mizu',back:'water',backVi:'nước',note:'Food'},
+  {id:'n5_40',front:'ごはん',read:'gohan',back:'rice / meal',backVi:'cơm / bữa ăn',note:'Food'},
+  {id:'n5_41',front:'パン',read:'pan',back:'bread',backVi:'bánh mì',note:'Food'},
+  {id:'n5_42',front:'たまご',read:'tamago',back:'egg',backVi:'trứng',note:'Food'},
+  {id:'n5_43',front:'にく',read:'niku',back:'meat',backVi:'thịt',note:'Food'},
+  {id:'n5_44',front:'さかな',read:'sakana',back:'fish',backVi:'cá',note:'Food'},
+  {id:'n5_45',front:'やさい',read:'yasai',back:'vegetable',backVi:'rau củ',note:'Food'},
+  {id:'n5_46',front:'くだもの',read:'kudamono',back:'fruit',backVi:'trái cây',note:'Food'},
+  {id:'n5_47',front:'おちゃ',read:'ocha',back:'green tea',backVi:'trà xanh',note:'Drink'},
+  {id:'n5_48',front:'コーヒー',read:'koohii',back:'coffee',backVi:'cà phê',note:'Drink'},
+  // Nature
+  {id:'n5_49',front:'そら',read:'sora',back:'sky',backVi:'bầu trời',note:'Nature'},
+  {id:'n5_50',front:'うみ',read:'umi',back:'sea / ocean',backVi:'biển',note:'Nature'},
+  {id:'n5_51',front:'やま',read:'yama',back:'mountain',backVi:'núi',note:'Nature'},
+  {id:'n5_52',front:'かわ',read:'kawa',back:'river',backVi:'sông',note:'Nature'},
+  {id:'n5_53',front:'き',read:'ki',back:'tree',backVi:'cây',note:'Nature'},
+  {id:'n5_54',front:'あめ',read:'ame',back:'rain',backVi:'mưa',note:'Nature'},
+  {id:'n5_55',front:'ゆき',read:'yuki',back:'snow',backVi:'tuyết',note:'Nature'},
+  {id:'n5_56',front:'かぜ',read:'kaze',back:'wind',backVi:'gió',note:'Nature'},
+  // Adjectives
+  {id:'n5_57',front:'おおきい',read:'ookii',back:'big / large',backVi:'to / lớn',note:'Adjective'},
+  {id:'n5_58',front:'ちいさい',read:'chiisai',back:'small / little',backVi:'nhỏ / bé',note:'Adjective'},
+  {id:'n5_59',front:'あたらしい',read:'atarashii',back:'new',backVi:'mới',note:'Adjective'},
+  {id:'n5_60',front:'ふるい',read:'furui',back:'old (thing)',backVi:'cũ',note:'Adjective'},
+  {id:'n5_61',front:'たかい',read:'takai',back:'high / expensive',backVi:'cao / đắt',note:'Adjective'},
+  {id:'n5_62',front:'やすい',read:'yasui',back:'cheap / easy',backVi:'rẻ / dễ',note:'Adjective'},
+  {id:'n5_63',front:'いい',read:'ii',back:'good',backVi:'tốt / được',note:'Adjective'},
+  {id:'n5_64',front:'わるい',read:'warui',back:'bad',backVi:'xấu / tệ',note:'Adjective'},
+  {id:'n5_65',front:'おもしろい',read:'omoshiroi',back:'interesting / funny',backVi:'thú vị / buồn cười',note:'Adjective'},
+  {id:'n5_66',front:'たのしい',read:'tanoshii',back:'fun / enjoyable',backVi:'vui / thú vị',note:'Adjective'},
+  // Common verbs
+  {id:'n5_67',front:'たべる',read:'taberu',back:'to eat',backVi:'ăn',note:'Verb'},
+  {id:'n5_68',front:'のむ',read:'nomu',back:'to drink',backVi:'uống',note:'Verb'},
+  {id:'n5_69',front:'みる',read:'miru',back:'to see / watch',backVi:'nhìn / xem',note:'Verb'},
+  {id:'n5_70',front:'きく',read:'kiku',back:'to listen / ask',backVi:'nghe / hỏi',note:'Verb'},
+  {id:'n5_71',front:'よむ',read:'yomu',back:'to read',backVi:'đọc',note:'Verb'},
+  {id:'n5_72',front:'かく',read:'kaku',back:'to write',backVi:'viết',note:'Verb'},
+  {id:'n5_73',front:'はなす',read:'hanasu',back:'to speak / talk',backVi:'nói / nói chuyện',note:'Verb'},
+  {id:'n5_74',front:'いく',read:'iku',back:'to go',backVi:'đi',note:'Verb'},
+  {id:'n5_75',front:'くる',read:'kuru',back:'to come',backVi:'đến / tới',note:'Verb'},
+  {id:'n5_76',front:'かえる',read:'kaeru',back:'to return / go home',backVi:'về nhà',note:'Verb'},
+  {id:'n5_77',front:'おきる',read:'okiru',back:'to wake up',backVi:'thức dậy',note:'Verb'},
+  {id:'n5_78',front:'ねる',read:'neru',back:'to sleep',backVi:'ngủ',note:'Verb'},
+  {id:'n5_79',front:'する',read:'suru',back:'to do',backVi:'làm',note:'Verb'},
+  {id:'n5_80',front:'べんきょうする',read:'benkyou suru',back:'to study',backVi:'học',note:'Verb'},
+  // Daily expressions
+  {id:'n5_81',front:'ありがとう',read:'arigatou',back:'thank you',backVi:'cảm ơn',note:'Expression'},
+  {id:'n5_82',front:'すみません',read:'sumimasen',back:'excuse me / sorry',backVi:'xin lỗi / làm ơn',note:'Expression'},
+  {id:'n5_83',front:'はい',read:'hai',back:'yes',backVi:'vâng / có',note:'Expression'},
+  {id:'n5_84',front:'いいえ',read:'iie',back:'no',backVi:'không',note:'Expression'},
+  {id:'n5_85',front:'わかります',read:'wakarimasu',back:'I understand',backVi:'tôi hiểu',note:'Expression'},
+  {id:'n5_86',front:'わかりません',read:'wakarimasen',back:'I don\'t understand',backVi:'tôi không hiểu',note:'Expression'},
+  {id:'n5_87',front:'なに',read:'nani',back:'what',backVi:'cái gì',note:'Question'},
+  {id:'n5_88',front:'どこ',read:'doko',back:'where',backVi:'ở đâu',note:'Question'},
+  {id:'n5_89',front:'いくら',read:'ikura',back:'how much',backVi:'bao nhiêu tiền',note:'Question'},
+  {id:'n5_90',front:'いつ',read:'itsu',back:'when',backVi:'khi nào',note:'Question'},
+  // Counters & misc
+  {id:'n5_91',front:'ひとつ',read:'hitotsu',back:'one (thing)',backVi:'một (cái)',note:'Counter'},
+  {id:'n5_92',front:'ふたつ',read:'futatsu',back:'two (things)',backVi:'hai (cái)',note:'Counter'},
+  {id:'n5_93',front:'みっつ',read:'mittsu',back:'three (things)',backVi:'ba (cái)',note:'Counter'},
+  {id:'n5_94',front:'なんじ',read:'nanji',back:'what time',backVi:'mấy giờ',note:'Time'},
+  {id:'n5_95',front:'なんさい',read:'nansai',back:'how old',backVi:'bao nhiêu tuổi',note:'Question'},
+  {id:'n5_96',front:'おはよう',read:'ohayou',back:'good morning',backVi:'chào buổi sáng',note:'Greeting'},
+  {id:'n5_97',front:'こんにちは',read:'konnichiwa',back:'good afternoon / hello',backVi:'xin chào',note:'Greeting'},
+  {id:'n5_98',front:'こんばんは',read:'konbanwa',back:'good evening',backVi:'chào buổi tối',note:'Greeting'},
+  {id:'n5_99',front:'さようなら',read:'sayounara',back:'goodbye',backVi:'tạm biệt',note:'Greeting'},
+  {id:'n5_100',front:'おやすみ',read:'oyasumi',back:'good night',backVi:'chúc ngủ ngon',note:'Greeting'},
+];
+
 
 // Declare before renderAll so inline oninput handlers can reference them
 let goalInputVals={};
@@ -651,10 +788,16 @@ let fcSortCol='', fcSortDir=1;
 let fcPlayMode = 'all';
 let fcPickedIds = new Set();
 let fcCurrentWord = 'おはよう';
+let fcListSelected = new Set();
+let fcPage = 0;
+const FC_PAGE_SIZE = 8;
 
 document.getElementById('ld').valueAsDate=new Date();
 buildPickers();buildMaster();renderAll();
-setTimeout(()=>{ if(typeof fcRenderAll==='function') fcRenderAll(); }, 0);
+// fcRenderAll needs N5_DECK which is defined later in script — use setTimeout to ensure it's ready
+setTimeout(function(){
+  try{ fcRenderAll(); } catch(e){ console.error('fcRenderAll init error:',e); }
+}, 50);
 
 function renderAll(){updStats();updProg();renderLog();renderStreak();renderGoals();renderMasterBoard();renderPinnedGoals();renderGoalLogInputs();}
 function showSec(n,btn){
@@ -829,11 +972,13 @@ function delLog(id){
 function updStats(){
   const td=new Set(logs.map(l=>l.date)).size;
   const tm=logs.reduce((s,l)=>s+(l.mins||0),0);
+  const avgMin=td>0?Math.round(tm/td):0;
+  const totalHours=(tm/60).toFixed(1);
   const set=(ids,v)=>ids.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=v;});
   set(['st','rt'],td);
-  set(['sm'],tm);
-  const rh=document.getElementById('rh');if(rh)rh.textContent=Math.round(tm/60);
-  const fc=document.getElementById('sc-cards');if(fc)fc.textContent=flashcards.length;
+  set(['sm','ravg'],avgMin);
+  set(['sc-hours','rh'],totalHours);
+  const fc=document.getElementById('sc-cards');if(fc)fc.textContent=flashcards.length+N5_DECK.length;
 }
 function calcStreak(){
   const dates=[...new Set(logs.map(l=>l.date))].sort().reverse();
@@ -1191,7 +1336,7 @@ function fcAddCard(){
 
 function fcDeleteCard(id){
   if(!confirm('Delete this card?')) return;
-  flashcards = flashcards.filter(c=>c.id!==id);
+  flashcards = flashcards.filter(c=>String(c.id)!==String(id));
   saveFC(); fcRenderAll();
 }
 
@@ -1207,22 +1352,38 @@ function fcStartSession(){
 function fcShowCard(){
   if(fcIdx >= fcSession.length){ fcEndSession(); return; }
   const card = fcSession[fcIdx];
-  fcCurrentWord = card.front; // store for audio
+  fcCurrentWord = card.front;
+  fcFlipped = false;
+
+  // Step 1: Kill transition, snap to front immediately
+  const inner = document.getElementById('fc-card-inner');
+  if(inner){
+    inner.style.transition = 'none';
+    inner.classList.remove('flipped');
+  }
+
+  // Step 2: Populate content while card is at front
   document.getElementById('fc-front-text').textContent = card.front;
-  document.getElementById('fc-back-text').textContent = card.back;
+  const meaning = (currentLang==='vi' && card.backVi) ? card.backVi : card.back;
+  document.getElementById('fc-back-text').textContent = meaning;
   document.getElementById('fc-back-reading').textContent = card.read||'';
   document.getElementById('fc-back-note').textContent = card.note||'';
-  // Reset flip
-  fcFlipped = false;
-  document.getElementById('fc-card-inner').classList.remove('flipped');
   document.getElementById('fc-ratings').style.display = 'none';
-  // Next interval labels
+
+  // Step 3: Restore transition after browser has painted front face
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      if(inner) inner.style.transition = '';
+    });
+  });
+
+  // Update labels
   const step = card.step||0;
-  const goodDays = SRS_STEPS[Math.min(step+1, SRS_STEPS.length-1)];
-  const easyDays = SRS_STEPS[Math.min(step+2, SRS_STEPS.length-1)];
-  document.getElementById('fc-good-label').textContent = '+'+goodDays+' day'+(goodDays>1?'s':'');
-  document.getElementById('fc-easy-label').textContent = '+'+easyDays+' day'+(easyDays>1?'s':'');
-  document.getElementById('fc-progress-text').textContent = `Card ${fcIdx+1} of ${fcSession.length}`;
+  const nextStep = Math.min(step+1, SRS_INTERVALS.length-1);
+  const nextDays = SRS_INTERVALS[nextStep];
+  const easyLbl = document.getElementById('fc-easy-label');
+  if(easyLbl) easyLbl.textContent = card.isHard ? `+${nextDays}d (was hard)` : `+${nextDays} day${nextDays>1?'s':''}`;
+  document.getElementById('fc-progress-text').textContent = `${fcIdx+1} of ${fcSession.length}`;
 }
 
 function fcFlip(){
@@ -1249,39 +1410,63 @@ function fcFlip(){
 }
 
 function fcRate(rating){
+  // rating: 'easy' | 'hard'
   const card = fcSession[fcIdx];
-  const fc = flashcards.find(c=>c.id===card.id);
-  if(!fc) return;
+  let fc = flashcards.find(c=>String(c.id)===String(card.id));
+  if(!fc) fc = fcSession.find(c=>String(c.id)===String(card.id));
+  if(!fc){ fcIdx++; setTimeout(()=>fcIdx<fcSession.length?fcShowCard():fcEndSession(),100); return; }
+
   const today = new Date();
   let step = fc.step||0;
-  let daysAhead = 0;
-  if(rating===0){ step=0; daysAhead=0; }
-  else if(rating===1){ daysAhead=1; }
-  else if(rating===2){ step=Math.min(step+1,SRS_STEPS.length-1); daysAhead=SRS_STEPS[step]; }
-  else { step=Math.min(step+2,SRS_STEPS.length-1); daysAhead=SRS_STEPS[step]; }
+  let daysAhead;
+
+  if(rating==='easy'){
+    // Follow fixed schedule: D1→2→3→7→14→30
+    step = Math.min(step+1, SRS_INTERVALS.length-1);
+    daysAhead = SRS_INTERVALS[step];
+    fc.isHard = false;
+  } else {
+    // Hard: come back tomorrow, don't advance, stay hard
+    daysAhead = 1;
+    fc.isHard = true;
+    // Keep step the same so when they finally go Easy, schedule continues from here
+  }
+
   const next = new Date(today);
   next.setDate(today.getDate()+daysAhead);
   fc.step=step; fc.interval=daysAhead;
   fc.nextReview=next.toISOString().split('T')[0];
   fc.reviewCount=(fc.reviewCount||0)+1;
   fc.lastRating=rating;
-  saveFC();
-  if(rating===0){
-    fcSession.push({...fc});
-    fcSession.splice(fcIdx,1);
-  } else {
-    fcIdx++;
-  }
-  // Reset flip state immediately before showing next card
-  fcFlipped = false;
-  document.getElementById('fc-card-inner').classList.remove('flipped');
-  document.getElementById('fc-ratings').style.display = 'none';
-  // Short delay for flip animation to reset, then show next
+
+  const si=fcSession.findIndex(c=>String(c.id)===String(card.id));
+  if(si>=0) Object.assign(fcSession[si],{step,interval:daysAhead,nextReview:fc.nextReview,reviewCount:fc.reviewCount,lastRating:rating,isHard:fc.isHard});
+
+  if(fc.isN5) saveN5State(fc); else saveFC();
+
+  fcIdx++;
+  document.getElementById('fc-ratings').style.display='none';
+  fcFlipped=false;
   setTimeout(()=>{
     if(fcIdx<fcSession.length) fcShowCard();
     else fcEndSession();
-    fcRenderList(); // only update list, not full re-render
-  }, 200);
+    fcRenderList();
+  }, 50);
+}
+
+function fcReplay(){
+  if(fcIdx<fcSession.length) fcSession.push({...fcSession[fcIdx]});
+  fcFlipped=false;
+  document.getElementById('fc-ratings').style.display='none';
+  fcIdx++;
+  setTimeout(()=>{ if(fcIdx<fcSession.length) fcShowCard(); else fcEndSession(); }, 50);
+}
+
+function fcSkip(){
+  fcIdx++;
+  fcFlipped=false;
+  document.getElementById('fc-ratings').style.display='none';
+  setTimeout(()=>{ if(fcIdx<fcSession.length) fcShowCard(); else fcEndSession(); }, 50);
 }
 
 function fcEndSession(){
@@ -1357,18 +1542,16 @@ function showCelebration(){
 // Filter
 function fcFilterSet(f, btn){
   fcFilter = f;
-  document.querySelectorAll('#sec-flash .script-btn').forEach(b=>b.classList.remove('sel'));
+  document.querySelectorAll('#sec-flash .script-btn[id^="flt-"]').forEach(b=>b.classList.remove('sel'));
   btn.classList.add('sel');
   fcRenderList();
 }
 
 function fcRenderAll(){
-  const due = flashcards.filter(fcIsDue);
-  const learned = flashcards.filter(c=>c.reviewCount>0&&!fcIsDue(c));
-  const newCards = flashcards.filter(c=>!c.nextReview);
   const el = id => document.getElementById(id);
   if(el('fc-queue-label')){
-    const d=flashcards.filter(fcIsDue).length;
+    const allCards = [...flashcards,...N5_DECK];
+    const d=allCards.filter(fcIsDue).length;
     el('fc-queue-label').textContent = d>0?`(${d} due)`:'';
   }
   fcUpdateModeCount();
@@ -1401,17 +1584,33 @@ function fcSort(col){
 }
 function fcSortArrow(col){return fcSortCol===col?(fcSortDir===1?' ↑':' ↓'):' ↕';}
 
-let fcListSelected = new Set();
+function fcGetAllCards(){
+  
+  const n5State = JSON.parse(localStorage.getItem('njn5')||'{}');
+  const n5 = N5_DECK.map(c=>({...c, isN5:true, ...( n5State[c.id]||{interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null} )}));
+  const mine = flashcards.map(c=>({...c, isN5:false}));
+  return {n5, mine, all:[...n5,...mine]};
+}
+
+function saveN5State(card){
+  const st=JSON.parse(localStorage.getItem('njn5')||'{}');
+  st[card.id]={interval:card.interval,step:card.step,nextReview:card.nextReview,reviewCount:card.reviewCount,lastRating:card.lastRating};
+  localStorage.setItem('njn5',JSON.stringify(st));
+}
 
 function fcRenderList(){
   const el=document.getElementById('fc-list');
   if(!el)return;
   const q=(document.getElementById('fc-list-search')?.value||'').toLowerCase().trim();
-  let cards=[...flashcards];
-  if(fcFilter==='due') cards=cards.filter(fcIsDue);
-  else if(fcFilter==='new') cards=cards.filter(c=>!c.nextReview);
-  else if(fcFilter==='learned') cards=cards.filter(c=>c.reviewCount>0&&!fcIsDue(c));
-  if(q) cards=cards.filter(c=>c.front.toLowerCase().includes(q)||c.back.toLowerCase().includes(q)||(c.read&&c.read.toLowerCase().includes(q)));
+  const {n5,mine,all}=fcGetAllCards();
+  let cards;
+  if(fcFilter==='mine') cards=mine;
+  else if(fcFilter==='n5') cards=n5;
+  else if(fcFilter==='due') cards=all.filter(fcIsDue);
+  else if(fcFilter==='new') cards=all.filter(c=>!c.nextReview);
+  else if(fcFilter==='learned') cards=all.filter(c=>c.reviewCount>0&&!fcIsDue(c));
+  else cards=all;
+  if(q) cards=cards.filter(c=>c.front.toLowerCase().includes(q)||c.back.toLowerCase().includes(q)||(c.read&&c.read.toLowerCase().includes(q))||(c.backVi&&c.backVi.toLowerCase().includes(q)));
   if(fcSortCol){
     cards.sort((a,b)=>{
       let av,bv;
@@ -1426,42 +1625,62 @@ function fcRenderList(){
   if(lbl)lbl.textContent=`${cards.length} words`;
   fcUpdListSelBar();
   if(!cards.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--ink-soft);font-size:13px;">No cards match.</div>';return;}
-  const re=['😫','😓','🙂','🤩'];
+
+  // Pagination
+  const totalPages=Math.ceil(cards.length/FC_PAGE_SIZE);
+  if(fcPage>=totalPages) fcPage=totalPages-1;
+  const pageCards=cards.slice(fcPage*FC_PAGE_SIZE,(fcPage+1)*FC_PAGE_SIZE);
+
+  const re={'easy':'🙂 Easy','hard':'😓 Hard'};
+  const isVi=currentLang==='vi';
   const hs='cursor:pointer;user-select:none;font-size:11px;font-weight:700;color:var(--ink-soft);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;';
   const cols='32px 1.2fr 1.2fr 110px 72px 40px';
   const header=`<div style="display:grid;grid-template-columns:${cols};gap:14px;align-items:center;padding:6px 12px;border-bottom:2px solid var(--border);margin-bottom:6px;">
     <div></div>
     <div style="${hs}" onclick="fcSort('front')">Japanese${fcSortArrow('front')}</div>
-    <div style="${hs}" onclick="fcSort('back')">Meaning${fcSortArrow('back')}</div>
-    <div style="${hs}" onclick="fcSort('next')">Next review${fcSortArrow('next')}</div>
-    <div style="${hs};text-align:center;" onclick="fcSort('played')">Played${fcSortArrow('played')}</div>
+    <div style="${hs}" onclick="fcSort('back')">${isVi?'Nghĩa':'Meaning'}${fcSortArrow('back')}</div>
+    <div style="${hs}" onclick="fcSort('next')">${isVi?'Ôn tiếp':'Next review'}${fcSortArrow('next')}</div>
+    <div style="${hs};text-align:center;" onclick="fcSort('played')">${isVi?'Đã học':'Played'}${fcSortArrow('played')}</div>
     <div></div>
   </div>`;
-  const rows=cards.map(c=>{
-    const due=fcIsDue(c),isNew=!c.nextReview,sel=fcListSelected.has(c.id);
-    const dueLabel=isNew?'<span class="fc-due-badge fc-due-new">New</span>':due?'<span class="fc-due-badge fc-due-now">Due</span>':`<span class="fc-due-badge fc-due-ok" style="font-size:11px;">${c.nextReview}</span>`;
-    const pc=c.reviewCount||0,le=pc>0&&c.lastRating!=null?re[c.lastRating]:'';
-    return `<div onclick="fcToggleListSel(${c.id},event)" style="display:grid;grid-template-columns:${cols};gap:14px;align-items:center;padding:10px 12px;background:${sel?'var(--sakura-light)':'var(--paper-warm)'};border-radius:10px;border:1.5px solid ${sel?'var(--sakura)':'var(--border)'};margin-bottom:6px;cursor:pointer;transition:all .12s;">
+  const rows=pageCards.map(c=>{
+    const due=fcIsDue(c),isNew=!c.nextReview,sel=fcListSelected.has(String(c.id));
+    const meaning=isVi&&c.backVi?c.backVi:c.back;
+    const dueLabel=isNew?`<span class="fc-due-badge fc-due-new">${isVi?'Mới':'New'}</span>`:due?`<span class="fc-due-badge fc-due-now">${isVi?'Đến hạn':'Due'}</span>`:`<span class="fc-due-badge fc-due-ok" style="font-size:11px;">${c.nextReview}</span>`;
+    const pc=c.reviewCount||0,le=pc>0&&c.lastRating?re[c.lastRating]||c.lastRating:'';
+    const n5Badge=c.isN5?`<span style="font-size:9px;padding:1px 6px;border-radius:6px;background:var(--fuji-light);color:var(--fuji);font-weight:700;margin-left:4px;">N5</span>`:'';
+    const delBtn=c.isN5?`<span style="font-size:11px;color:var(--border);padding:0 8px;" title="Built-in word">🔒</span>`:`<button onclick="fcDeleteCard('${c.id}')" class="log-del" style="font-size:15px;">✕</button>`;
+    return `<div onclick="fcToggleListSel('${c.id}',event)" style="display:grid;grid-template-columns:${cols};gap:14px;align-items:center;padding:10px 12px;background:${sel?'var(--sakura-light)':'var(--paper-warm)'};border-radius:10px;border:1.5px solid ${sel?'var(--sakura)':'var(--border)'};margin-bottom:6px;cursor:pointer;transition:background .12s,border-color .12s;">
       <div style="width:20px;height:20px;border-radius:5px;border:2px solid ${sel?'var(--sakura)':'var(--border)'};background:${sel?'var(--sakura)':'white'};display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;">${sel?'✓':''}</div>
-      <div><div style="font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700;">${c.front}</div>${c.read?`<div style="font-size:11px;color:var(--sakura-deep);">${c.read}</div>`:''}</div>
-      <div style="font-size:13px;color:var(--ink);">${c.back}${c.note?`<div style="font-size:11px;color:var(--ink-soft);margin-top:1px;">${c.note}</div>`:''}</div>
+      <div><div style="font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700;">${c.front}${n5Badge}</div>${c.read?`<div style="font-size:11px;color:var(--sakura-deep);">${c.read}</div>`:''}</div>
+      <div style="font-size:13px;color:var(--ink);">${meaning}${c.note?`<div style="font-size:11px;color:var(--ink-soft);margin-top:1px;">${c.note}</div>`:''}</div>
       <div>${dueLabel}</div>
       <div style="text-align:center;font-size:14px;font-weight:700;color:var(--matcha);white-space:nowrap;">${pc>0?pc+' '+le:'—'}</div>
-      <div><button onclick="fcDeleteCard(${c.id})" class="log-del" style="font-size:15px;">✕</button></div>
+      <div>${delBtn}</div>
     </div>`;
   }).join('');
-  el.innerHTML=header+rows;
+
+  // Pagination controls
+  const pager = totalPages>1 ? `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+    <button onclick="fcPage=Math.max(0,fcPage-1);fcRenderList()" style="padding:5px 14px;border-radius:8px;border:1.5px solid var(--border);background:white;cursor:pointer;font-size:13px;${fcPage===0?'opacity:.4;cursor:default;':''}">← Prev</button>
+    <span style="font-size:13px;color:var(--ink-soft);">Page ${fcPage+1} of ${totalPages} &nbsp;·&nbsp; ${cards.length} words</span>
+    <button onclick="fcPage=Math.min(${totalPages-1},fcPage+1);fcRenderList()" style="padding:5px 14px;border-radius:8px;border:1.5px solid var(--border);background:white;cursor:pointer;font-size:13px;${fcPage===totalPages-1?'opacity:.4;cursor:default;':''}">Next →</button>
+  </div>` : '';
+
+  el.innerHTML=header+rows+pager;
 }
 
 function fcToggleListSel(id,e){
   if(e.target.classList.contains('log-del')||e.target.closest?.('.log-del')) return;
-  fcListSelected.has(id)?fcListSelected.delete(id):fcListSelected.add(id);
-  // Update just this row visually without re-rendering (preserves order)
-  const sel=fcListSelected.has(id);
+  // ids may be string (N5) or number (user) — normalize to string
+  const sid=String(id);
+  const found=[...fcListSelected].find(x=>String(x)===sid);
+  if(found!==undefined) fcListSelected.delete(found); else fcListSelected.add(sid);
+  const sel=fcListSelected.has(sid);
   const row=e.currentTarget;
   row.style.background=sel?'var(--sakura-light)':'var(--paper-warm)';
   row.style.borderColor=sel?'var(--sakura)':'var(--border)';
-  const chk=row.querySelector('div'); // first child = checkbox div
+  const chk=row.querySelector('div');
   if(chk){chk.style.background=sel?'var(--sakura)':'white';chk.style.borderColor=sel?'var(--sakura)':'var(--border)';chk.textContent=sel?'✓':'';}
   fcUpdListSelBar();
 }
@@ -1473,10 +1692,41 @@ function fcUpdListSelBar(){
   bar.style.display=n>0?'flex':'none';
   if(cnt)cnt.textContent=`${n} word${n!==1?'s':''} selected`;
 }
-function fcClearListSel(){ fcListSelected.clear(); fcRenderList(); }
+function fcAddToMyCards(){
+  if(!fcListSelected.size){ showToast('Select cards first'); return; }
+  const {all}=fcGetAllCards();
+  let added=0, skipped=0;
+  [...fcListSelected].forEach(sid=>{
+    // Only copy if not already in user's flashcards
+    const already=flashcards.some(c=>String(c.id)===String(sid)||
+      (all.find(x=>String(x.id)===String(sid))?.front===c.front));
+    if(already){ skipped++; return; }
+    const src=all.find(c=>String(c.id)===String(sid));
+    if(!src) return;
+    // Copy to user deck as a fresh card (new SRS state)
+    flashcards.push({
+      id:Date.now()+added,
+      front:src.front, back:src.back, backVi:src.backVi||'',
+      read:src.read||'', note:src.note||'',
+      interval:0, step:0, nextReview:null,
+      reviewCount:0, lastRating:null,
+      created:fcToday(), isHard:false,
+      tag: src.note||''
+    });
+    added++;
+  });
+  saveFC();
+  fcClearListSel();
+  fcRenderAll();
+  if(added>0) showToast(`✍️ Added ${added} card${added>1?'s':''} to My Cards!`);
+  if(skipped>0) showToast(`⚠️ ${skipped} already in My Cards`);
+}
+
+function fcClearListSel(){ fcListSelected.clear(); fcUpdListSelBar(); fcRenderList(); }
 function fcPlaySelectedList(){
   if(!fcListSelected.size){showToast('No words selected');return;}
-  const cards=flashcards.filter(c=>fcListSelected.has(c.id));
+  const {all}=fcGetAllCards();
+  const cards=all.filter(c=>[...fcListSelected].some(sid=>String(c.id)===String(sid)));
   if(!cards.length){showToast('❗ Selected cards not found');return;}
   fcSession=[...cards].sort(()=>Math.random()-0.5);
   fcIdx=0;fcFlipped=false;
@@ -1491,11 +1741,13 @@ function fcPlaySelectedList(){
 // ===== PLAY MODES =====
 
 function fcSetMode(mode, btn){
-  const dateRow = document.getElementById('fc-date-row');
-  const pickRow = document.getElementById('fc-pick-row');
-  if(fcPlayMode===mode && (mode==='date'||mode==='pick')){
-    dateRow.style.display='none';
-    pickRow.style.display='none';
+  const pickRow=document.getElementById('fc-pick-row');
+  const hiraRow=document.getElementById('fc-hira-row');
+  const kataRow=document.getElementById('fc-kata-row');
+  const allPopups=[pickRow,hiraRow,kataRow];
+  // Toggle off if same popup mode clicked again
+  if(fcPlayMode===mode && (mode==='pick'||mode==='hira'||mode==='kata')){
+    allPopups.forEach(p=>p&&(p.style.display='none'));
     fcPlayMode='all';
     document.querySelectorAll('[id^="pm-"]').forEach(b=>b.classList.remove('sel'));
     document.getElementById('pm-all').classList.add('sel');
@@ -1504,23 +1756,38 @@ function fcSetMode(mode, btn){
   fcPlayMode=mode;
   document.querySelectorAll('[id^="pm-"]').forEach(b=>b.classList.remove('sel'));
   btn.classList.add('sel');
-  dateRow.style.display=mode==='date'?'block':'none';
-  pickRow.style.display=mode==='pick'?'block':'none';
-  if(mode==='pick') fcRenderPickList();
+  // Show/hide popups
+  allPopups.forEach(p=>p&&(p.style.display='none'));
+  if(mode==='pick'){ pickRow.style.display='block'; fcRenderPickList(); }
+  if(mode==='hira'){ hiraRow.style.display='block'; fcRenderAlphaList('hira'); }
+  if(mode==='kata'){ kataRow.style.display='block'; fcRenderAlphaList('kata'); }
   fcUpdateModeCount();
 }
 
 function fcGetModeCards(){
   const today=fcToday();
-  if(fcPlayMode==='due')  return flashcards.filter(fcIsDue);
-  if(fcPlayMode==='all')  return [...flashcards];
+  const {n5,mine,all}=fcGetAllCards();
+  // Due today = only My Cards (user-owned) that are due
+  if(fcPlayMode==='due') return mine.filter(fcIsDue);
+  if(fcPlayMode==='all') return all;
+  if(fcPlayMode==='mine') return mine;
+  if(fcPlayMode==='hira'){
+    // N5 Hiragana words — all N5 cards that use only hiragana/basic kana
+    const hiraRe=/^[\u3040-\u309F\u30A0-\u30FFー]+$/;
+    return n5.filter(c=>hiraRe.test(c.front));
+  }
+  if(fcPlayMode==='kata'){
+    // N5 Katakana words
+    const kataRe=/^[\u30A0-\u30FFー]+$/;
+    return n5.filter(c=>kataRe.test(c.front));
+  }
   if(fcPlayMode==='date'){
     const from=document.getElementById('fc-date-from')?.value||'2020-01-01';
     const to=document.getElementById('fc-date-to')?.value||today;
-    return flashcards.filter(c=>c.created>=from&&c.created<=to);
+    return mine.filter(c=>c.created>=from&&c.created<=to);
   }
-  if(fcPlayMode==='pick') return flashcards.filter(c=>fcPickedIds.has(c.id));
-  return [];
+  if(fcPlayMode==='pick') return all.filter(c=>fcPickedIds.has(c.id));
+  return all;
 }
 
 function fcQuickDate(preset){
@@ -1770,7 +2037,6 @@ function applyTheme(){
 
 // Pick words apply
 function fcApplyPick(){
-  const dateRow=document.getElementById('fc-date-row');
   const pickRow=document.getElementById('fc-pick-row');
   if(pickRow) pickRow.style.display='none';
   fcPlayMode='pick';
@@ -1778,32 +2044,106 @@ function fcApplyPick(){
   showToast(`✋ ${fcPickedIds.size} word${fcPickedIds.size!==1?'s':''} selected`);
 }
 
+// Hiragana & Katakana alphabet data for picker
+const HIRA_CHARS = [
+  {f:'あ',r:'a',m:'a'},{f:'い',r:'i',m:'i'},{f:'う',r:'u',m:'u'},{f:'え',r:'e',m:'e'},{f:'お',r:'o',m:'o'},
+  {f:'か',r:'ka',m:'ka'},{f:'き',r:'ki',m:'ki'},{f:'く',r:'ku',m:'ku'},{f:'け',r:'ke',m:'ke'},{f:'こ',r:'ko',m:'ko'},
+  {f:'さ',r:'sa',m:'sa'},{f:'し',r:'shi',m:'shi'},{f:'す',r:'su',m:'su'},{f:'せ',r:'se',m:'se'},{f:'そ',r:'so',m:'so'},
+  {f:'た',r:'ta',m:'ta'},{f:'ち',r:'chi',m:'chi'},{f:'つ',r:'tsu',m:'tsu'},{f:'て',r:'te',m:'te'},{f:'と',r:'to',m:'to'},
+  {f:'な',r:'na',m:'na'},{f:'に',r:'ni',m:'ni'},{f:'ぬ',r:'nu',m:'nu'},{f:'ね',r:'ne',m:'ne'},{f:'の',r:'no',m:'no'},
+  {f:'は',r:'ha',m:'ha'},{f:'ひ',r:'hi',m:'hi'},{f:'ふ',r:'fu',m:'fu'},{f:'へ',r:'he',m:'he'},{f:'ほ',r:'ho',m:'ho'},
+  {f:'ま',r:'ma',m:'ma'},{f:'み',r:'mi',m:'mi'},{f:'む',r:'mu',m:'mu'},{f:'め',r:'me',m:'me'},{f:'も',r:'mo',m:'mo'},
+  {f:'や',r:'ya',m:'ya'},{f:'ゆ',r:'yu',m:'yu'},{f:'よ',r:'yo',m:'yo'},
+  {f:'ら',r:'ra',m:'ra'},{f:'り',r:'ri',m:'ri'},{f:'る',r:'ru',m:'ru'},{f:'れ',r:'re',m:'re'},{f:'ろ',r:'ro',m:'ro'},
+  {f:'わ',r:'wa',m:'wa'},{f:'を',r:'wo',m:'wo'},{f:'ん',r:'n',m:'n'}
+];
+const KATA_CHARS = [
+  {f:'ア',r:'a',m:'a'},{f:'イ',r:'i',m:'i'},{f:'ウ',r:'u',m:'u'},{f:'エ',r:'e',m:'e'},{f:'オ',r:'o',m:'o'},
+  {f:'カ',r:'ka',m:'ka'},{f:'キ',r:'ki',m:'ki'},{f:'ク',r:'ku',m:'ku'},{f:'ケ',r:'ke',m:'ke'},{f:'コ',r:'ko',m:'ko'},
+  {f:'サ',r:'sa',m:'sa'},{f:'シ',r:'shi',m:'shi'},{f:'ス',r:'su',m:'su'},{f:'セ',r:'se',m:'se'},{f:'ソ',r:'so',m:'so'},
+  {f:'タ',r:'ta',m:'ta'},{f:'チ',r:'chi',m:'chi'},{f:'ツ',r:'tsu',m:'tsu'},{f:'テ',r:'te',m:'te'},{f:'ト',r:'to',m:'to'},
+  {f:'ナ',r:'na',m:'na'},{f:'ニ',r:'ni',m:'ni'},{f:'ヌ',r:'nu',m:'nu'},{f:'ネ',r:'ne',m:'ne'},{f:'ノ',r:'no',m:'no'},
+  {f:'ハ',r:'ha',m:'ha'},{f:'ヒ',r:'hi',m:'hi'},{f:'フ',r:'fu',m:'fu'},{f:'ヘ',r:'he',m:'he'},{f:'ホ',r:'ho',m:'ho'},
+  {f:'マ',r:'ma',m:'ma'},{f:'ミ',r:'mi',m:'mi'},{f:'ム',r:'mu',m:'mu'},{f:'メ',r:'me',m:'me'},{f:'モ',r:'mo',m:'mo'},
+  {f:'ヤ',r:'ya',m:'ya'},{f:'ユ',r:'yu',m:'yu'},{f:'ヨ',r:'yo',m:'yo'},
+  {f:'ラ',r:'ra',m:'ra'},{f:'リ',r:'ri',m:'ri'},{f:'ル',r:'ru',m:'ru'},{f:'レ',r:'re',m:'re'},{f:'ロ',r:'ro',m:'ro'},
+  {f:'ワ',r:'wa',m:'wa'},{f:'ヲ',r:'wo',m:'wo'},{f:'ン',r:'n',m:'n'}
+];
+
+// Track selected alpha chars
+let fcAlphaSelected = {hira: new Set(), kata: new Set()};
+
+function fcRenderAlphaList(type){
+  const el=document.getElementById('fc-'+type+'-list');
+  if(!el)return;
+  const chars = type==='hira'?HIRA_CHARS:KATA_CHARS;
+  const sel = fcAlphaSelected[type];
+  const color = type==='hira'?'var(--sakura)':'var(--fuji)';
+  const colorLight = type==='hira'?'var(--sakura-light)':'var(--fuji-light)';
+  el.innerHTML=chars.map(c=>{
+    const picked=sel.has(c.f);
+    return `<div onclick="fcToggleAlpha('${type}','${c.f}',this)" style="display:flex;flex-direction:column;align-items:center;padding:6px 10px;border-radius:10px;border:1.5px solid ${picked?color:'var(--border)'};background:${picked?colorLight:'white'};cursor:pointer;min-width:44px;transition:all .12s;">
+      <span style="font-family:'Zen Maru Gothic',sans-serif;font-size:20px;font-weight:700;">${c.f}</span>
+      <span style="font-size:10px;color:var(--ink-soft);">${c.r}</span>
+    </div>`;
+  }).join('');
+}
+
+function fcToggleAlpha(type, char, el){
+  const sel=fcAlphaSelected[type];
+  sel.has(char)?sel.delete(char):sel.add(char);
+  const picked=sel.has(char);
+  const color=type==='hira'?'var(--sakura)':'var(--fuji)';
+  const colorLight=type==='hira'?'var(--sakura-light)':'var(--fuji-light)';
+  el.style.borderColor=picked?color:'var(--border)';
+  el.style.background=picked?colorLight:'white';
+}
+
+function fcPickAlpha(type, all){
+  const chars=type==='hira'?HIRA_CHARS:KATA_CHARS;
+  const sel=fcAlphaSelected[type];
+  sel.clear();
+  if(all) chars.forEach(c=>sel.add(c.f));
+  fcRenderAlphaList(type);
+}
+
+function fcApplyAlpha(type){
+  const row=document.getElementById('fc-'+type+'-row');
+  if(row) row.style.display='none';
+  const sel=fcAlphaSelected[type];
+  if(!sel.size){ showToast('Select at least one character'); return; }
+  // Build session from selected characters as flashcard objects
+  const chars=type==='hira'?HIRA_CHARS:KATA_CHARS;
+  const selected=chars.filter(c=>sel.has(c.f));
+  fcSession=selected.map((c,i)=>({
+    id:'alpha_'+type+'_'+c.f, front:c.f, back:c.r,
+    backVi:c.r, read:c.r, note:type==='hira'?'Hiragana':'Katakana',
+    step:0, interval:0, nextReview:null, reviewCount:0, lastRating:null,
+    isAlpha:true, isN5:false
+  })).sort(()=>Math.random()-0.5);
+  fcIdx=0; fcFlipped=false;
+  document.getElementById('fc-empty').style.display='none';
+  document.getElementById('fc-session').style.display='block';
+  document.getElementById('fc-done').style.display='none';
+  fcShowCard();
+  document.getElementById('fc-review-card').scrollIntoView({behavior:'smooth',block:'start'});
+  showToast(`▶ Practicing ${selected.length} ${type==='hira'?'Hiragana':'Katakana'} characters!`);
+}
+
 // Close filter popups on outside click
 document.addEventListener('click',function(e){
-  const dateRow=document.getElementById('fc-date-row');
   const pickRow=document.getElementById('fc-pick-row');
-  const datBtn=document.getElementById('pm-date');
+  const hiraRow=document.getElementById('fc-hira-row');
+  const kataRow=document.getElementById('fc-kata-row');
   const picBtn=document.getElementById('pm-pick');
+  const hiraBtn=document.getElementById('pm-hira');
+  const kataBtn=document.getElementById('pm-kata');
   const settDD=document.getElementById('settings-dd');
   const settBtn=document.querySelector('.settings-btn');
-  // Close date popup
-  if(dateRow&&dateRow.style.display!=='none'){
-    if(!dateRow.contains(e.target)&&e.target!==datBtn){
-      dateRow.style.display='none';
-    }
-  }
-  // Close pick popup
-  if(pickRow&&pickRow.style.display!=='none'){
-    if(!pickRow.contains(e.target)&&e.target!==picBtn){
-      pickRow.style.display='none';
-    }
-  }
-  // Close settings
-  if(settDD&&settDD.classList.contains('open')){
-    if(!settDD.contains(e.target)&&e.target!==settBtn&&!settBtn?.contains(e.target)){
-      settDD.classList.remove('open');
-    }
-  }
+  if(pickRow&&pickRow.style.display!=='none'&&!pickRow.contains(e.target)&&e.target!==picBtn) pickRow.style.display='none';
+  if(hiraRow&&hiraRow.style.display!=='none'&&!hiraRow.contains(e.target)&&e.target!==hiraBtn) hiraRow.style.display='none';
+  if(kataRow&&kataRow.style.display!=='none'&&!kataRow.contains(e.target)&&e.target!==kataBtn) kataRow.style.display='none';
+  if(settDD&&settDD.classList.contains('open')&&!settDD.contains(e.target)&&e.target!==settBtn&&!settBtn?.contains(e.target)) settDD.classList.remove('open');
 },{capture:true});
 
 // Init settings on load
