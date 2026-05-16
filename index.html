@@ -424,21 +424,7 @@ textarea{resize:vertical;min-height:70px;}
 <div class="section active" id="sec-flash">
   <div class="sec-header">🃏 Flashcards</div>
 
-  <!-- 1. Add new card -->
-  <div class="card">
-    <div class="card-title"><span>➕</span> Add new card</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
-      <div><label>Japanese (front)</label><input type="text" id="fc-in-front" placeholder="e.g. 食べる" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
-      <div><label>Meaning (back)</label><input type="text" id="fc-in-back" placeholder="e.g. to eat" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
-      <div><label>Reading — shown on back</label><input type="text" id="fc-in-read" placeholder="e.g. たべる" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:end;">
-      <button class="btn-primary" onclick="fcAddCard()" style="height:48px;font-size:16px;">+ Add Card</button>
-      <div><label>Note (optional)</label><input type="text" id="fc-in-note" placeholder="e.g. Group 2 verb, て-form: 食べて" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
-    </div>
-  </div>
-
-  <!-- 2. Review area with play mode inside -->
+  <!-- 1. Review area with play mode inside -->
   <div class="card" id="fc-review-card">
     <!-- Play mode row — wrapper for popup alignment -->
     <div style="position:relative;margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--border);">
@@ -452,6 +438,7 @@ textarea{resize:vertical;min-height:70px;}
         <button class="script-btn" id="pm-mine" onclick="fcSetMode('mine',this)">✍️ My Cards</button>
         <button class="script-btn" id="pm-hira" onclick="fcSetMode('hira',this)">🌸 Hiragana</button>
         <button class="script-btn" id="pm-kata" onclick="fcSetMode('kata',this)">💜 Katakana</button>
+        <button class="script-btn" id="pm-date" onclick="fcSetMode('date',this)">🗓 Date</button>
         <button class="script-btn"    id="pm-pick" onclick="fcSetMode('pick',this)">✋ Pick words</button>
         <button onclick="fcLaunchSession()" style="padding:9px 24px;border-radius:12px;border:none;background:linear-gradient(135deg,#FF85A1,var(--sakura-deep));color:white;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(232,130,154,0.5);letter-spacing:.3px;">▶ Start 🌸</button>
         <span id="fc-mode-count" style="font-size:13px;color:var(--ink-soft);font-weight:600;"></span>
@@ -484,6 +471,25 @@ textarea{resize:vertical;min-height:70px;}
           </div>
           <div id="fc-kata-list" style="display:flex;flex-wrap:wrap;gap:6px;max-height:220px;overflow-y:auto;margin-bottom:10px;"></div>
           <button onclick="fcApplyAlpha('kata')" style="width:100%;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--fuji-light),var(--fuji));color:white;font-size:13px;font-weight:700;cursor:pointer;">✓ Start practice</button>
+        </div>
+      </div>
+
+      <!-- Date popup -->
+      <div id="fc-date-row" style="display:none;position:absolute;top:100%;z-index:200;margin-top:6px;">
+        <div style="background:white;border:2px solid var(--sakura);border-radius:16px;padding:14px 16px;box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:320px;">
+          <div style="font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Filter by date added</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+            <button class="fc-preset-btn" onclick="fcQuickDate('today')">📅 Today</button>
+            <button class="fc-preset-btn" onclick="fcQuickDate('yesterday')">Yesterday</button>
+            <button class="fc-preset-btn" onclick="fcQuickDate('7days')">Last 7 days</button>
+            <button class="fc-preset-btn" onclick="fcQuickDate('30days')">Last 30 days</button>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;"><div style="font-size:10px;color:var(--ink-soft);margin-bottom:2px;">From</div><input type="date" id="fc-date-from" style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:12px;" onchange="fcDateRangeChange()"></div>
+            <span style="font-size:14px;color:var(--ink-soft);margin-top:14px;">→</span>
+            <div style="flex:1;"><div style="font-size:10px;color:var(--ink-soft);margin-bottom:2px;">To</div><input type="date" id="fc-date-to" style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:12px;" onchange="fcDateRangeChange()"></div>
+          </div>
+          <div id="fc-date-preview" style="font-size:12px;color:var(--sakura-deep);font-weight:600;margin-top:6px;"></div>
         </div>
       </div>
 
@@ -527,7 +533,7 @@ textarea{resize:vertical;min-height:70px;}
                 <div style="font-size:12px;color:var(--ink-soft);margin-bottom:14px;letter-spacing:2px;text-transform:uppercase;">Meaning</div>
                 <div id="fc-back-text" style="font-size:64px;font-weight:700;color:var(--ink);text-align:center;line-height:1.2;">Good morning</div>
                 <div id="fc-back-reading" style="font-family:'Zen Maru Gothic',sans-serif;font-size:36px;font-weight:500;color:var(--sakura-deep);margin-top:12px;text-align:center;">Ohayou</div>
-                <div id="fc-back-note" style="font-size:15px;color:var(--ink-soft);margin-top:10px;text-align:center;"></div>
+                <div id="fc-back-note" style="font-size:14px;color:var(--sakura-deep);margin-top:10px;text-align:center;background:var(--sakura-light);padding:6px 16px;border-radius:10px;display:none;max-width:90%;"></div>
                 <div style="font-size:12px;color:var(--fuji);margin-top:20px;font-weight:500;opacity:.7;">Choose Easy or Hard to continue</div>
                 <button onclick="fcSpeak(event)" style="margin-top:10px;padding:7px 18px;border-radius:12px;border:2px solid var(--fuji);background:white;color:var(--fuji);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='var(--fuji-light)'" onmouseout="this.style.background='white'">🔊 Listen</button>
               </div>
@@ -551,6 +557,20 @@ textarea{resize:vertical;min-height:70px;}
       <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:20px;color:var(--ink);margin-bottom:8px;">Session complete!</div>
       <div style="font-size:14px;color:var(--ink-soft);">Come back tomorrow for your next review. Keep it up, Angel!</div>
       <button onclick="fcLaunchSession()" style="margin-top:18px;padding:12px 28px;border-radius:12px;border:none;background:var(--sakura);color:white;font-size:14px;font-weight:700;cursor:pointer;">▶ Play again</button>
+    </div>
+  </div>
+
+  <!-- 2. Add new card -->
+  <div class="card">
+    <div class="card-title"><span>➕</span> Add new card</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div><label>Japanese (front)</label><input type="text" id="fc-in-front" placeholder="e.g. 食べる" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
+      <div><label>Meaning (back)</label><input type="text" id="fc-in-back" placeholder="e.g. to eat" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
+      <div><label>Reading — shown on back</label><input type="text" id="fc-in-read" placeholder="e.g. たべる" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:end;">
+      <button class="btn-primary" onclick="fcAddCard()" style="height:48px;font-size:16px;">+ Add Card</button>
+      <div><label>Note (optional)</label><input type="text" id="fc-in-note" placeholder="e.g. Group 2 verb, て-form: 食べて" onkeydown="if(event.key==='Enter')fcAddCard()"></div>
     </div>
   </div>
 
@@ -1831,7 +1851,11 @@ function fcShowCard(){
   const meaning = (currentLang==='vi' && card.backVi) ? card.backVi : card.back;
   document.getElementById('fc-back-text').textContent = meaning;
   document.getElementById('fc-back-reading').textContent = card.read||'';
-  document.getElementById('fc-back-note').textContent = card.note||'';
+  const noteEl = document.getElementById('fc-back-note');
+  if(noteEl){
+    if(card.note){ noteEl.textContent='📝 '+card.note; noteEl.style.display='block'; }
+    else noteEl.style.display='none';
+  }
   document.getElementById('fc-ratings').style.display = 'none';
 
   // Step 3: Restore transition after browser has painted front face
@@ -1865,9 +1889,7 @@ function fcFlip(){
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(fcCurrentWord);
       utter.lang = 'ja-JP'; utter.rate = 0.8; utter.volume = 1.0;
-      const voices = window.speechSynthesis.getVoices();
-      const jpVoice = voices.find(v=>v.lang==='ja-JP'||v.lang==='ja');
-      if(jpVoice) utter.voice = jpVoice;
+      const jpVoice=getBestJpVoice(); if(jpVoice) utter.voice=jpVoice;
       window.speechSynthesis.speak(utter);
     }, 400);
   }
@@ -2051,7 +2073,7 @@ function fcSortArrow(col){return fcSortCol===col?(fcSortDir===1?' ↑':' ↓'):'
 function fcGetAllCards(){
   
   const n5State = JSON.parse(localStorage.getItem('njn5')||'{}');
-  const n5 = N5_DECK.map(c=>({...c, isN5:true, ...( n5State[c.id]||{interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null} )}));
+  const n5 = N5_DECK.map(c=>({...c, isN5:true, ...( n5State[c.id]||{interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null} ), note: n5State[c.id]?.note||c.note||'' }));
   const mine = flashcards.map(c=>({...c, isN5:false}));
   return {n5, mine, all:[...n5,...mine]};
 }
@@ -2114,13 +2136,20 @@ function fcRenderList(){
     const pc=c.reviewCount||0,le=pc>0&&c.lastRating?re[c.lastRating]||c.lastRating:'';
     const n5Badge=c.isN5?`<span style="font-size:9px;padding:1px 6px;border-radius:6px;background:var(--fuji-light);color:var(--fuji);font-weight:700;margin-left:4px;">N5</span>`:'';
     const delBtn=c.isN5?`<span style="font-size:11px;color:var(--border);padding:0 8px;" title="Built-in word">🔒</span>`:`<button onclick="fcDeleteCard('${c.id}')" class="log-del" style="font-size:15px;">✕</button>`;
-    return `<div onclick="fcToggleListSel('${c.id}',event)" style="display:grid;grid-template-columns:${cols};gap:14px;align-items:center;padding:10px 12px;background:${sel?'var(--sakura-light)':'var(--paper-warm)'};border-radius:10px;border:1.5px solid ${sel?'var(--sakura)':'var(--border)'};margin-bottom:6px;cursor:pointer;transition:background .12s,border-color .12s;">
-      <div style="width:20px;height:20px;border-radius:5px;border:2px solid ${sel?'var(--sakura)':'var(--border)'};background:${sel?'var(--sakura)':'white'};display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;">${sel?'✓':''}</div>
+    const noteHtml=`<div onclick="event.stopPropagation()" style="margin-top:4px;">
+      <div style="display:flex;align-items:center;gap:4px;">
+        <input type="text" value="${(c.note||'').replace(/"/g,'&quot;')}" placeholder="+ add note..." onclick="event.stopPropagation()"
+          onchange="fcSaveNote('${c.id}',this.value,${c.isN5?'true':'false'})"
+          style="font-size:11px;color:var(--ink-soft);border:none;border-bottom:1px dashed var(--border);background:transparent;outline:none;width:100%;padding:1px 0;">
+      </div>
+    </div>`;
+    return `<div onclick="fcToggleListSel('${c.id}',event)" style="display:grid;grid-template-columns:${cols};gap:14px;align-items:start;padding:10px 12px;background:${sel?'var(--sakura-light)':'var(--paper-warm)'};border-radius:10px;border:1.5px solid ${sel?'var(--sakura)':'var(--border)'};margin-bottom:6px;cursor:pointer;transition:background .12s,border-color .12s;">
+      <div style="width:20px;height:20px;border-radius:5px;border:2px solid ${sel?'var(--sakura)':'var(--border)'};background:${sel?'var(--sakura)':'white'};display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;margin-top:2px;">${sel?'✓':''}</div>
       <div><div style="font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700;">${c.front}${n5Badge}</div>${c.read?`<div style="font-size:11px;color:var(--sakura-deep);">${c.read}</div>`:''}</div>
-      <div style="font-size:13px;color:var(--ink);">${meaning}${c.note?`<div style="font-size:11px;color:var(--ink-soft);margin-top:1px;">${c.note}</div>`:''}</div>
-      <div>${dueLabel}</div>
-      <div style="text-align:center;font-size:15px;font-weight:700;color:var(--matcha);white-space:nowrap;">${pc>0?pc:'—'}</div>
-      <div>${delBtn}</div>
+      <div style="font-size:13px;color:var(--ink);">${meaning}${noteHtml}</div>
+      <div style="margin-top:2px;">${dueLabel}</div>
+      <div style="text-align:center;font-size:15px;font-weight:700;color:var(--matcha);white-space:nowrap;margin-top:2px;">${pc>0?pc:'—'}</div>
+      <div style="margin-top:2px;">${delBtn}</div>
     </div>`;
   }).join('');
 
@@ -2133,6 +2162,33 @@ function fcRenderList(){
 
   el.innerHTML=header+rows+pager;
 }
+
+function fcSaveNote(id, note, isN5){
+  const sid=String(id);
+  if(isN5){
+    const st=JSON.parse(localStorage.getItem('njn5')||'{}');
+    if(!st[sid]) st[sid]={interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null};
+    st[sid].note=note;
+    localStorage.setItem('njn5',JSON.stringify(st));
+  } else {
+    const card=flashcards.find(c=>String(c.id)===sid);
+    if(card){ card.note=note; saveFC(); }
+  }
+  // Update session copy if active
+  const si=fcSession.findIndex(c=>String(c.id)===sid);
+  if(si>=0) fcSession[si].note=note;
+}
+
+// Best female Japanese voice — waits for voices to load
+function getBestJpVoice(){
+  const voices=window.speechSynthesis.getVoices();
+  return voices.find(v=>v.lang==='ja-JP'&&/kyoko|haruka|mizuki|female|woman/i.test(v.name))
+    ||voices.find(v=>v.lang==='ja-JP')
+    ||voices.find(v=>v.lang.startsWith('ja'))
+    ||null;
+}
+// Pre-load voices (Chrome needs this trigger)
+if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged=()=>getBestJpVoice();
 
 function fcToggleListSel(id,e){
   if(e.target.classList.contains('log-del')||e.target.closest?.('.log-del')) return;
@@ -2208,9 +2264,9 @@ function fcSetMode(mode, btn){
   const pickRow=document.getElementById('fc-pick-row');
   const hiraRow=document.getElementById('fc-hira-row');
   const kataRow=document.getElementById('fc-kata-row');
-  const allPopups=[pickRow,hiraRow,kataRow];
-  // Toggle off if same popup mode clicked again
-  if(fcPlayMode===mode && (mode==='pick'||mode==='hira'||mode==='kata')){
+  const dateRow=document.getElementById('fc-date-row');
+  const allPopups=[pickRow,hiraRow,kataRow,dateRow];
+  if(fcPlayMode===mode && (mode==='pick'||mode==='hira'||mode==='kata'||mode==='date')){
     allPopups.forEach(p=>p&&(p.style.display='none'));
     fcPlayMode='all';
     document.querySelectorAll('[id^="pm-"]').forEach(b=>b.classList.remove('sel'));
@@ -2220,11 +2276,11 @@ function fcSetMode(mode, btn){
   fcPlayMode=mode;
   document.querySelectorAll('[id^="pm-"]').forEach(b=>b.classList.remove('sel'));
   btn.classList.add('sel');
-  // Show/hide popups
   allPopups.forEach(p=>p&&(p.style.display='none'));
   if(mode==='pick'){ pickRow.style.display='block'; fcRenderPickList(); }
   if(mode==='hira'){ hiraRow.style.display='block'; fcRenderAlphaList('hira'); }
   if(mode==='kata'){ kataRow.style.display='block'; fcRenderAlphaList('kata'); }
+  if(mode==='date'){ dateRow.style.display='block'; }
   fcUpdateModeCount();
 }
 
@@ -2248,9 +2304,9 @@ function fcGetModeCards(){
   if(fcPlayMode==='date'){
     const from=document.getElementById('fc-date-from')?.value||'2020-01-01';
     const to=document.getElementById('fc-date-to')?.value||today;
-    return mine.filter(c=>c.created>=from&&c.created<=to);
+    return mine.filter(c=>c.created&&c.created>=from&&c.created<=to);
   }
-  if(fcPlayMode==='pick') return all.filter(c=>fcPickedIds.has(c.id));
+  if(fcPlayMode==='pick') return all.filter(c=>[...fcPickedIds].some(sid=>String(c.id)===String(sid)));
   return all;
 }
 
@@ -2352,9 +2408,7 @@ function fcSpeak(e){
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(fcCurrentWord);
   utter.lang = 'ja-JP'; utter.rate = 0.8; utter.volume = 1.0;
-  const voices = window.speechSynthesis.getVoices();
-  const jpVoice = voices.find(v=>v.lang==='ja-JP'||v.lang==='ja');
-  if(jpVoice) utter.voice = jpVoice;
+  const jpVoice=getBestJpVoice(); if(jpVoice) utter.voice=jpVoice;
   window.speechSynthesis.speak(utter);
 }
 
@@ -2604,7 +2658,9 @@ document.addEventListener('click',function(e){
   const kataBtn=document.getElementById('pm-kata');
   const settDD=document.getElementById('settings-dd');
   const settBtn=document.querySelector('.settings-btn');
-  if(pickRow&&pickRow.style.display!=='none'&&!pickRow.contains(e.target)&&e.target!==picBtn) pickRow.style.display='none';
+  const dateRow=document.getElementById('fc-date-row');
+  const datBtn=document.getElementById('pm-date');
+  if(dateRow&&dateRow.style.display!=='none'&&!dateRow.contains(e.target)&&e.target!==datBtn) dateRow.style.display='none';
   if(hiraRow&&hiraRow.style.display!=='none'&&!hiraRow.contains(e.target)&&e.target!==hiraBtn) hiraRow.style.display='none';
   if(kataRow&&kataRow.style.display!=='none'&&!kataRow.contains(e.target)&&e.target!==kataBtn) kataRow.style.display='none';
   if(settDD&&settDD.classList.contains('open')&&!settDD.contains(e.target)&&e.target!==settBtn&&!settBtn?.contains(e.target)) settDD.classList.remove('open');
