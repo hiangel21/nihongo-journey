@@ -260,7 +260,7 @@ textarea{resize:vertical;min-height:70px;}
   <div class="sc-item matcha"><span class="sc-icon">📅</span><div><div class="sc-val" id="st">0</div><div class="sc-lbl">Total Days</div></div></div>
   <div class="sc-item yuzu"><span class="sc-icon">⏱</span><div><div class="sc-val" id="sc-hours">0</div><div class="sc-lbl">Total Hours</div></div></div>
   <div class="sc-item fuji"><span class="sc-icon">📊</span><div><div class="sc-val" id="sm">0</div><div class="sc-lbl">Avg min/day</div></div></div>
-  <div class="sc-item sakura"><span class="sc-icon">🃏</span><div><div class="sc-val" id="sc-cards">0</div><div class="sc-lbl">Flashcards</div></div></div>
+  <div class="sc-item sakura"><span class="sc-icon">📝</span><div><div class="sc-val" id="sc-cards">0</div><div class="sc-lbl">Words learned</div></div></div>
 </div>
 <!-- Hide/show scorecard -->
 <button id="scorecard-x" onclick="document.getElementById('scorecard-wrap').style.display='none';document.getElementById('scorecard-x').style.display='none';document.getElementById('scorecard-show').style.display='flex';" style="position:fixed;bottom:calc(24px + 4 * 58px + 4px);right:16px;z-index:51;width:20px;height:20px;border-radius:50%;border:1px solid var(--border);background:white;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);box-shadow:0 1px 4px var(--shadow);opacity:.7;" title="Hide">✕</button>
@@ -381,6 +381,7 @@ textarea{resize:vertical;min-height:70px;}
     <div class="stat-card matcha"><div class="stat-num" id="rt">0</div><div class="stat-label">📅 Total Days</div></div>
     <div class="stat-card yuzu"><div class="stat-num" id="rh">0</div><div class="stat-label">⏱ Total Hours</div></div>
     <div class="stat-card fuji"><div class="stat-num" id="ravg">0</div><div class="stat-label">📊 Avg min/day</div></div>
+    <div class="stat-card sakura"><div class="stat-num" id="r-words">0</div><div class="stat-label">📝 Words learned</div></div>
   </div>
   <div class="card"><div class="card-title"><span>📈</span> Minutes studied (last 7 days)</div><div class="chart-wrap"><canvas id="cmin" role="img" aria-label="Minutes studied last 7 days"></canvas></div></div>
   <div class="card"><div class="card-title"><span>🎯</span> Goal Progress</div><div id="gpl"></div></div>
@@ -536,11 +537,11 @@ textarea{resize:vertical;min-height:70px;}
         </div>
         <!-- Right: 2 ratings + replay + skip -->
         <div id="fc-ratings" style="display:none;flex-direction:column;gap:8px;">
-          <button onclick="fcRate('easy')" style="width:100%;padding:12px 6px;border-radius:12px;border:2px solid var(--matcha);background:white;color:#2E7D32;font-size:13px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">🙂<br>Easy<br><span id="fc-easy-label" style="font-size:10px;font-weight:400;color:#2E7D32;"></span></button>
-          <button onclick="fcRate('hard')" style="width:100%;padding:12px 6px;border-radius:12px;border:2px solid #F09595;background:white;color:#A32D2D;font-size:13px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">😓<br>Hard<br><span style="font-size:10px;font-weight:400;color:#A32D2D;">daily until Easy</span></button>
+          <button onclick="fcRate('easy')" style="width:100%;padding:12px 6px;border-radius:12px;border:2px solid var(--matcha);background:white;color:#2E7D32;font-size:15px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">🙂<br>Easy<br><span id="fc-easy-label" style="font-size:11px;font-weight:400;color:#2E7D32;"></span></button>
+          <button onclick="fcRate('hard')" style="width:100%;padding:12px 6px;border-radius:12px;border:2px solid #F09595;background:white;color:#A32D2D;font-size:15px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">😓<br>Hard<br><span style="font-size:11px;font-weight:400;color:#A32D2D;">daily until Easy</span></button>
           <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
-          <button onclick="fcReplay()" style="width:100%;padding:8px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper-warm);color:var(--ink-soft);font-size:12px;font-weight:600;cursor:pointer;text-align:center;" title="Add to end of this session">🔁 See again later</button>
-          <button onclick="fcSkip()" style="width:100%;padding:8px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper-warm);color:var(--ink-soft);font-size:12px;font-weight:600;cursor:pointer;text-align:center;">⏭ Skip</button>
+          <button onclick="fcReplay()" style="width:100%;padding:8px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper-warm);color:var(--ink-soft);font-size:13px;font-weight:600;cursor:pointer;text-align:center;" title="Add to end of this session">🔁 See again later</button>
+          <button onclick="fcSkip()" style="width:100%;padding:8px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper-warm);color:var(--ink-soft);font-size:13px;font-weight:600;cursor:pointer;text-align:center;">⏭ Skip</button>
         </div>
       </div>
     </div>
@@ -1031,6 +1032,208 @@ const N5_DECK = [
   {id:'n5_348',front:'ごちそうさま',read:'gochisousama',back:'thanks for the meal',backVi:'cảm ơn bữa ăn (sau bữa ăn)',note:'Expression'},
   {id:'n5_349',front:'きをつけて',read:'ki wo tsukete',back:'take care',backVi:'bảo trọng nhé',note:'Expression'},
   {id:'n5_350',front:'おねがいします',read:'onegaishimasu',back:'please (request)',backVi:'xin hãy / nhờ bạn',note:'Expression'},
+
+  // === BATCH 6: Hiragana — remaining N5 words ===
+  // Numbers & counting
+  {id:'n5_351',front:'ろく',read:'roku',back:'six',backVi:'sáu',note:'Number'},
+  {id:'n5_352',front:'しち',read:'shichi',back:'seven',backVi:'bảy',note:'Number'},
+  {id:'n5_353',front:'はち',read:'hachi',back:'eight',backVi:'tám',note:'Number'},
+  {id:'n5_354',front:'きゅう',read:'kyuu',back:'nine',backVi:'chín',note:'Number'},
+  {id:'n5_355',front:'じゅう',read:'juu',back:'ten',backVi:'mười',note:'Number'},
+  {id:'n5_356',front:'ひゃく',read:'hyaku',back:'hundred',backVi:'một trăm',note:'Number'},
+  {id:'n5_357',front:'せん',read:'sen',back:'thousand',backVi:'một nghìn',note:'Number'},
+  {id:'n5_358',front:'まん',read:'man',back:'ten thousand',backVi:'mười nghìn',note:'Number'},
+  {id:'n5_359',front:'いくつ',read:'ikutsu',back:'how many',backVi:'bao nhiêu cái',note:'Number'},
+  {id:'n5_360',front:'よっつ',read:'yottsu',back:'four (things)',backVi:'bốn (cái)',note:'Counter'},
+  {id:'n5_361',front:'いつつ',read:'itsutsu',back:'five (things)',backVi:'năm (cái)',note:'Counter'},
+  {id:'n5_362',front:'むっつ',read:'muttsu',back:'six (things)',backVi:'sáu (cái)',note:'Counter'},
+  {id:'n5_363',front:'ななつ',read:'nanatsu',back:'seven (things)',backVi:'bảy (cái)',note:'Counter'},
+  {id:'n5_364',front:'やっつ',read:'yattsu',back:'eight (things)',backVi:'tám (cái)',note:'Counter'},
+  {id:'n5_365',front:'ここのつ',read:'kokonotsu',back:'nine (things)',backVi:'chín (cái)',note:'Counter'},
+  {id:'n5_366',front:'とお',read:'too',back:'ten (things)',backVi:'mười (cái)',note:'Counter'},
+  // Time expressions
+  {id:'n5_367',front:'おととい',read:'ototoi',back:'day before yesterday',backVi:'hôm kia',note:'Time'},
+  {id:'n5_368',front:'あさって',read:'asatte',back:'day after tomorrow',backVi:'ngày kia',note:'Time'},
+  {id:'n5_369',front:'こんしゅう',read:'konshuu',back:'this week',backVi:'tuần này',note:'Time'},
+  {id:'n5_370',front:'らいしゅう',read:'raishuu',back:'next week',backVi:'tuần sau',note:'Time'},
+  {id:'n5_371',front:'せんしゅう',read:'senshuu',back:'last week',backVi:'tuần trước',note:'Time'},
+  {id:'n5_372',front:'こんげつ',read:'kongetsu',back:'this month',backVi:'tháng này',note:'Time'},
+  {id:'n5_373',front:'らいげつ',read:'raigetsu',back:'next month',backVi:'tháng sau',note:'Time'},
+  {id:'n5_374',front:'せんげつ',read:'sengetsu',back:'last month',backVi:'tháng trước',note:'Time'},
+  {id:'n5_375',front:'ことし',read:'kotoshi',back:'this year',backVi:'năm nay',note:'Time'},
+  {id:'n5_376',front:'らいねん',read:'rainen',back:'next year',backVi:'năm sau',note:'Time'},
+  {id:'n5_377',front:'きょねん',read:'kyonen',back:'last year',backVi:'năm ngoái',note:'Time'},
+  {id:'n5_378',front:'ひる',read:'hiru',back:'noon / daytime',backVi:'buổi trưa',note:'Time'},
+  {id:'n5_379',front:'ひるごはん',read:'hirugohan',back:'lunch',backVi:'bữa trưa',note:'Food'},
+  {id:'n5_380',front:'よる',read:'yoru',back:'night / evening',backVi:'buổi tối',note:'Time'},
+  {id:'n5_381',front:'ばん',read:'ban',back:'evening',backVi:'tối',note:'Time'},
+  {id:'n5_382',front:'ばんごはん',read:'bangohan',back:'dinner',backVi:'bữa tối',note:'Food'},
+  {id:'n5_383',front:'まいあさ',read:'maiasa',back:'every morning',backVi:'mỗi buổi sáng',note:'Time'},
+  {id:'n5_384',front:'まいばん',read:'maiban',back:'every evening',backVi:'mỗi buổi tối',note:'Time'},
+  {id:'n5_385',front:'まいつき',read:'maitsuki',back:'every month',backVi:'mỗi tháng',note:'Time'},
+  {id:'n5_386',front:'まいとし',read:'maitoshi',back:'every year',backVi:'mỗi năm',note:'Time'},
+  {id:'n5_387',front:'はる',read:'haru',back:'spring',backVi:'mùa xuân',note:'Time'},
+  {id:'n5_388',front:'なつ',read:'natsu',back:'summer',backVi:'mùa hè',note:'Time'},
+  {id:'n5_389',front:'あき',read:'aki',back:'autumn',backVi:'mùa thu',note:'Time'},
+  {id:'n5_390',front:'ふゆ',read:'fuyu',back:'winter',backVi:'mùa đông',note:'Time'},
+  // Body & health
+  {id:'n5_391',front:'のど',read:'nodo',back:'throat',backVi:'cổ họng',note:'Body'},
+  {id:'n5_392',front:'むね',read:'mune',back:'chest',backVi:'ngực',note:'Body'},
+  {id:'n5_393',front:'せなか',read:'senaka',back:'back (of body)',backVi:'lưng',note:'Body'},
+  {id:'n5_394',front:'おなか',read:'onaka',back:'stomach / belly',backVi:'bụng',note:'Body'},
+  {id:'n5_395',front:'ゆび',read:'yubi',back:'finger / toe',backVi:'ngón tay / ngón chân',note:'Body'},
+  {id:'n5_396',front:'かみのけ',read:'kaminoke',back:'hair (on head)',backVi:'tóc',note:'Body'},
+  {id:'n5_397',front:'は',read:'ha',back:'tooth / teeth',backVi:'răng',note:'Body'},
+  {id:'n5_398',front:'いたい',read:'itai',back:'painful / ouch',backVi:'đau',note:'Adjective'},
+  {id:'n5_399',front:'ねつ',read:'netsu',back:'fever',backVi:'sốt',note:'Noun'},
+  {id:'n5_400',front:'いしゃ',read:'isha',back:'doctor',backVi:'bác sĩ',note:'Noun'},
+  // Home & daily life
+  {id:'n5_401',front:'いす',read:'isu',back:'chair',backVi:'ghế',note:'Noun'},
+  {id:'n5_402',front:'いりぐち',read:'iriguchi',back:'entrance',backVi:'lối vào',note:'Noun'},
+  {id:'n5_403',front:'でぐち',read:'deguchi',back:'exit',backVi:'lối ra',note:'Noun'},
+  {id:'n5_404',front:'かいだん',read:'kaidan',back:'stairs',backVi:'cầu thang',note:'Noun'},
+  {id:'n5_405',front:'かべ',read:'kabe',back:'wall',backVi:'tường',note:'Noun'},
+  {id:'n5_406',front:'ゆか',read:'yuka',back:'floor',backVi:'sàn nhà',note:'Noun'},
+  {id:'n5_407',front:'まど',read:'mado',back:'window',backVi:'cửa sổ',note:'Noun'},
+  {id:'n5_408',front:'ドア',read:'doa',back:'door',backVi:'cửa',note:'Noun'},
+  {id:'n5_409',front:'ふろ',read:'furo',back:'bath',backVi:'bồn tắm',note:'Noun'},
+  {id:'n5_410',front:'トイレ',read:'toire',back:'toilet',backVi:'nhà vệ sinh',note:'Noun'},
+  {id:'n5_411',front:'にわ',read:'niwa',back:'garden',backVi:'vườn',note:'Noun'},
+  {id:'n5_412',front:'たてもの',read:'tatemono',back:'building',backVi:'tòa nhà',note:'Noun'},
+  {id:'n5_413',front:'でんき',read:'denki',back:'electricity / light',backVi:'điện / đèn',note:'Noun'},
+  {id:'n5_414',front:'みず',read:'mizu',back:'water',backVi:'nước',note:'Food'},
+  {id:'n5_415',front:'ゴミ',read:'gomi',back:'trash / garbage',backVi:'rác',note:'Noun'},
+  // School & work
+  {id:'n5_416',front:'きょうしつ',read:'kyoushitsu',back:'classroom',backVi:'lớp học',note:'Noun'},
+  {id:'n5_417',front:'こくばん',read:'kokuban',back:'blackboard',backVi:'bảng đen',note:'Noun'},
+  {id:'n5_418',front:'えんぴつ',read:'enpitsu',back:'pencil',backVi:'bút chì',note:'Noun'},
+  {id:'n5_419',front:'かみ',read:'kami',back:'paper',backVi:'giấy',note:'Noun'},
+  {id:'n5_420',front:'じしょ',read:'jisho',back:'dictionary',backVi:'từ điển',note:'Noun'},
+  {id:'n5_421',front:'しゅくだい',read:'shukudai',back:'homework',backVi:'bài tập về nhà',note:'Noun'},
+  {id:'n5_422',front:'しけん',read:'shiken',back:'exam / test',backVi:'kỳ thi',note:'Noun'},
+  {id:'n5_423',front:'べんきょう',read:'benkyou',back:'study',backVi:'học bài',note:'Noun'},
+  {id:'n5_424',front:'なつやすみ',read:'natsuyasumi',back:'summer vacation',backVi:'nghỉ hè',note:'Noun'},
+  {id:'n5_425',front:'かいしゃ',read:'kaisha',back:'company',backVi:'công ty',note:'Noun'},
+  // Transport & city
+  {id:'n5_426',front:'みち',read:'michi',back:'road / path',backVi:'đường / con đường',note:'Noun'},
+  {id:'n5_427',front:'しんごう',read:'shingou',back:'traffic light',backVi:'đèn giao thông',note:'Noun'},
+  {id:'n5_428',front:'かど',read:'kado',back:'corner',backVi:'góc đường',note:'Noun'},
+  {id:'n5_429',front:'きっぷ',read:'kippu',back:'ticket',backVi:'vé',note:'Noun'},
+  {id:'n5_430',front:'のりば',read:'noriba',back:'boarding platform',backVi:'bến xe / bến tàu',note:'Noun'},
+  {id:'n5_431',front:'ひこうき',read:'hikouki',back:'airplane',backVi:'máy bay',note:'Noun'},
+  {id:'n5_432',front:'ふね',read:'fune',back:'ship / boat',backVi:'tàu thuyền',note:'Noun'},
+  {id:'n5_433',front:'くるま',read:'kuruma',back:'car',backVi:'xe hơi',note:'Noun'},
+  {id:'n5_434',front:'タクシー',read:'takushii',back:'taxi',backVi:'taxi',note:'Noun'},
+  // Nature & weather
+  {id:'n5_435',front:'てんき',read:'tenki',back:'weather',backVi:'thời tiết',note:'Nature'},
+  {id:'n5_436',front:'くもり',read:'kumori',back:'cloudy',backVi:'nhiều mây',note:'Nature'},
+  {id:'n5_437',front:'はれ',read:'hare',back:'sunny / clear',backVi:'trời nắng',note:'Nature'},
+  {id:'n5_438',front:'かわ',read:'kawa',back:'river',backVi:'sông',note:'Nature'},
+  {id:'n5_439',front:'いけ',read:'ike',back:'pond',backVi:'ao hồ',note:'Nature'},
+  {id:'n5_440',front:'もり',read:'mori',back:'forest',backVi:'rừng',note:'Nature'},
+  {id:'n5_441',front:'はたけ',read:'hatake',back:'field / farm',backVi:'ruộng / đồng',note:'Nature'},
+  {id:'n5_442',front:'そら',read:'sora',back:'sky',backVi:'bầu trời',note:'Nature'},
+  {id:'n5_443',front:'つき',read:'tsuki',back:'moon / month',backVi:'mặt trăng / tháng',note:'Nature'},
+  {id:'n5_444',front:'ほし',read:'hoshi',back:'star',backVi:'ngôi sao',note:'Nature'},
+  {id:'n5_445',front:'たいよう',read:'taiyou',back:'sun',backVi:'mặt trời',note:'Nature'},
+  // Misc nouns
+  {id:'n5_446',front:'いろ',read:'iro',back:'color',backVi:'màu sắc',note:'Noun'},
+  {id:'n5_447',front:'かたち',read:'katachi',back:'shape',backVi:'hình dạng',note:'Noun'},
+  {id:'n5_448',front:'おもさ',read:'omosa',back:'weight',backVi:'trọng lượng',note:'Noun'},
+  {id:'n5_449',front:'たかさ',read:'takasa',back:'height',backVi:'chiều cao',note:'Noun'},
+  {id:'n5_450',front:'ねだん',read:'nedan',back:'price',backVi:'giá tiền',note:'Noun'},
+
+  // === BATCH 7: Katakana N5 words ===
+  // Food & drink
+  {id:'n5_451',front:'アイスクリーム',read:'aisukuriimu',back:'ice cream',backVi:'kem',note:'Food-kata'},
+  {id:'n5_452',front:'ジュース',read:'juusu',back:'juice',backVi:'nước trái cây',note:'Food-kata'},
+  {id:'n5_453',front:'ビール',read:'biiru',back:'beer',backVi:'bia',note:'Food-kata'},
+  {id:'n5_454',front:'ワイン',read:'wain',back:'wine',backVi:'rượu vang',note:'Food-kata'},
+  {id:'n5_455',front:'ミルク',read:'miruku',back:'milk',backVi:'sữa',note:'Food-kata'},
+  {id:'n5_456',front:'パン',read:'pan',back:'bread',backVi:'bánh mì',note:'Food-kata'},
+  {id:'n5_457',front:'ケーキ',read:'keeki',back:'cake',backVi:'bánh ngọt',note:'Food-kata'},
+  {id:'n5_458',front:'チョコレート',read:'chokoreeto',back:'chocolate',backVi:'sô cô la',note:'Food-kata'},
+  {id:'n5_459',front:'サンドイッチ',read:'sandoicchi',back:'sandwich',backVi:'bánh mì kẹp',note:'Food-kata'},
+  {id:'n5_460',front:'ハンバーガー',read:'hanbaagaa',back:'hamburger',backVi:'hamburger',note:'Food-kata'},
+  {id:'n5_461',front:'ピザ',read:'piza',back:'pizza',backVi:'pizza',note:'Food-kata'},
+  {id:'n5_462',front:'カレー',read:'karee',back:'curry',backVi:'cà ri',note:'Food-kata'},
+  {id:'n5_463',front:'スープ',read:'suupu',back:'soup',backVi:'súp',note:'Food-kata'},
+  {id:'n5_464',front:'サラダ',read:'sarada',back:'salad',backVi:'salad',note:'Food-kata'},
+  {id:'n5_465',front:'フルーツ',read:'furuutsu',back:'fruit',backVi:'trái cây',note:'Food-kata'},
+  // People & countries
+  {id:'n5_466',front:'アメリカ',read:'Amerika',back:'America',backVi:'nước Mỹ',note:'Country'},
+  {id:'n5_467',front:'イギリス',read:'Igirisu',back:'England / UK',backVi:'nước Anh',note:'Country'},
+  {id:'n5_468',front:'フランス',read:'Furansu',back:'France',backVi:'nước Pháp',note:'Country'},
+  {id:'n5_469',front:'ドイツ',read:'Doitsu',back:'Germany',backVi:'nước Đức',note:'Country'},
+  {id:'n5_470',front:'イタリア',read:'Italia',back:'Italy',backVi:'nước Ý',note:'Country'},
+  {id:'n5_471',front:'ちゅうごく',read:'Chuugoku',back:'China',backVi:'Trung Quốc',note:'Country'},
+  {id:'n5_472',front:'かんこく',read:'Kankoku',back:'Korea',backVi:'Hàn Quốc',note:'Country'},
+  {id:'n5_473',front:'アジア',read:'Ajia',back:'Asia',backVi:'châu Á',note:'Country'},
+  // Electronics & modern life
+  {id:'n5_474',front:'テレビ',read:'terebi',back:'television',backVi:'tivi',note:'Electronics'},
+  {id:'n5_475',front:'ラジオ',read:'rajio',back:'radio',backVi:'radio',note:'Electronics'},
+  {id:'n5_476',front:'カメラ',read:'kamera',back:'camera',backVi:'máy ảnh',note:'Electronics'},
+  {id:'n5_477',front:'パソコン',read:'pasokon',back:'computer',backVi:'máy tính',note:'Electronics'},
+  {id:'n5_478',front:'スマホ',read:'sumaho',back:'smartphone',backVi:'điện thoại thông minh',note:'Electronics'},
+  {id:'n5_479',front:'インターネット',read:'intaanetto',back:'internet',backVi:'internet',note:'Electronics'},
+  {id:'n5_480',front:'メール',read:'meeru',back:'email',backVi:'email',note:'Electronics'},
+  {id:'n5_481',front:'ゲーム',read:'geemu',back:'game',backVi:'trò chơi',note:'Electronics'},
+  // Transport
+  {id:'n5_482',front:'バス',read:'basu',back:'bus',backVi:'xe buýt',note:'Transport'},
+  {id:'n5_483',front:'タクシー',read:'takushii',back:'taxi',backVi:'taxi',note:'Transport'},
+  {id:'n5_484',front:'バイク',read:'baiku',back:'motorcycle',backVi:'xe máy',note:'Transport'},
+  {id:'n5_485',front:'エレベーター',read:'erebeetaa',back:'elevator',backVi:'thang máy',note:'Transport'},
+  {id:'n5_486',front:'エスカレーター',read:'esukareetaa',back:'escalator',backVi:'thang cuốn',note:'Transport'},
+  // Clothing & shopping
+  {id:'n5_487',front:'シャツ',read:'shatsu',back:'shirt',backVi:'áo sơ mi',note:'Clothing'},
+  {id:'n5_488',front:'ズボン',read:'zubon',back:'trousers / pants',backVi:'quần dài',note:'Clothing'},
+  {id:'n5_489',front:'スカート',read:'sukaato',back:'skirt',backVi:'váy',note:'Clothing'},
+  {id:'n5_490',front:'コート',read:'kooto',back:'coat',backVi:'áo khoác',note:'Clothing'},
+  {id:'n5_491',front:'セーター',read:'seetaa',back:'sweater',backVi:'áo len',note:'Clothing'},
+  {id:'n5_492',front:'ジャケット',read:'jaketto',back:'jacket',backVi:'áo jacket',note:'Clothing'},
+  {id:'n5_493',front:'ブーツ',read:'buutsu',back:'boots',backVi:'giày bốt',note:'Clothing'},
+  {id:'n5_494',front:'バッグ',read:'baggu',back:'bag',backVi:'túi xách',note:'Clothing'},
+  {id:'n5_495',front:'スーパー',read:'suupaa',back:'supermarket',backVi:'siêu thị',note:'Place'},
+  {id:'n5_496',front:'デパート',read:'depaato',back:'department store',backVi:'trung tâm thương mại',note:'Place'},
+  // Sports & hobbies
+  {id:'n5_497',front:'スポーツ',read:'supootsu',back:'sports',backVi:'thể thao',note:'Hobby'},
+  {id:'n5_498',front:'テニス',read:'tenisu',back:'tennis',backVi:'quần vợt',note:'Hobby'},
+  {id:'n5_499',front:'サッカー',read:'sakkaa',back:'soccer / football',backVi:'bóng đá',note:'Hobby'},
+  {id:'n5_500',front:'バスケット',read:'basuketto',back:'basketball',backVi:'bóng rổ',note:'Hobby'},
+  {id:'n5_501',front:'ダンス',read:'dansu',back:'dance',backVi:'nhảy múa',note:'Hobby'},
+  {id:'n5_502',front:'ピアノ',read:'piano',back:'piano',backVi:'đàn piano',note:'Hobby'},
+  {id:'n5_503',front:'ギター',read:'gitaa',back:'guitar',backVi:'đàn guitar',note:'Hobby'},
+  // Places & buildings
+  {id:'n5_504',front:'ホテル',read:'hoteru',back:'hotel',backVi:'khách sạn',note:'Place'},
+  {id:'n5_505',front:'レストラン',read:'resutoran',back:'restaurant',backVi:'nhà hàng',note:'Place'},
+  {id:'n5_506',front:'カフェ',read:'kafe',back:'cafe',backVi:'quán cà phê',note:'Place'},
+  {id:'n5_507',front:'コンビニ',read:'konbini',back:'convenience store',backVi:'cửa hàng tiện lợi',note:'Place'},
+  {id:'n5_508',front:'プール',read:'puuru',back:'swimming pool',backVi:'hồ bơi',note:'Place'},
+  {id:'n5_509',front:'アパート',read:'apaato',back:'apartment',backVi:'căn hộ',note:'Place'},
+  {id:'n5_510',front:'マンション',read:'manshon',back:'condo / mansion',backVi:'chung cư cao cấp',note:'Place'},
+  {id:'n5_511',front:'オフィス',read:'ofisu',back:'office',backVi:'văn phòng',note:'Place'},
+  // Daily items
+  {id:'n5_512',front:'ノート',read:'nooto',back:'notebook',backVi:'vở ghi',note:'Noun'},
+  {id:'n5_513',front:'ボールペン',read:'boorupen',back:'ballpoint pen',backVi:'bút bi',note:'Noun'},
+  {id:'n5_514',front:'テーブル',read:'teebu ru',back:'table',backVi:'bàn',note:'Noun'},
+  {id:'n5_515',front:'ベッド',read:'beddo',back:'bed',backVi:'giường',note:'Noun'},
+  {id:'n5_516',front:'ソファ',read:'sofa',back:'sofa',backVi:'ghế sofa',note:'Noun'},
+  {id:'n5_517',front:'カーテン',read:'kaaten',back:'curtain',backVi:'rèm cửa',note:'Noun'},
+  {id:'n5_518',front:'タオル',read:'taoru',back:'towel',backVi:'khăn tắm',note:'Noun'},
+  {id:'n5_519',front:'シャワー',read:'shawaa',back:'shower',backVi:'vòi hoa sen',note:'Noun'},
+  {id:'n5_520',front:'アルバム',read:'arubamu',back:'album',backVi:'album ảnh',note:'Noun'},
+  // Jobs & people
+  {id:'n5_521',front:'サラリーマン',read:'sarariiman',back:'office worker',backVi:'nhân viên văn phòng',note:'Job'},
+  {id:'n5_522',front:'アルバイト',read:'arubaito',back:'part-time job',backVi:'làm thêm / bán thời gian',note:'Job'},
+  {id:'n5_523',front:'ドクター',read:'dokutaa',back:'doctor',backVi:'bác sĩ',note:'Job'},
+  {id:'n5_524',front:'ナース',read:'naasu',back:'nurse',backVi:'y tá',note:'Job'},
+  {id:'n5_525',front:'エンジニア',read:'enjinia',back:'engineer',backVi:'kỹ sư',note:'Job'},
+  // Expressions & useful katakana
+  {id:'n5_526',front:'ありがとう',read:'arigatou',back:'thank you',backVi:'cảm ơn',note:'Expression'},
+  {id:'n5_527',front:'オーケー',read:'ookee',back:'okay',backVi:'ổn / được rồi',note:'Expression'},
+  {id:'n5_528',front:'バイバイ',read:'baibai',back:'bye bye',backVi:'tạm biệt',note:'Expression'},
+  {id:'n5_529',front:'ナイス',read:'naisu',back:'nice',backVi:'tốt / hay đó',note:'Expression'},
+  {id:'n5_530',front:'チャンス',read:'chansu',back:'chance / opportunity',backVi:'cơ hội',note:'Noun'},
 ];
 
 
@@ -1236,7 +1439,10 @@ function updStats(){
   set(['st','rt'],td);
   set(['sm','ravg'],avgMin);
   set(['sc-hours','rh'],totalHours);
-  const fc=document.getElementById('sc-cards');if(fc)fc.textContent=flashcards.length+N5_DECK.length;
+  // Words learned = My Cards that have been reviewed at least once
+  const wordsLearned = flashcards.filter(c=>c.reviewCount>0).length;
+  const fc=document.getElementById('sc-cards');if(fc)fc.textContent=wordsLearned;
+  const rwords=document.getElementById('r-words');if(rwords)rwords.textContent=wordsLearned;
 }
 function calcStreak(){
   const dates=[...new Set(logs.map(l=>l.date))].sort().reverse();
@@ -1658,7 +1864,7 @@ function fcFlip(){
       if(!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(fcCurrentWord);
-      utter.lang = 'ja-JP'; utter.rate = 0.85;
+      utter.lang = 'ja-JP'; utter.rate = 0.8; utter.volume = 1.0;
       const voices = window.speechSynthesis.getVoices();
       const jpVoice = voices.find(v=>v.lang==='ja-JP'||v.lang==='ja');
       if(jpVoice) utter.voice = jpVoice;
@@ -1913,7 +2119,7 @@ function fcRenderList(){
       <div><div style="font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700;">${c.front}${n5Badge}</div>${c.read?`<div style="font-size:11px;color:var(--sakura-deep);">${c.read}</div>`:''}</div>
       <div style="font-size:13px;color:var(--ink);">${meaning}${c.note?`<div style="font-size:11px;color:var(--ink-soft);margin-top:1px;">${c.note}</div>`:''}</div>
       <div>${dueLabel}</div>
-      <div style="text-align:center;font-size:14px;font-weight:700;color:var(--matcha);white-space:nowrap;">${pc>0?pc+' '+le:'—'}</div>
+      <div style="text-align:center;font-size:15px;font-weight:700;color:var(--matcha);white-space:nowrap;">${pc>0?pc:'—'}</div>
       <div>${delBtn}</div>
     </div>`;
   }).join('');
@@ -2145,7 +2351,7 @@ function fcSpeak(e){
   if(!window.speechSynthesis){ showToast('Audio not supported in this browser'); return; }
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(fcCurrentWord);
-  utter.lang = 'ja-JP'; utter.rate = 0.85;
+  utter.lang = 'ja-JP'; utter.rate = 0.8; utter.volume = 1.0;
   const voices = window.speechSynthesis.getVoices();
   const jpVoice = voices.find(v=>v.lang==='ja-JP'||v.lang==='ja');
   if(jpVoice) utter.voice = jpVoice;
