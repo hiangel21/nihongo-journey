@@ -713,7 +713,7 @@ let cMin=null,cScr=null;
 const SL={hiragana:'🌸 Hiragana',katakana:'💜 Katakana',kanji:'漢 Kanji',grammar:'🔤 Grammar',vocabulary:'📝 Vocabulary',listening:'👂 Listening',anime:'📺 Anime',reading:'📖 Reading'};
 const SC={hiragana:'tag-h',katakana:'tag-k',kanji:'tag-j',vocab:'tag-v',grammar:'tag-g',listening:'tag-v',anime:'tag-j'};
 const SRS_STEPS = [1,2,3,7,14,30,60,120];
-const SRS_INTERVALS = [1,2,3,7,14,30]; // Easy schedule: new→D1→2→3→7→14→30
+const SRS_INTERVALS = [1,1,1,4,7,16]; // Day 0 add → review on day 1,2,3,7,14,30
 
 // ===== N5 BUILT-IN DECK (100 words) =====
 // Each card: front=hiragana, back=EN meaning, backVi=VN meaning, read=romaji, note=category
@@ -1902,10 +1902,13 @@ function fcShowCard(){
 
   // Update labels
   const step = card.step||0;
-  const nextStep = Math.min(step+1, SRS_INTERVALS.length-1);
-  const nextDays = SRS_INTERVALS[nextStep];
+  const todayStr = new Date().toISOString().split('T')[0];
   const easyLbl = document.getElementById('fc-easy-label');
-  if(easyLbl) easyLbl.textContent = card.isHard ? `+${nextDays}d (was hard)` : `+${nextDays} day${nextDays>1?'s':''}`;
+  if(easyLbl){
+    const nextStep = card.lastReviewDate === todayStr ? (card.step||0) : Math.min((card.step||0)+1, SRS_INTERVALS.length-1);
+    const nextDays = SRS_INTERVALS[nextStep];
+    easyLbl.textContent = `+${nextDays} day${nextDays>1?'s':''}`;
+  }
   document.getElementById('fc-progress-text').textContent = `${fcIdx+1} of ${fcSession.length}`;
 }
 
@@ -1958,13 +1961,19 @@ function fcRate(rating){
   let daysAhead;
 
   if(rating==='easy'){
-    step = Math.min(step+1, SRS_INTERVALS.length-1);
+    const todayStr = today.toISOString().split('T')[0];
+    // Only advance step once per day
+    if(fc.lastReviewDate !== todayStr){
+      step = Math.min(step+1, SRS_INTERVALS.length-1);
+      fc.lastReviewDate = todayStr;
+    }
     daysAhead = SRS_INTERVALS[step];
     fc.isHard = false;
     fcSessionStats.easy++;
   } else {
     daysAhead = 1;
     fc.isHard = true;
+    // Hard does NOT update lastReviewDate — not counted as a successful review
     fcSessionStats.hard++;
   }
 
@@ -1976,7 +1985,7 @@ function fcRate(rating){
   fc.lastRating=rating;
 
   const si=fcSession.findIndex(c=>String(c.id)===String(card.id));
-  if(si>=0) Object.assign(fcSession[si],{step,interval:daysAhead,nextReview:fc.nextReview,reviewCount:fc.reviewCount,lastRating:rating,isHard:fc.isHard});
+  if(si>=0) Object.assign(fcSession[si],{step,interval:daysAhead,nextReview:fc.nextReview,reviewCount:fc.reviewCount,lastRating:rating,isHard:fc.isHard,lastReviewDate:fc.lastReviewDate});
 
   if(fc.isN5) saveN5State(fc); else saveFC();
 
