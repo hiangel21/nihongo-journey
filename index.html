@@ -201,7 +201,7 @@ textarea{resize:vertical;min-height:70px;}
 @keyframes celebFadeOut{to{opacity:0;pointer-events:none;}}
 .celebrate-card{background:white;border-radius:28px;padding:48px 56px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.25);position:relative;z-index:2;animation:celebPop .45s cubic-bezier(.34,1.56,.64,1);}
 @keyframes celebPop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
-.celebrate-petal{position:fixed;pointer-events:none;animation:celebFall linear forwards;z-index:901;}
+.celebrate-petal,.celebrate-confetti{position:fixed;pointer-events:none;animation:celebFall linear forwards;z-index:901;}
 @keyframes celebFall{0%{transform:translateY(-40px) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(540deg);opacity:0;}}
 @keyframes tIn{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes tOut{to{opacity:0;transform:translateX(-50%) translateY(16px)}}
@@ -440,7 +440,7 @@ textarea{resize:vertical;min-height:70px;}
         <button class="script-btn" id="pm-hira" onclick="fcSetMode('hira',this)">🌸 Hiragana</button>
         <button class="script-btn" id="pm-kata" onclick="fcSetMode('kata',this)">💜 Katakana</button>
         <button class="script-btn" id="pm-date" onclick="fcSetMode('date',this)">🗓 Date</button>
-        <button class="script-btn"    id="pm-pick" onclick="fcSetMode('pick',this)">✋ Pick words</button>
+        <button class="script-btn"    id="pm-hard" onclick="fcSetMode('hard',this)">😓 Hard words</button>
         <button id="fc-start-btn" onclick="fcLaunchSession()" style="padding:9px 24px;border-radius:12px;border:none;background:linear-gradient(135deg,#FF85A1,var(--sakura-deep));color:white;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(232,130,154,0.5);letter-spacing:.3px;">▶ Start 🌸</button>
         <span id="fc-mode-count" style="font-size:13px;color:var(--ink-soft);font-weight:600;"></span>
       </div>
@@ -494,22 +494,6 @@ textarea{resize:vertical;min-height:70px;}
         </div>
       </div>
 
-      <!-- Word picker popup — aligned under button, with Apply -->
-      <div id="fc-pick-row" style="display:none;position:absolute;top:100%;z-index:200;margin-top:6px;">
-        <div style="background:white;border:2px solid var(--sakura);border-radius:16px;padding:14px 16px;box-shadow:0 8px 28px rgba(0,0,0,.18);width:360px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span id="fc-pick-count" style="font-size:12px;color:var(--ink-soft);font-weight:600;"></span>
-            <div style="display:flex;gap:6px;">
-              <button onclick="fcPickAll(true)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--sakura);background:var(--sakura-light);color:var(--sakura-deep);cursor:pointer;">All</button>
-              <button onclick="fcPickAll(false)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--border);background:white;color:var(--ink-soft);cursor:pointer;">Clear</button>
-            </div>
-          </div>
-          <input type="text" id="fc-pick-search" placeholder="🔍 Search Japanese or meaning..." oninput="fcRenderPickList()"
-            style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;outline:none;margin-bottom:6px;box-sizing:border-box;">
-          <div id="fc-pick-list" style="max-height:180px;overflow-y:auto;border:1.5px solid var(--border);border-radius:10px;background:white;margin-bottom:8px;"></div>
-          <button onclick="fcApplyPick()" style="width:100%;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--sakura),var(--sakura-deep));color:white;font-size:13px;font-weight:700;cursor:pointer;">✓ Apply selection</button>
-        </div>
-      </div>
     </div>
 
     <div class="card-title" style="margin-bottom:12px;"><span>🎴</span> Review <span id="fc-queue-label" style="font-size:13px;color:var(--ink-soft);font-weight:400;"></span></div>
@@ -1268,12 +1252,12 @@ let goalInputVals={};
 let pgDragId=null;
 let flashcards = JSON.parse(localStorage.getItem('njfc')||'[]');
 let fcSession = [];
+let fcSessionStats = {easy:0, hard:0, replay:0, skip:0}; // track per session
 let fcIdx = 0;
 let fcFlipped = false;
 let fcFilter = 'all';
 let fcSortCol='', fcSortDir=1;
 let fcPlayMode = 'all';
-let fcPickedIds = new Set();
 let fcCurrentWord = 'おはよう';
 let fcListSelected = new Set();
 let fcPage = 0;
@@ -1833,6 +1817,7 @@ function fcDeleteCard(id){
 function fcStartSession(){
   const due = flashcards.filter(fcIsDue);
   fcSession = [...due]; fcIdx = 0; fcFlipped = false;
+  fcSessionStats={easy:0,hard:0,replay:0,skip:0};
   document.getElementById('fc-empty').style.display = due.length?'none':'block';
   document.getElementById('fc-session').style.display = due.length?'block':'none';
   document.getElementById('fc-done').style.display = 'none';
@@ -1929,15 +1914,14 @@ function fcRate(rating){
   let daysAhead;
 
   if(rating==='easy'){
-    // Follow fixed schedule: D1→2→3→7→14→30
     step = Math.min(step+1, SRS_INTERVALS.length-1);
     daysAhead = SRS_INTERVALS[step];
     fc.isHard = false;
+    fcSessionStats.easy++;
   } else {
-    // Hard: come back tomorrow, don't advance, stay hard
     daysAhead = 1;
     fc.isHard = true;
-    // Keep step the same so when they finally go Easy, schedule continues from here
+    fcSessionStats.hard++;
   }
 
   const next = new Date(today);
@@ -1964,6 +1948,7 @@ function fcRate(rating){
 
 function fcReplay(){
   if(fcIdx<fcSession.length) fcSession.push({...fcSession[fcIdx]});
+  fcSessionStats.replay++;
   fcFlipped=false;
   document.getElementById('fc-ratings').style.display='none';
   fcIdx++;
@@ -1972,6 +1957,7 @@ function fcReplay(){
 
 function fcSkip(){
   fcIdx++;
+  fcSessionStats.skip++;
   fcFlipped=false;
   document.getElementById('fc-ratings').style.display='none';
   setTimeout(()=>{ if(fcIdx<fcSession.length) fcShowCard(); else fcEndSession(); }, 50);
@@ -1980,70 +1966,134 @@ function fcSkip(){
 function fcEndSession(){
   document.getElementById('fc-session').style.display = 'none';
   document.getElementById('fc-done').style.display = 'block';
+
+  // Auto-log session to Today's Log
+  fcAutoLog();
+
   fcRenderAll();
-  // Show celebration!
   setTimeout(showCelebration, 300);
+}
+
+function fcAutoLog(){
+  if(!fcSessionStartTime) return;
+  const mins = Math.max(1, Math.round((Date.now()-fcSessionStartTime)/60000));
+  const wordsReviewed = fcSessionStats.easy + fcSessionStats.hard;
+  if(wordsReviewed===0) return;
+  const today = fcToday();
+  const autoNote = `🃏 Flashcard session: ${wordsReviewed} words · ${mins} min`;
+
+  // Find existing log entry for today
+  let entry = logs.find(l=>l.date===today);
+  if(entry){
+    entry.mins = (entry.mins||0) + mins;
+    entry.words = (entry.words||0) + wordsReviewed;
+    // scripts is the field renderLog uses for topic tags
+    if(!entry.scripts) entry.scripts=[];
+    if(!entry.scripts.includes('vocabulary')) entry.scripts.push('vocabulary');
+    entry.note = (entry.note ? entry.note+'\n' : '') + autoNote;
+  } else {
+    logs.unshift({
+      id: Date.now(),
+      date: today,
+      mins: mins,
+      words: wordsReviewed,
+      scripts: ['vocabulary'],
+      note: autoNote,
+      goalProgress: {}
+    });
+  }
+  localStorage.setItem('njl', JSON.stringify(logs));
+  fcSessionStartTime = null;
+  updStats();
+  renderLog();
+  renderStreak();
 }
 
 // ===== CELEBRATION =====
 const CELEBRATE_MODES = ['petals', 'cat'];
 function showCelebration(){
   const mode = CELEBRATE_MODES[Math.floor(Math.random()*CELEBRATE_MODES.length)];
-  const modeLabel = {due:'Due Today',all:'All Cards',date:'Date Range',pick:'Picked Words'}[fcPlayMode]||'All Cards';
+  const modeLabel = {due:'Due Today',all:'All Cards',mine:'My Cards',hira:'Hiragana',kata:'Katakana',date:'Date Filter',pick:'Picked Words'}[fcPlayMode]||'All Cards';
+  const s = fcSessionStats;
+  const total = s.easy+s.hard+s.skip;
+
+  const statsHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin:12px 0 16px;">
+      <div style="background:#E8F5E9;border-radius:12px;padding:10px 8px;text-align:center;">
+        <div style="font-size:18px;margin-bottom:2px;">🙂</div>
+        <div style="font-size:20px;font-weight:800;color:#2E7D32;">${s.easy}</div>
+        <div style="font-size:11px;color:#2E7D32;font-weight:600;margin-top:1px;">Easy</div>
+      </div>
+      <div style="background:#FFEBEE;border-radius:12px;padding:10px 8px;text-align:center;">
+        <div style="font-size:18px;margin-bottom:2px;">😓</div>
+        <div style="font-size:20px;font-weight:800;color:#C62828;">${s.hard}</div>
+        <div style="font-size:11px;color:#C62828;font-weight:600;margin-top:1px;">Hard</div>
+      </div>
+      <div style="background:#FFF8E1;border-radius:12px;padding:10px 8px;text-align:center;">
+        <div style="font-size:18px;margin-bottom:2px;">🔁</div>
+        <div style="font-size:20px;font-weight:800;color:#E65100;">${s.replay}</div>
+        <div style="font-size:11px;color:#E65100;font-weight:600;margin-top:1px;">See again</div>
+      </div>
+      <div style="background:#F3F3F3;border-radius:12px;padding:10px 8px;text-align:center;">
+        <div style="font-size:18px;margin-bottom:2px;">⏭</div>
+        <div style="font-size:20px;font-weight:800;color:#666;">${s.skip}</div>
+        <div style="font-size:11px;color:#666;font-weight:600;margin-top:1px;">Skipped</div>
+      </div>
+    </div>`;
+
   const overlay = document.createElement('div');
   overlay.className = 'celebrate-overlay';
   overlay.onclick = ()=>{
     overlay.classList.add('fade-out');
-    setTimeout(()=>overlay.remove(), 500);
-    document.querySelectorAll('.celebrate-petal').forEach(p=>p.remove());
+    setTimeout(()=>{ overlay.remove(); document.querySelectorAll('.celebrate-petal,.celebrate-confetti').forEach(p=>p.remove()); }, 500);
   };
 
-  if(mode==='petals'){
-    // Flower blossom — petals rain
-    overlay.innerHTML = `
-      <div class="celebrate-card">
-        <div style="font-size:56px;margin-bottom:12px;">🌸</div>
-        <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:26px;font-weight:700;color:var(--ink);margin-bottom:8px;">Session Complete!</div>
-        <div style="font-size:15px;color:var(--ink-soft);margin-bottom:6px;">${fcSession.length} cards · ${modeLabel}</div>
-        <div style="font-size:14px;color:var(--sakura-deep);font-weight:600;margin-top:8px;">頑張りました！You did great ✨</div>
-        <div style="font-size:12px;color:var(--ink-soft);margin-top:16px;">Tap anywhere to close</div>
-      </div>`;
-    document.body.appendChild(overlay);
-    // Spawn petals
-    const petals = ['🌸','✿','🌺','🌼','💮','🌷'];
-    for(let i=0;i<28;i++){
-      setTimeout(()=>{
-        const p = document.createElement('div');
-        p.className = 'celebrate-petal';
-        p.textContent = petals[Math.floor(Math.random()*petals.length)];
-        p.style.left = Math.random()*100+'vw';
-        p.style.top = '-40px';
-        p.style.fontSize = (18+Math.random()*20)+'px';
-        const dur = 2.5+Math.random()*2;
-        p.style.animationDuration = dur+'s';
-        p.style.animationDelay = '0s';
-        document.body.appendChild(p);
-        setTimeout(()=>p.remove(), dur*1000+100);
-      }, i*120);
-    }
-  } else {
-    // Cute cat congratulation
-    const cats = ['😸','🐱','😻','🙀'];
-    const msgs = [
-      'Nyaa~ You crushed it! 🐾',
-      'Purrfect session! 🐟',
-      'Meow-velous work! ⭐',
-      '*purrs proudly* 🐈'
-    ];
-    overlay.innerHTML = `
-      <div class="celebrate-card">
-        <div style="font-size:80px;margin-bottom:10px;animation:celebPop .6s cubic-bezier(.34,1.56,.64,1);">${cats[Math.floor(Math.random()*cats.length)]}</div>
-        <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:24px;font-weight:700;color:var(--ink);margin-bottom:8px;">Session Complete!</div>
-        <div style="font-size:16px;color:var(--sakura-deep);font-weight:600;margin-bottom:6px;">${msgs[Math.floor(Math.random()*msgs.length)]}</div>
-        <div style="font-size:14px;color:var(--ink-soft);">${fcSession.length} cards · ${modeLabel}</div>
-        <div style="font-size:12px;color:var(--ink-soft);margin-top:16px;">Tap anywhere to close</div>
-      </div>`;
-    document.body.appendChild(overlay);
+  // Pick content based on mode
+  const isCat = mode==='cat';
+  const heroEmoji   = isCat ? ['😸','😻','🙀','🐱'][Math.floor(Math.random()*4)] : '🏅';
+  const headline    = isCat ? ['Nyaa~ You crushed it!','Purrfect session!','Meow-velous work!','*purrs proudly*'][Math.floor(Math.random()*4)] : '頑張りました！';
+  const subline     = isCat ? 'Session Complete! 🐾' : 'You did great ✨';
+  const btnColor    = isCat ? '#FF85A1' : '#F5A623';
+
+  overlay.innerHTML = `
+    <div class="celebrate-card" style="display:flex;flex-direction:column;align-items:center;max-width:320px;width:90%;padding:0;overflow:hidden;border-radius:24px;box-shadow:0 24px 60px rgba(0,0,0,.22);">
+      <!-- Colourful top band with confetti bits -->
+      <div style="width:100%;background:linear-gradient(135deg,${btnColor}cc,${btnColor}88);padding:28px 24px 20px;text-align:center;position:relative;overflow:hidden;">
+        <!-- Decorative dots -->
+        <div style="position:absolute;top:10px;left:14px;width:8px;height:8px;border-radius:50%;background:white;opacity:.5;"></div>
+        <div style="position:absolute;top:18px;left:40px;width:5px;height:5px;border-radius:50%;background:white;opacity:.4;"></div>
+        <div style="position:absolute;top:8px;right:20px;width:7px;height:7px;border-radius:2px;background:white;opacity:.5;transform:rotate(30deg);"></div>
+        <div style="position:absolute;top:22px;right:44px;width:5px;height:5px;border-radius:50%;background:white;opacity:.35;"></div>
+        <div style="position:absolute;bottom:10px;left:20px;width:6px;height:6px;border-radius:1px;background:white;opacity:.4;transform:rotate(15deg);"></div>
+        <div style="position:absolute;bottom:14px;right:18px;width:8px;height:8px;border-radius:50%;background:white;opacity:.45;"></div>
+        <!-- Hero -->
+        <div style="font-size:72px;line-height:1;animation:celebPop .5s cubic-bezier(.34,1.56,.64,1);display:inline-block;">${heroEmoji}</div>
+      </div>
+      <!-- White body -->
+      <div style="width:100%;background:white;padding:20px 24px 24px;display:flex;flex-direction:column;align-items:center;box-sizing:border-box;">
+        <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:22px;font-weight:800;color:#1a1a2e;margin-bottom:4px;">${subline}</div>
+        <div style="font-size:14px;color:#888;margin-bottom:2px;">${headline}</div>
+        <div style="font-size:12px;color:#bbb;margin-bottom:4px;">${total} cards · ${modeLabel}</div>
+        <div style="font-size:11px;color:#aaa;margin-bottom:2px;">✅ Auto-logged to Today's Log</div>
+        ${statsHTML}
+        <button onclick="this.closest('.celebrate-overlay').click()" style="width:100%;padding:13px;border-radius:50px;border:none;background:${btnColor};color:white;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.3px;box-shadow:0 6px 18px ${btnColor}66;">続けましょう！ Keep going 🌸</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+
+  // Confetti burst
+  const shapes = ['●','■','▲','◆','★'];
+  const colors = ['#FF85A1','#F5A623','#9B8EC4','#1D9E75','#378ADD','#FF6B6B'];
+  for(let i=0;i<36;i++){
+    setTimeout(()=>{
+      const p=document.createElement('div');
+      p.className='celebrate-confetti';
+      p.textContent=shapes[Math.floor(Math.random()*shapes.length)];
+      p.style.cssText=`position:fixed;pointer-events:none;z-index:901;font-size:${8+Math.random()*10}px;color:${colors[Math.floor(Math.random()*colors.length)]};left:${20+Math.random()*60}vw;top:-20px;animation:celebFall ${2+Math.random()*2}s linear forwards;opacity:.85;`;
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(),4000);
+    },i*80);
   }
 }
 
@@ -2272,6 +2322,7 @@ function fcPlaySelectedList(){
   if(!cards.length){showToast('❗ Selected cards not found');return;}
   fcSession=[...cards].sort(()=>Math.random()-0.5);
   fcIdx=0;fcFlipped=false;
+  fcSessionStats={easy:0,hard:0,replay:0,skip:0};
   document.getElementById('fc-empty').style.display='none';
   document.getElementById('fc-session').style.display='block';
   document.getElementById('fc-done').style.display='none';
@@ -2283,12 +2334,11 @@ function fcPlaySelectedList(){
 // ===== PLAY MODES =====
 
 function fcSetMode(mode, btn){
-  const pickRow=document.getElementById('fc-pick-row');
   const hiraRow=document.getElementById('fc-hira-row');
   const kataRow=document.getElementById('fc-kata-row');
   const dateRow=document.getElementById('fc-date-row');
-  const allPopups=[pickRow,hiraRow,kataRow,dateRow];
-  if(fcPlayMode===mode && (mode==='pick'||mode==='hira'||mode==='kata'||mode==='date')){
+  const allPopups=[hiraRow,kataRow,dateRow];
+  if(fcPlayMode===mode && (mode==='hira'||mode==='kata'||mode==='date')){
     allPopups.forEach(p=>p&&(p.style.display='none'));
     fcPlayMode='all';
     document.querySelectorAll('[id^="pm-"]').forEach(b=>b.classList.remove('sel'));
@@ -2299,10 +2349,14 @@ function fcSetMode(mode, btn){
   document.querySelectorAll('[id^="pm-"]').forEach(b=>b.classList.remove('sel'));
   btn.classList.add('sel');
   allPopups.forEach(p=>p&&(p.style.display='none'));
-  if(mode==='pick'){ pickRow.style.display='block'; fcRenderPickList(); }
   if(mode==='hira'){ hiraRow.style.display='block'; fcRenderAlphaList('hira'); }
   if(mode==='kata'){ kataRow.style.display='block'; fcRenderAlphaList('kata'); }
   if(mode==='date'){ dateRow.style.display='block'; }
+  if(mode==='hard'){
+    const {all}=fcGetAllCards();
+    const hardCards=all.filter(c=>c.isHard===true);
+    if(!hardCards.length){ showToast('🎉 No hard words! All cleared!'); fcPlayMode='all'; btn.classList.remove('sel'); document.getElementById('pm-all').classList.add('sel'); }
+  }
   fcUpdateModeCount();
 }
 
@@ -2328,7 +2382,10 @@ function fcGetModeCards(){
     const to=document.getElementById('fc-date-to')?.value||today;
     return mine.filter(c=>c.created&&c.created>=from&&c.created<=to);
   }
-  if(fcPlayMode==='pick') return all.filter(c=>[...fcPickedIds].some(sid=>String(c.id)===String(sid)));
+  if(fcPlayMode==='hard'){
+    // Hard words = cards with isHard:true (latest status) from both My Cards and N5
+    return all.filter(c=>c.isHard===true);
+  }
   return all;
 }
 
@@ -2368,58 +2425,19 @@ function fcUpdateModeCount(){
   if(el)el.textContent=cards.length?`${cards.length} card${cards.length>1?'s':''} selected`:'No cards match';
 }
 
-function fcRenderPickList(){
-  const el=document.getElementById('fc-pick-list');
-  if(!el)return;
-  const q=(document.getElementById('fc-pick-search')?.value||'').toLowerCase().trim();
-  const pool=flashcards.filter(c=>{
-    if(!q)return true;
-    return c.front.toLowerCase().includes(q)||c.back.toLowerCase().includes(q)||(c.read&&c.read.toLowerCase().includes(q));
-  });
-  const countEl=document.getElementById('fc-pick-count');
-  if(countEl)countEl.textContent=`${fcPickedIds.size} selected · ${pool.length} shown`;
-  if(!pool.length){el.innerHTML='<div style="padding:12px;font-size:13px;color:var(--ink-soft);text-align:center;">No cards found</div>';return;}
-  el.innerHTML=pool.map(c=>{
-    const picked=fcPickedIds.has(c.id);
-    return `<div onclick="fcTogglePick(${c.id},this)" style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:0.5px solid var(--border);background:${picked?'var(--sakura-light)':'white'};transition:background .1s;" id="fcp-${c.id}">
-      <div style="width:18px;height:18px;border-radius:4px;border:1.5px solid ${picked?'var(--sakura)':'var(--border)'};background:${picked?'var(--sakura)':'white'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:white;font-weight:700;">${picked?'✓':''}</div>
-      <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:16px;font-weight:700;min-width:60px;">${c.front}</div>
-      <div style="font-size:13px;color:var(--ink-soft);">${c.back}</div>
-      ${c.read?`<div style="font-size:11px;color:var(--sakura-deep);margin-left:auto;">${c.read}</div>`:''}
-    </div>`;
-  }).join('');
-  fcUpdateModeCount();
-}
-
-function fcTogglePick(id,el){
-  fcPickedIds.has(id)?fcPickedIds.delete(id):fcPickedIds.add(id);
-  const picked=fcPickedIds.has(id);
-  el.style.background=picked?'var(--sakura-light)':'white';
-  const chk=el.querySelector('div');
-  if(chk){chk.style.background=picked?'var(--sakura)':'white';chk.style.borderColor=picked?'var(--sakura)':'var(--border)';chk.textContent=picked?'✓':'';}
-  const countEl=document.getElementById('fc-pick-count');
-  if(countEl){const q=(document.getElementById('fc-pick-search')?.value||'').toLowerCase();const pool=flashcards.filter(c=>!q||c.front.toLowerCase().includes(q)||c.back.toLowerCase().includes(q));countEl.textContent=`${fcPickedIds.size} selected · ${pool.length} shown`;}
-  fcUpdateModeCount();
-}
-
-function fcPickAll(val){
-  const q=(document.getElementById('fc-pick-search')?.value||'').toLowerCase().trim();
-  const pool=flashcards.filter(c=>!q||c.front.toLowerCase().includes(q)||c.back.toLowerCase().includes(q)||(c.read&&c.read.toLowerCase().includes(q)));
-  pool.forEach(c=>val?fcPickedIds.add(c.id):fcPickedIds.delete(c.id));
-  fcRenderPickList();
-}
+let fcSessionStartTime = null;
 
 function fcLaunchSession(){
   const cards = fcGetModeCards();
   if(!cards.length){ showToast('❗ No cards in this selection!'); return; }
-  // Shuffle
   fcSession = [...cards].sort(()=>Math.random()-0.5);
   fcIdx = 0; fcFlipped = false;
+  fcSessionStats={easy:0,hard:0,replay:0,skip:0};
+  fcSessionStartTime = Date.now(); // start timer
   document.getElementById('fc-empty').style.display   = 'none';
   document.getElementById('fc-session').style.display = 'block';
   document.getElementById('fc-done').style.display    = 'none';
   fcShowCard();
-  // Scroll to review card
   document.getElementById('fc-review-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
 // ===== AUDIO =====
@@ -2709,15 +2727,6 @@ function applyTheme(){
   }
 }
 
-// Pick words apply
-function fcApplyPick(){
-  const pickRow=document.getElementById('fc-pick-row');
-  if(pickRow) pickRow.style.display='none';
-  fcPlayMode='pick';
-  fcUpdateModeCount();
-  showToast(`✋ ${fcPickedIds.size} word${fcPickedIds.size!==1?'s':''} selected`);
-}
-
 // Hiragana & Katakana alphabet data for picker
 const HIRA_CHARS = [
   {f:'あ',r:'a',m:'a'},{f:'い',r:'i',m:'i'},{f:'う',r:'u',m:'u'},{f:'え',r:'e',m:'e'},{f:'お',r:'o',m:'o'},
@@ -2806,10 +2815,8 @@ function fcApplyAlpha(type){
 
 // Close filter popups on outside click
 document.addEventListener('click',function(e){
-  const pickRow=document.getElementById('fc-pick-row');
   const hiraRow=document.getElementById('fc-hira-row');
   const kataRow=document.getElementById('fc-kata-row');
-  const picBtn=document.getElementById('pm-pick');
   const hiraBtn=document.getElementById('pm-hira');
   const kataBtn=document.getElementById('pm-kata');
   const settDD=document.getElementById('settings-dd');
