@@ -531,13 +531,57 @@ textarea{resize:vertical;min-height:70px;}
           </div>
           <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--ink-soft);" id="fc-progress-text"></div>
         </div>
-        <!-- Right: 2 ratings + replay + skip -->
+        <!-- Right: rating cards + actions -->
         <div id="fc-ratings" style="display:none;flex-direction:column;gap:8px;">
-          <button onclick="fcRate('easy')" style="width:100%;padding:12px 6px;border-radius:12px;border:2px solid var(--matcha);background:white;color:#2E7D32;font-size:15px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">🙂<br>Easy<br><span id="fc-easy-label" style="font-size:11px;font-weight:400;color:#2E7D32;"></span></button>
-          <button onclick="fcRate('hard')" style="width:100%;padding:12px 6px;border-radius:12px;border:2px solid #F09595;background:white;color:#A32D2D;font-size:15px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;">😓<br>Hard<br><span style="font-size:11px;font-weight:400;color:#A32D2D;">daily until Easy</span></button>
+          <!-- Easy card -->
+          <button onclick="fcRate('easy')" style="width:100%;padding:14px 8px;border-radius:16px;border:none;background:#E8F5E9;color:#2E7D32;cursor:pointer;text-align:center;line-height:1.4;transition:transform .1s,box-shadow .1s;box-shadow:0 4px 10px rgba(46,125,50,.15);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(46,125,50,.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 10px rgba(46,125,50,.15)'">
+            <div style="margin-bottom:4px;">
+              <svg viewBox="0 0 50 50" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="25" cy="28" r="20" fill="#FDDCCC"/>
+                <path d="M7 21 Q13 6 25 9 Q37 6 43 21" fill="#C4AAEA"/>
+                <ellipse cx="18" cy="27" rx="5.5" ry="6" fill="white"/>
+                <ellipse cx="32" cy="27" rx="5.5" ry="6" fill="white"/>
+                <path d="M13 23 Q18 20 23 23" fill="#3A2A90"/>
+                <path d="M27 23 Q32 20 37 23" fill="#3A2A90"/>
+                <ellipse cx="18" cy="26" rx="3" ry="3.5" fill="#1A0A4A"/>
+                <ellipse cx="32" cy="26" rx="3" ry="3.5" fill="#1A0A4A"/>
+                <ellipse cx="19.5" cy="24.5" rx="1.2" ry="1.2" fill="white"/>
+                <ellipse cx="33.5" cy="24.5" rx="1.2" ry="1.2" fill="white"/>
+                <path d="M16 36 Q25 43 34 36" fill="#FF6080"/>
+                <ellipse cx="13" cy="33" rx="5" ry="3" fill="#FF8090" opacity=".85"/>
+                <ellipse cx="37" cy="33" rx="5" ry="3" fill="#FF8090" opacity=".85"/>
+              </svg>
+            </div>
+            <div style="font-size:15px;font-weight:800;">Easy</div>
+            <div id="fc-easy-label" style="font-size:10px;font-weight:500;color:#4CAF50;margin-top:2px;"></div>
+          </button>
+          <!-- Hard card -->
+          <button onclick="fcRate('hard')" style="width:100%;padding:14px 8px;border-radius:16px;border:none;background:#FFEBEE;color:#C62828;cursor:pointer;text-align:center;line-height:1.4;transition:transform .1s,box-shadow .1s;box-shadow:0 4px 10px rgba(198,40,40,.15);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(198,40,40,.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 10px rgba(198,40,40,.15)'">
+            <div style="margin-bottom:4px;">
+              <svg viewBox="0 0 50 50" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="25" cy="28" r="20" fill="#FDDCCC"/>
+                <path d="M7 21 Q13 6 25 9 Q37 6 43 21" fill="#C4AAEA"/>
+                <ellipse cx="18" cy="27" rx="5.5" ry="6" fill="white"/>
+                <ellipse cx="32" cy="27" rx="5.5" ry="6" fill="white"/>
+                <ellipse cx="18" cy="28" rx="3.2" ry="3.8" fill="#1A0A4A"/>
+                <ellipse cx="32" cy="28" rx="3.2" ry="3.8" fill="#1A0A4A"/>
+                <ellipse cx="19.5" cy="26.5" rx="1.2" ry="1.2" fill="white"/>
+                <path d="M13 21 Q18 18 23 21" stroke="#1A0A4A" stroke-width="2" fill="none"/>
+                <path d="M27 21 Q32 18 37 21" stroke="#1A0A4A" stroke-width="2" fill="none"/>
+                <ellipse cx="25" cy="38" rx="7" ry="5" fill="#CC3333"/>
+                <ellipse cx="25" cy="37" rx="5" ry="3.5" fill="#991111"/>
+                <path d="M11 32 Q9 41 7 48" stroke="#70AAFF" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+                <path d="M39 32 Q41 41 43 48" stroke="#70AAFF" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+                <ellipse cx="12" cy="31" rx="3.5" ry="4.5" fill="#AAD0FF" opacity=".9"/>
+                <ellipse cx="38" cy="31" rx="3.5" ry="4.5" fill="#AAD0FF" opacity=".9"/>
+              </svg>
+            </div>
+            <div style="font-size:15px;font-weight:800;">Hard</div>
+            <div style="font-size:10px;font-weight:500;color:#EF5350;margin-top:2px;">daily until Easy</div>
+          </button>
           <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
-          <button onclick="fcReplay()" style="width:100%;padding:8px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper-warm);color:var(--ink-soft);font-size:13px;font-weight:600;cursor:pointer;text-align:center;" title="Add to end of this session">🔁 See again later</button>
-          <button onclick="fcSkip()" style="width:100%;padding:8px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper-warm);color:var(--ink-soft);font-size:13px;font-weight:600;cursor:pointer;text-align:center;">⏭ Skip</button>
+          <button onclick="fcReplay()" style="width:100%;padding:8px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper-warm);color:var(--ink-soft);font-size:12px;font-weight:600;cursor:pointer;text-align:center;" title="Add to end of this session">🔁 See again later</button>
+          <button onclick="fcSkip()" style="width:100%;padding:8px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper-warm);color:var(--ink-soft);font-size:12px;font-weight:600;cursor:pointer;text-align:center;">⏭ Skip</button>
         </div>
       </div>
     </div>
@@ -578,8 +622,8 @@ textarea{resize:vertical;min-height:70px;}
         <button class="script-btn" id="flt-mine" onclick="fcFilterSet('mine',this)">✍️ My Cards</button>
         <button class="script-btn" id="flt-n5" onclick="fcFilterSet('n5',this)">📚 N5</button>
         <button class="script-btn" id="flt-due" onclick="fcFilterSet('due',this)">Due</button>
-        <button class="script-btn" id="flt-new" onclick="fcFilterSet('new',this)">New</button>
-        <button class="script-btn" id="flt-learned" onclick="fcFilterSet('learned',this)">Learned</button>
+        <button class="script-btn" id="flt-easy" onclick="fcFilterSet('easy',this)">🙂 Easy</button>
+        <button class="script-btn" id="flt-hard" onclick="fcFilterSet('hard',this)">😓 Hard</button>
       </div>
     </div>
     <!-- Selected play bar -->
@@ -2165,8 +2209,8 @@ function fcRenderList(){
   if(fcFilter==='mine') cards=mine;
   else if(fcFilter==='n5') cards=n5;
   else if(fcFilter==='due') cards=all.filter(fcIsDue);
-  else if(fcFilter==='new') cards=all.filter(c=>!c.nextReview);
-  else if(fcFilter==='learned') cards=all.filter(c=>c.reviewCount>0&&!fcIsDue(c));
+  else if(fcFilter==='easy') cards=all.filter(c=>c.reviewCount>0&&!c.isHard);
+  else if(fcFilter==='hard') cards=all.filter(c=>c.isHard===true);
   else cards=all;
   if(q) cards=cards.filter(c=>c.front.toLowerCase().includes(q)||c.back.toLowerCase().includes(q)||(c.read&&c.read.toLowerCase().includes(q))||(c.backVi&&c.backVi.toLowerCase().includes(q)));
   if(fcSortCol){
@@ -2634,8 +2678,6 @@ function _setVal(id,val){ const el=document.getElementById(id); if(el&&val) el.t
 function _setInnerBtn(id,val){ const el=document.getElementById(id); if(el&&val) el.textContent=val; }
 function _setPlaceholder(id,val){ const el=document.getElementById(id); if(el&&val) el.placeholder=val; }
 function _setEasyHard(t){
-  const easy=document.querySelector('[onclick="fcRate(\'easy\')"]');
-  if(easy){ const lbl=easy.querySelector('span'); easy.childNodes[0].textContent='🙂\n'; easy.childNodes[2]&&(easy.childNodes[2].textContent='\n'+t.fc_easy+'\n'); if(lbl) lbl.textContent=''; }
   const hard=document.querySelector('[onclick="fcRate(\'hard\')"]');
   if(hard){ const lbl=hard.querySelector('span'); if(lbl) lbl.textContent=t.fc_hard_sub; }
 }
