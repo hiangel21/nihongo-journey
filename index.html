@@ -3192,14 +3192,24 @@ async function saveGoals_cloud(){
   await supa.from('goals').upsert({user_id:currentUser.id, data:goals},{onConflict:'user_id'});
 }
 
-// ===== AUTH STATE LISTENER =====
-// ===== AUTH INIT — onAuthStateChange is the ONLY source of truth =====
-// Do NOT show login until we know for sure there's no session
-// Use a timeout fallback in case onAuthStateChange never fires
+// ===== DEV MODE — bypass login on local/preview =====
+const IS_LOCAL = window.location.protocol === 'blob:' || 
+                 window.location.href.includes('claude.ai') ||
+                 window.location.protocol === 'data:' ||
+                 window.location.hostname === 'localhost' ||
+                 window.location.hostname === '127.0.0.1' ||
+                 window.location.hostname === '' ||
+                 !window.location.hostname.includes('github.io');
 
-let authResolved = false;
+if(IS_LOCAL){
+  // Skip auth entirely on local preview
+  currentUser = null;
+  // Don't show login, just render app normally
+} else {
+  // Production — full auth flow
+  let authResolved = false;
 
-supa.auth.onAuthStateChange(async (event, session)=>{
+  supa.auth.onAuthStateChange(async (event, session)=>{
   authResolved = true;
   if(session?.user){
     currentUser = session.user;
@@ -3225,19 +3235,20 @@ supa.auth.onAuthStateChange(async (event, session)=>{
 });
 
 // Fallback: if onAuthStateChange hasn't fired after 4s, show login
-setTimeout(()=>{
-  if(!authResolved) showLogin();
-}, 4000);
+  setTimeout(()=>{
+    if(!authResolved) showLogin();
+  }, 4000);
 
-// Cloud save hooks
-const _origSaveFC = saveFC;
-function saveFC(){ _origSaveFC(); saveFC_cloud(); }
+  // Cloud save hooks — only in production
+  const _origSaveFC = saveFC;
+  function saveFC(){ _origSaveFC(); saveFC_cloud(); }
 
-const _origSaveN5State = saveN5State;
-function saveN5State(fc){ _origSaveN5State(fc); saveN5_cloud(); }
+  const _origSaveN5State = saveN5State;
+  function saveN5State(fc){ _origSaveN5State(fc); saveN5_cloud(); }
 
-const _origSaveLog = saveLog;
-function saveLog(){ _origSaveLog(); saveLogs_cloud(); }
+  const _origSaveLog = saveLog;
+  function saveLog(){ _origSaveLog(); saveLogs_cloud(); }
+} // end production auth block
 </script>
 <!-- LOGIN OVERLAY -->
 <div id="login-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,var(--sakura-light),var(--fuji-light));z-index:9999;align-items:center;justify-content:center;">
