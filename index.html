@@ -2923,7 +2923,7 @@ async function signInGoogle(){
   btn.disabled = true;
   const {error} = await supa.auth.signInWithOAuth({
     provider:'google',
-    options:{ redirectTo: window.location.href }
+    options:{ redirectTo: 'https://hiangel21.github.io/nihongo-journey/' }
   });
   if(error){
     document.getElementById('login-error').textContent = error.message;
