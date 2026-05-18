@@ -232,6 +232,16 @@ textarea{resize:vertical;min-height:70px;}
 <!-- Settings button -->
 <button class="settings-btn" onclick="toggleSettings()" title="Settings">⚙️</button>
 <div class="settings-dropdown" id="settings-dd">
+  <!-- User info -->
+  <div id="settings-user" style="display:none;padding:10px 4px 14px;border-bottom:1px solid var(--border);margin-bottom:12px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img id="settings-avatar" src="" width="36" height="36" style="border-radius:50%;border:2px solid var(--sakura);display:none;">
+      <div>
+        <div id="settings-name" style="font-size:14px;font-weight:700;color:var(--ink);"></div>
+        <div id="settings-email" style="font-size:11px;color:var(--ink-soft);"></div>
+      </div>
+    </div>
+  </div>
   <div class="settings-row">
     <div class="settings-title" data-i18n="lang_label">🌐 Language</div>
     <div class="settings-opts">
@@ -280,6 +290,7 @@ textarea{resize:vertical;min-height:70px;}
   <button class="nav-btn" onclick="showSec('history',this)">📖 History</button>
   <button class="nav-btn" onclick="showSec('report',this)">📊 Report</button>
   <button class="nav-btn" onclick="showSec('board',this)">🔤 Character Board</button>
+  <button class="nav-btn" onclick="showSec('ranking',this)">🏆 Ranking</button>
 </div>
 
 
@@ -369,7 +380,25 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
-<!-- HISTORY -->
+<!-- RANKING -->
+<div class="section" id="sec-ranking">
+  <div class="sec-header">🏆 Leaderboard</div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:13px;color:var(--ink-soft);">So sánh với những người học cùng — cập nhật mỗi khi bạn mở trang.</div>
+      <div style="display:flex;gap:8px;">
+        <button id="rank-tab-hours" onclick="rankSetTab('hours',this)" style="padding:6px 14px;border-radius:10px;border:none;background:var(--sakura);color:white;font-size:12px;font-weight:700;cursor:pointer;">⏱ Giờ học</button>
+        <button id="rank-tab-words" onclick="rankSetTab('words',this)" style="padding:6px 14px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--ink-soft);font-size:12px;font-weight:600;cursor:pointer;">📝 Từ đã học</button>
+        <button id="rank-tab-days" onclick="rankSetTab('days',this)" style="padding:6px 14px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--ink-soft);font-size:12px;font-weight:600;cursor:pointer;">📅 Ngày học</button>
+      </div>
+    </div>
+    <div id="rank-list" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="text-align:center;padding:32px;color:var(--ink-soft);font-size:14px;">⏳ Đang tải bảng xếp hạng...</div>
+    </div>
+  </div>
+</div>
+
+
 <div class="section" id="sec-history">
   <div class="sec-header" id="hist-title-el">📖 Study History</div>
   <div class="card"><div class="card-title"><span>🗓️</span> Last 30 Days</div><div class="streak-grid" id="sgrid"></div></div>
@@ -1300,6 +1329,7 @@ function showSec(n,btn){
   btn.classList.add('active');
   if(n==='report') renderReport();
   if(n==='flash'){ fcSession=[]; fcIdx=0; fcFlipped=false; fcRenderAll(); }
+  if(n==='ranking') renderRanking();
 }
 function togScript(btn){btn.classList.toggle('sel');const v=btn.dataset.val;sScripts.includes(v)?sScripts=sScripts.filter(x=>x!==v):sScripts.push(v);}
 function pickM(btn){document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');sMood=btn.dataset.val;}
@@ -2902,19 +2932,88 @@ document.addEventListener('click',function(e){
 })();
 
 
+function toggleSettings(){ document.getElementById('settings-dd').classList.toggle('open'); }
+
+function updateSettingsUser(user){
+  const panel=document.getElementById('settings-user');
+  if(!panel||!user) return;
+  panel.style.display='block';
+  const name=document.getElementById('settings-name');
+  const email=document.getElementById('settings-email');
+  const avatar=document.getElementById('settings-avatar');
+  if(name) name.textContent=user.user_metadata?.full_name||user.email?.split('@')[0]||'User';
+  if(email) email.textContent=user.email||'';
+  if(avatar&&user.user_metadata?.avatar_url){ avatar.src=user.user_metadata.avatar_url; avatar.style.display='block'; }
+}
+
+// ===== RANKING =====
+let rankTab='hours';
+
+function rankSetTab(tab,btn){
+  rankTab=tab;
+  document.querySelectorAll('[id^="rank-tab-"]').forEach(b=>{ b.style.background='white'; b.style.color='var(--ink-soft)'; b.style.border='1.5px solid var(--border)'; });
+  btn.style.background='var(--sakura)'; btn.style.color='white'; btn.style.border='none';
+  renderRanking();
+}
+
+async function renderRanking(){
+  const wrap=document.getElementById('rank-list');
+  if(!wrap) return;
+  wrap.innerHTML='<div style="text-align:center;padding:32px;color:var(--ink-soft);">⏳ Đang tải...</div>';
+  // Push current user stats
+  if(currentUser){
+    const totalMins=logs.reduce((s,l)=>s+(l.mins||0),0);
+    const totalDays=[...new Set(logs.map(l=>l.date))].length;
+    const wordsLearned=flashcards.filter(c=>c.reviewCount>0).length;
+    const displayName=currentUser.user_metadata?.full_name||currentUser.email?.split('@')[0]||'User';
+    await supa.from('leaderboard').upsert({
+      user_id:currentUser.id, display_name:displayName,
+      avatar_url:currentUser.user_metadata?.avatar_url||'',
+      total_mins:totalMins, total_days:totalDays, words_learned:wordsLearned,
+      updated_at:new Date().toISOString()
+    },{onConflict:'user_id'});
+  }
+  const sortCol=rankTab==='hours'?'total_mins':rankTab==='words'?'words_learned':'total_days';
+  const {data}=await supa.from('leaderboard').select('*').order(sortCol,{ascending:false}).limit(50);
+  if(!data?.length){ wrap.innerHTML='<div style="text-align:center;padding:32px;color:var(--ink-soft);">Chưa có dữ liệu — hãy là người đầu tiên! 🌸</div>'; return; }
+  const medals=['🥇','🥈','🥉'];
+  wrap.innerHTML=data.map((u,i)=>{
+    const isMe=currentUser&&u.user_id===currentUser.id;
+    const val=rankTab==='hours'?`${(u.total_mins/60).toFixed(1)}h`:rankTab==='words'?`${u.words_learned} từ`:`${u.total_days} ngày`;
+    const rank=i<3?medals[i]:`#${i+1}`;
+    const initials=(u.display_name||'?')[0].toUpperCase();
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;background:${isMe?'var(--sakura-light)':'var(--paper-warm)'};border:1.5px solid ${isMe?'var(--sakura)':'var(--border)'};">
+      <div style="font-size:20px;width:28px;text-align:center;flex-shrink:0;">${rank}</div>
+      ${u.avatar_url?`<img src="${u.avatar_url}" width="32" height="32" style="border-radius:50%;flex-shrink:0;">`:`<div style="width:32px;height:32px;border-radius:50%;background:var(--sakura);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0;">${initials}</div>`}
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:var(--ink);">${u.display_name||'User'}${isMe?' <span style="font-size:11px;color:var(--sakura-deep);">(bạn)</span>':''}</div>
+        <div style="font-size:11px;color:var(--ink-soft);">${u.total_mins}ph · ${u.words_learned} từ · ${u.total_days} ngày</div>
+      </div>
+      <div style="font-size:16px;font-weight:800;color:var(--sakura-deep);flex-shrink:0;">${val}</div>
+    </div>`;
+  }).join('');
+}
+
 function fmtDate(d){const date=new Date(d+'T00:00:00');return date.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'2-digit',year:'numeric'});}
 function showToast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
 
 // ===== SUPABASE AUTH & SYNC =====
 const SUPA_URL = 'https://ziavhtbquwxwuueywnia.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppYXZodGJxdXd4d3V1ZXl3bmlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMDUyNzcsImV4cCI6MjA5NDY4MTI3N30.qgWJszQbwl-jTypshyxVsX1fmNu4xR0YS_kfRvVyUAo';
-const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
+  auth: {
+    detectSessionInUrl: true,
+    persistSession: true,
+    autoRefreshToken: true,
+    flowType: 'implicit'
+  }
+});
 
 let currentUser = null;
 
 // Show/hide login overlay
-function showLogin(){ document.getElementById('login-overlay').style.display='flex'; }
-function hideLogin(){ document.getElementById('login-overlay').style.display='none'; }
+function showLogin(){ const o=document.getElementById('login-overlay'); if(o){o.style.display='flex';} }
+function hideLogin(){ const o=document.getElementById('login-overlay'); if(o){o.style.display='none';} }
 
 // Google sign in
 async function signInGoogle(){
@@ -2923,7 +3022,10 @@ async function signInGoogle(){
   btn.disabled = true;
   const {error} = await supa.auth.signInWithOAuth({
     provider:'google',
-    options:{ redirectTo: 'https://hiangel21.github.io/nihongo-journey/' }
+    options:{ 
+      redirectTo: 'https://hiangel21.github.io/nihongo-journey/',
+      queryParams: { access_type: 'offline', prompt: 'consent' }
+    }
   });
   if(error){
     document.getElementById('login-error').textContent = error.message;
@@ -3091,19 +3193,28 @@ async function saveGoals_cloud(){
 }
 
 // ===== AUTH STATE LISTENER =====
+// ===== AUTH INIT — onAuthStateChange is the ONLY source of truth =====
+// Do NOT show login until we know for sure there's no session
+// Use a timeout fallback in case onAuthStateChange never fires
+
+let authResolved = false;
+
 supa.auth.onAuthStateChange(async (event, session)=>{
+  authResolved = true;
   if(session?.user){
     currentUser = session.user;
     hideLogin();
     addLogoutBtn();
-
-    // Check if first time (no cloud data yet)
+    updateSettingsUser(currentUser);
+    // Clean up URL hash after OAuth redirect
+    if(window.location.hash.includes('access_token')){
+      window.history.replaceState(null,'',window.location.pathname);
+    }
+    // Check if first time
     const {data:existing} = await supa.from('n5_state').select('user_id').eq('user_id',currentUser.id).single();
     if(!existing){
-      // First login — migrate localStorage to cloud
       await migrateToCloud(currentUser.id);
     } else {
-      // Returning user — load from cloud
       await loadFromCloud(currentUser.id);
     }
     showToast(`👋 Xin chào ${currentUser.user_metadata?.full_name||'bạn'}!`);
@@ -3113,35 +3224,23 @@ supa.auth.onAuthStateChange(async (event, session)=>{
   }
 });
 
-// Hook saveFC to also save to cloud
+// Fallback: if onAuthStateChange hasn't fired after 4s, show login
+setTimeout(()=>{
+  if(!authResolved) showLogin();
+}, 4000);
+
+// Cloud save hooks
 const _origSaveFC = saveFC;
-function saveFC(){
-  _origSaveFC();
-  saveFC_cloud();
-}
+function saveFC(){ _origSaveFC(); saveFC_cloud(); }
 
-// Hook saveN5State to also save to cloud  
 const _origSaveN5State = saveN5State;
-function saveN5State(fc){
-  _origSaveN5State(fc);
-  saveN5_cloud();
-}
+function saveN5State(fc){ _origSaveN5State(fc); saveN5_cloud(); }
 
-// Hook log saving to cloud
 const _origSaveLog = saveLog;
-function saveLog(){
-  _origSaveLog();
-  saveLogs_cloud();
-}
-
-// Init — check session on load
-(async ()=>{
-  const {data:{session}} = await supa.auth.getSession();
-  if(!session) showLogin();
-})();
+function saveLog(){ _origSaveLog(); saveLogs_cloud(); }
 </script>
 <!-- LOGIN OVERLAY -->
-<div id="login-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,var(--sakura-light),var(--fuji-light));z-index:9999;display:flex;align-items:center;justify-content:center;">
+<div id="login-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,var(--sakura-light),var(--fuji-light));z-index:9999;align-items:center;justify-content:center;">
   <div style="background:white;border-radius:24px;padding:40px 36px;max-width:380px;width:90%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.15);">
     <div style="font-size:48px;margin-bottom:12px;">🌸</div>
     <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:24px;font-weight:800;color:var(--ink);margin-bottom:8px;">My Nihongo Journey</div>
