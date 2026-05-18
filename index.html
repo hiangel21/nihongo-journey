@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://*.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.googleapis.com; script-src-elem 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.googleapis.com; img-src * data: blob:; connect-src * https://*.supabase.co wss://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:;">
 <title>にほんご Journey ✿</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root{--sakura:#FFB7C5;--sakura-light:#FFE4EC;--sakura-deep:#E8829A;--matcha:#7BAE7F;--matcha-light:#C8E6C9;--yuzu:#FFD966;--yuzu-light:#FFF3C4;--fuji:#B39DDB;--fuji-light:#EDE7F6;--ink:#3D2B1F;--ink-soft:#6B4C3B;--paper:#FFF9F5;--paper-warm:#FFF0E8;--border:#F5D0DC;--shadow:rgba(255,183,197,0.3);}
 /* Ocean theme — deep blue/cyan */
@@ -1823,9 +1822,11 @@ function renderReport(){
   else{const TL={days:'days',words:'words',mins:'mins',hira:'hiragana',kata:'katakana',kanji:'kanji'};gpl.innerHTML=goals.map(g=>{const cur=getGC(g);const pct=Math.min(100,Math.round(cur/g.target*100));return`<div class="prog-wrap"><div class="prog-label"><span>🎯 ${g.name}</span><span>${pct}% · ${cur}/${g.target} ${TL[g.type]||''}</span></div><div class="prog-bar"><div class="prog-fill ${pct>=100?'matcha':''}" style="width:${pct}%"></div></div></div>`;}).join('');}
   const mc={};logs.forEach(l=>{if(l.mood)mc[l.mood]=(mc[l.mood]||0)+1;});
   const mrep=document.getElementById('mrep');
-  if(!Object.keys(mc).length)mrep.innerHTML='<div style="font-size:14px;color:var(--ink-soft);text-align:center;padding:12px;">No mood data yet.</div>';
-  else{const total=Object.values(mc).reduce((a,b)=>a+b,0);mrep.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:14px;padding:4px 0;">${Object.entries(mc).sort((a,b)=>b[1]-a[1]).map(([m,c])=>`<div style="text-align:center;"><div style="font-size:32px;">${m}</div><div style="font-size:12px;color:var(--ink-soft);">${c} times (${Math.round(c/total*100)}%)</div></div>`).join('')}</div>`;}
-}
+  if(mrep){
+    if(!Object.keys(mc).length) mrep.innerHTML='<div style="font-size:14px;color:var(--ink-soft);text-align:center;padding:12px;">No mood data yet.</div>';
+    else{const total=Object.values(mc).reduce((a,b)=>a+b,0);mrep.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:14px;padding:4px 0;">${Object.entries(mc).sort((a,b)=>b[1]-a[1]).map(([m,c])=>`<div style="text-align:center;"><div style="font-size:32px;">${m}</div><div style="font-size:12px;color:var(--ink-soft);">${c} times (${Math.round(c/total*100)}%)</div></div>`).join('')}</div>`;}
+  }
+} // end renderReport
 
 
 // ===== SRS FLASHCARD ENGINE =====
@@ -3202,54 +3203,46 @@ const IS_LOCAL = window.location.protocol === 'blob:' ||
                  window.location.hostname === '' ||
                  !window.location.hostname.includes('github.io');
 
-if(IS_LOCAL){
-  // Skip auth entirely on local preview
-  currentUser = null;
-  // Don't show login, just render app normally
-} else {
+// Cloud save hooks — always defined, only work when logged in
+const _origSaveFC = saveFC;
+function saveFC(){ _origSaveFC(); if(!IS_LOCAL) saveFC_cloud(); }
+
+const _origSaveN5State = saveN5State;
+function saveN5State(fc){ _origSaveN5State(fc); if(!IS_LOCAL) saveN5_cloud(); }
+
+const _origSaveLog = saveLog;
+function saveLog(){ _origSaveLog(); if(!IS_LOCAL) saveLogs_cloud(); }
+
+if(!IS_LOCAL){
   // Production — full auth flow
   let authResolved = false;
 
   supa.auth.onAuthStateChange(async (event, session)=>{
-  authResolved = true;
-  if(session?.user){
-    currentUser = session.user;
-    hideLogin();
-    addLogoutBtn();
-    updateSettingsUser(currentUser);
-    // Clean up URL hash after OAuth redirect
-    if(window.location.hash.includes('access_token')){
-      window.history.replaceState(null,'',window.location.pathname);
-    }
-    // Check if first time
-    const {data:existing} = await supa.from('n5_state').select('user_id').eq('user_id',currentUser.id).single();
-    if(!existing){
-      await migrateToCloud(currentUser.id);
+    authResolved = true;
+    if(session?.user){
+      currentUser = session.user;
+      hideLogin();
+      addLogoutBtn();
+      updateSettingsUser(currentUser);
+      if(window.location.hash.includes('access_token')){
+        window.history.replaceState(null,'',window.location.pathname);
+      }
+      const {data:existing} = await supa.from('n5_state').select('user_id').eq('user_id',currentUser.id).single();
+      if(!existing){
+        await migrateToCloud(currentUser.id);
+      } else {
+        await loadFromCloud(currentUser.id);
+      }
+      showToast(`👋 Xin chào ${currentUser.user_metadata?.full_name||'bạn'}!`);
     } else {
-      await loadFromCloud(currentUser.id);
+      currentUser = null;
+      showLogin();
     }
-    showToast(`👋 Xin chào ${currentUser.user_metadata?.full_name||'bạn'}!`);
-  } else {
-    currentUser = null;
-    showLogin();
-  }
-});
+  });
 
-// Fallback: if onAuthStateChange hasn't fired after 4s, show login
-  setTimeout(()=>{
-    if(!authResolved) showLogin();
-  }, 4000);
-
-  // Cloud save hooks — only in production
-  const _origSaveFC = saveFC;
-  function saveFC(){ _origSaveFC(); saveFC_cloud(); }
-
-  const _origSaveN5State = saveN5State;
-  function saveN5State(fc){ _origSaveN5State(fc); saveN5_cloud(); }
-
-  const _origSaveLog = saveLog;
-  function saveLog(){ _origSaveLog(); saveLogs_cloud(); }
-} // end production auth block
+  // Fallback: if onAuthStateChange hasn't fired after 4s, show login
+  setTimeout(()=>{ if(!authResolved) showLogin(); }, 4000);
+}
 </script>
 <!-- LOGIN OVERLAY -->
 <div id="login-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,var(--sakura-light),var(--fuji-light));z-index:9999;align-items:center;justify-content:center;">
