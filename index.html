@@ -1875,6 +1875,7 @@ function renderLog(){
 // Streak
 function renderStreak(){
   const el=document.getElementById('sgrid');
+  if(!el) return; // sgrid removed — skip silently
   const ld=new Set(logs.map(l=>l.date));
   const today=new Date();let html='';
   for(let i=29;i>=0;i--){
@@ -2369,7 +2370,6 @@ function fcAutoLog(){
   fcSessionStartTime = null;
   updStats();
   renderLog();
-  renderStreak();
 }
 
 // ===== CELEBRATION =====
