@@ -8,10 +8,8 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root{--sakura:#FFB7C5;--sakura-light:#FFE4EC;--sakura-deep:#E8829A;--matcha:#7BAE7F;--matcha-light:#C8E6C9;--yuzu:#FFD966;--yuzu-light:#FFF3C4;--fuji:#B39DDB;--fuji-light:#EDE7F6;--ink:#3D2B1F;--ink-soft:#6B4C3B;--paper:#FFF9F5;--paper-warm:#FFF0E8;--border:#F5D0DC;--shadow:rgba(255,183,197,0.3);}
-/* Ocean theme — deep blue/cyan */
-.theme-ocean{--sakura:#0EA5C4;--sakura-light:#E0F7FC;--sakura-deep:#0B7A94;--matcha:#1A8C6E;--matcha-light:#D4F0E8;--yuzu:#F5A623;--yuzu-light:#FEF3DC;--fuji:#4A6FA5;--fuji-light:#E2EAF6;--ink:#0D2137;--ink-soft:#2E5470;--paper:#F0F8FB;--paper-warm:#E6F4F8;--border:#B0D8E8;--shadow:rgba(14,165,196,0.2);}
-/* Frieren theme — soft purple/silver mage aesthetic */
-.theme-frieren{--sakura:#9B8EC4;--sakura-light:#EDE8F8;--sakura-deep:#6B5BA0;--matcha:#7BA8A0;--matcha-light:#D8EDEB;--yuzu:#C4A882;--yuzu-light:#F5EEE0;--fuji:#B8A0D0;--fuji-light:#F0EBF8;--ink:#1E1830;--ink-soft:#4A3F6B;--paper:#F8F6FC;--paper-warm:#F2EEF9;--border:#D0C8E8;--shadow:rgba(155,142,196,0.25);}
+/* Italiano theme — same Sakura pink, different falling effect */
+.theme-italiano{--sakura:#FFB7C5;--sakura-light:#FFE4EC;--sakura-deep:#E8829A;--matcha:#7BAE7F;--matcha-light:#C8E6C9;--yuzu:#FFD966;--yuzu-light:#FFF3C4;--fuji:#B39DDB;--fuji-light:#EDE7F6;--ink:#3D2B1F;--ink-soft:#6B4C3B;--paper:#FFF9F5;--paper-warm:#FFF0E8;--border:#F5D0DC;--shadow:rgba(255,183,197,0.3);}
 /* Preset date buttons */
 .fc-preset-btn{padding:6px 10px;border-radius:9px;border:1.5px solid var(--border);background:var(--paper-warm);font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-soft);transition:all .15s;text-align:center;}
 .fc-preset-btn:hover,.fc-preset-btn.active{background:var(--sakura-light);border-color:var(--sakura);color:var(--sakura-deep);}
@@ -229,6 +227,16 @@ textarea{resize:vertical;min-height:70px;}
 <div class="petal" style="left:75%;animation-duration:10s;animation-delay:4s">🌸</div>
 <div class="petal" style="left:90%;animation-duration:8s;animation-delay:3s">✿</div>
 
+<!-- Language switcher button (fixed, left of settings) -->
+<div style="position:fixed;top:16px;right:68px;z-index:201;">
+  <button id="lang-switch-btn" onclick="toggleLangSwitch()" style="background:white;border:2px solid var(--border);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px var(--shadow);transition:all .2s;white-space:nowrap;" title="Switch study language">
+    <span id="lang-flag">🇯🇵</span><span id="lang-name" style="color:var(--ink);">日本語</span><span style="font-size:10px;color:var(--ink-soft);">▾</span>
+  </button>
+  <div id="lang-switch-dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:white;border:2px solid var(--border);border-radius:14px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.15);min-width:150px;z-index:202;">
+    <button id="sl-jp" onclick="switchStudyLang('jp')" style="width:100%;padding:8px 14px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;background:var(--sakura-light);color:var(--ink);margin-bottom:4px;">🇯🇵 <span>日本語</span></button>
+    <button id="sl-it" onclick="switchStudyLang('it')" style="width:100%;padding:8px 14px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;background:transparent;color:var(--ink-soft);">🇮🇹 <span>Italiano</span></button>
+  </div>
+</div>
 <!-- Settings button -->
 <button class="settings-btn" onclick="toggleSettings()" title="Settings">⚙️</button>
 <div class="settings-dropdown" id="settings-dd">
@@ -265,8 +273,6 @@ textarea{resize:vertical;min-height:70px;}
     <div class="settings-title" data-i18n="theme_label">🎨 Theme</div>
     <div class="settings-opts">
       <button class="settings-opt active" id="theme-girl" onclick="setTheme('girl')">🌸 Sakura</button>
-      <button class="settings-opt" id="theme-ocean" onclick="setTheme('ocean')">🌊 Ocean</button>
-      <button class="settings-opt" id="theme-frieren" onclick="setTheme('frieren')">🧝 Frieren</button>
     </div>
   </div>
 </div>
@@ -280,10 +286,10 @@ textarea{resize:vertical;min-height:70px;}
 
 <!-- Fixed scorecard bottom-right -->
 <div class="scorecard" id="scorecard-wrap">
-  <div class="sc-item matcha"><span class="sc-icon">📅</span><div><div class="sc-val" id="st">0</div><div class="sc-lbl">Total Days</div></div></div>
-  <div class="sc-item yuzu"><span class="sc-icon">⏱</span><div><div class="sc-val" id="sc-hours">0</div><div class="sc-lbl">Total Hours</div></div></div>
-  <div class="sc-item fuji"><span class="sc-icon">📊</span><div><div class="sc-val" id="sm">0</div><div class="sc-lbl">Avg min/day</div></div></div>
-  <div class="sc-item sakura"><span class="sc-icon">📝</span><div><div class="sc-val" id="sc-cards">0</div><div class="sc-lbl">Words learned</div></div></div>
+  <div class="sc-item matcha"><span class="sc-icon">📅</span><div><div class="sc-val" id="st">0</div><div class="sc-lbl" id="sc-days-lbl">Total Days</div></div></div>
+  <div class="sc-item yuzu"><span class="sc-icon">⏱</span><div><div class="sc-val" id="sc-hours">0</div><div class="sc-lbl" id="sc-hours-lbl">Total Hours</div></div></div>
+  <div class="sc-item fuji"><span class="sc-icon">📊</span><div><div class="sc-val" id="sm">0</div><div class="sc-lbl" id="sc-avg-lbl">Avg min/day</div></div></div>
+  <div class="sc-item sakura"><span class="sc-icon">📝</span><div><div class="sc-val" id="sc-cards">0</div><div class="sc-lbl" id="sc-words-lbl">Words learned</div></div></div>
 </div>
 <!-- Hide/show scorecard -->
 <button id="scorecard-x" onclick="document.getElementById('scorecard-wrap').style.display='none';document.getElementById('scorecard-x').style.display='none';document.getElementById('scorecard-show').style.display='flex';" style="position:fixed;bottom:calc(24px + 4 * 58px + 4px);right:16px;z-index:51;width:20px;height:20px;border-radius:50%;border:1px solid var(--border);background:white;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);box-shadow:0 1px 4px var(--shadow);opacity:.7;" title="Hide">✕</button>
@@ -301,7 +307,7 @@ textarea{resize:vertical;min-height:70px;}
   <button class="nav-btn" onclick="showSec('log',this)">📝 Today's Log</button>
   <button class="nav-btn" onclick="showSec('history',this)">📖 History</button>
   <button class="nav-btn" onclick="showSec('report',this)">📊 Report</button>
-  <button class="nav-btn" onclick="showSec('board',this)">🔤 Character Board</button>
+  <button id="nav-board-btn" class="nav-btn" onclick="showSec('board',this)">🔤 Character Board</button>
   <button class="nav-btn" onclick="showSec('ranking',this)">🏆 Ranking</button>
 </div>
 
@@ -394,10 +400,10 @@ textarea{resize:vertical;min-height:70px;}
 
 <!-- RANKING -->
 <div class="section" id="sec-ranking">
-  <div class="sec-header">🏆 Leaderboard</div>
+  <div class="sec-header" id="rank-title-el">🏆 Leaderboard</div>
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-      <div style="font-size:13px;color:var(--ink-soft);">So sánh với những người học cùng — cập nhật mỗi khi bạn mở trang.</div>
+      <div id="rank-desc-el" style="font-size:13px;color:var(--ink-soft);">So sánh với những người học cùng — cập nhật mỗi khi bạn mở trang.</div>
       <div style="display:flex;gap:8px;">
         <button id="rank-tab-hours" onclick="rankSetTab('hours',this)" style="padding:6px 14px;border-radius:10px;border:none;background:var(--sakura);color:white;font-size:12px;font-weight:700;cursor:pointer;">⏱ Giờ học</button>
         <button id="rank-tab-words" onclick="rankSetTab('words',this)" style="padding:6px 14px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--ink-soft);font-size:12px;font-weight:600;cursor:pointer;">📝 Từ đã học</button>
@@ -606,9 +612,9 @@ textarea{resize:vertical;min-height:70px;}
         <div>
           <div id="fc-card" style="perspective:1000px;cursor:pointer;" onclick="fcFlip()">
             <div id="fc-card-inner" style="position:relative;width:100%;min-height:340px;transform-style:preserve-3d;transition:transform 0.45s;border-radius:20px;">
-              <!-- FRONT: 88 * 1.4 = ~123px -->
+              <!-- FRONT -->
               <div id="fc-front" style="position:absolute;width:100%;min-height:340px;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:linear-gradient(135deg,var(--sakura-light),white);border:2.5px solid var(--sakura);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;box-sizing:border-box;">
-                <div style="font-size:12px;color:var(--ink-soft);margin-bottom:20px;letter-spacing:2px;text-transform:uppercase;">Japanese</div>
+                <div id="fc-front-lang-lbl" style="font-size:12px;color:var(--ink-soft);margin-bottom:20px;letter-spacing:2px;text-transform:uppercase;">Japanese</div>
                 <div id="fc-front-text" style="font-family:'Zen Maru Gothic',sans-serif;font-size:123px;font-weight:700;color:var(--ink);line-height:1;text-align:center;text-shadow:0 3px 16px rgba(232,130,154,0.3);">おはよう</div>
                 <div style="font-size:14px;color:var(--sakura-deep);margin-top:28px;font-weight:600;">Tap to reveal ↓</div>
               </div>
@@ -687,8 +693,8 @@ textarea{resize:vertical;min-height:70px;}
     <!-- Session done -->
     <div id="fc-done" style="display:none;text-align:center;padding:40px 0;">
       <div style="font-size:48px;margin-bottom:14px;">🎉</div>
-      <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:20px;color:var(--ink);margin-bottom:8px;">Session complete!</div>
-      <div style="font-size:14px;color:var(--ink-soft);">Come back tomorrow for your next review. Keep it up, Angel!</div>
+      <div style="font-family:'Zen Maru Gothic',sans-serif;font-size:20px;color:var(--ink);margin-bottom:8px;" id="fc-done-title">Session complete!</div>
+      <div style="font-size:14px;color:var(--ink-soft);" id="fc-done-msg">Come back tomorrow for your next review. Keep it up, Angel!</div>
       <button onclick="fcLaunchSession()" style="margin-top:18px;padding:12px 28px;border-radius:12px;border:none;background:var(--sakura);color:white;font-size:14px;font-weight:700;cursor:pointer;">▶ Play again</button>
     </div>
   </div>
@@ -742,8 +748,8 @@ textarea{resize:vertical;min-height:70px;}
 
   <!-- RIGHT: pinned goals sidebar -->
   <div class="pinned-goals-card" id="pinned-sidebar">
-    <div class="pinned-goals-title">📌 Pinned Goals</div>
-    <div style="font-size:11px;color:var(--ink-soft);margin-bottom:10px;">Drag to reorder priority ↕</div>
+    <div class="pinned-goals-title" id="pin-goals-lbl">📌 Pinned Goals</div>
+    <div style="font-size:11px;color:var(--ink-soft);margin-bottom:10px;" id="pin-drag-lbl">Drag to reorder priority ↕</div>
     <div id="pinned-goals-list"><div style="font-size:12px;color:var(--ink-soft);text-align:center;padding:16px 0;line-height:1.6;">No pinned goals yet.<br>Go to 🎯 Goals and click Pin.</div></div>
   </div>
 
@@ -1468,6 +1474,609 @@ const N5_DECK = [
   {id:'n5_630',front:'花',read:'はな・か',back:'flower',backVi:'hoa',note:'Kanji'},
 ];
 
+const IT_DECK = [
+  {id:'it_001',front:'ciao',back:'hello / bye',backVi:'xin chào / tạm biệt',note:'Greeting'},
+  {id:'it_002',front:'buongiorno',back:'good morning',backVi:'chào buổi sáng',note:'Greeting'},
+  {id:'it_003',front:'buonasera',back:'good evening',backVi:'chào buổi tối',note:'Greeting'},
+  {id:'it_004',front:'buonanotte',back:'good night',backVi:'chúc ngủ ngon',note:'Greeting'},
+  {id:'it_005',front:'arrivederci',back:'goodbye (formal)',backVi:'tạm biệt (trang trọng)',note:'Greeting'},
+  {id:'it_006',front:'per favore',back:'please',backVi:'làm ơn',note:'Expression'},
+  {id:'it_007',front:'grazie',back:'thank you',backVi:'cảm ơn',note:'Expression'},
+  {id:'it_008',front:'prego',back:"you're welcome",backVi:'không có gì',note:'Expression'},
+  {id:'it_009',front:'scusa',back:'excuse me (informal)',backVi:'xin lỗi (thân mật)',note:'Expression'},
+  {id:'it_010',front:'scusi',back:'excuse me (formal)',backVi:'xin lỗi (trang trọng)',note:'Expression'},
+  {id:'it_011',front:'mi dispiace',back:"I'm sorry",backVi:'tôi xin lỗi',note:'Expression'},
+  {id:'it_012',front:'sì',back:'yes',backVi:'có / vâng',note:'Expression'},
+  {id:'it_013',front:'no',back:'no',backVi:'không',note:'Expression'},
+  {id:'it_014',front:'come stai?',back:'how are you? (informal)',backVi:'bạn khỏe không?',note:'Expression'},
+  {id:'it_015',front:'bene',back:'well / fine',backVi:'tốt / khỏe',note:'Adjective'},
+  {id:'it_016',front:'male',back:'badly / not well',backVi:'tệ / không khỏe',note:'Adjective'},
+  {id:'it_017',front:'così così',back:'so so',backVi:'tạm tạm',note:'Expression'},
+  {id:'it_018',front:'mi chiamo',back:'my name is',backVi:'tôi tên là',note:'Expression'},
+  {id:'it_019',front:'piacere',back:'nice to meet you',backVi:'hân hạnh được gặp',note:'Expression'},
+  {id:'it_020',front:'di dove sei?',back:'where are you from?',backVi:'bạn từ đâu đến?',note:'Expression'},
+  {id:'it_021',front:'uno',back:'one',backVi:'một',note:'Number'},
+  {id:'it_022',front:'due',back:'two',backVi:'hai',note:'Number'},
+  {id:'it_023',front:'tre',back:'three',backVi:'ba',note:'Number'},
+  {id:'it_024',front:'quattro',back:'four',backVi:'bốn',note:'Number'},
+  {id:'it_025',front:'cinque',back:'five',backVi:'năm',note:'Number'},
+  {id:'it_026',front:'sei',back:'six',backVi:'sáu',note:'Number'},
+  {id:'it_027',front:'sette',back:'seven',backVi:'bảy',note:'Number'},
+  {id:'it_028',front:'otto',back:'eight',backVi:'tám',note:'Number'},
+  {id:'it_029',front:'nove',back:'nine',backVi:'chín',note:'Number'},
+  {id:'it_030',front:'dieci',back:'ten',backVi:'mười',note:'Number'},
+  {id:'it_031',front:'venti',back:'twenty',backVi:'hai mươi',note:'Number'},
+  {id:'it_032',front:'trenta',back:'thirty',backVi:'ba mươi',note:'Number'},
+  {id:'it_033',front:'cento',back:'one hundred',backVi:'một trăm',note:'Number'},
+  {id:'it_034',front:'mille',back:'one thousand',backVi:'một nghìn',note:'Number'},
+  {id:'it_035',front:'oggi',back:'today',backVi:'hôm nay',note:'Time'},
+  {id:'it_036',front:'ieri',back:'yesterday',backVi:'hôm qua',note:'Time'},
+  {id:'it_037',front:'domani',back:'tomorrow',backVi:'ngày mai',note:'Time'},
+  {id:'it_038',front:'mattina',back:'morning',backVi:'buổi sáng',note:'Time'},
+  {id:'it_039',front:'pomeriggio',back:'afternoon',backVi:'buổi chiều',note:'Time'},
+  {id:'it_040',front:'sera',back:'evening',backVi:'buổi tối',note:'Time'},
+  {id:'it_041',front:'notte',back:'night',backVi:'ban đêm',note:'Time'},
+  {id:'it_042',front:'settimana',back:'week',backVi:'tuần',note:'Time'},
+  {id:'it_043',front:'mese',back:'month',backVi:'tháng',note:'Time'},
+  {id:'it_044',front:'anno',back:'year',backVi:'năm',note:'Time'},
+  {id:'it_045',front:'lunedì',back:'Monday',backVi:'thứ Hai',note:'Time'},
+  {id:'it_046',front:'martedì',back:'Tuesday',backVi:'thứ Ba',note:'Time'},
+  {id:'it_047',front:'mercoledì',back:'Wednesday',backVi:'thứ Tư',note:'Time'},
+  {id:'it_048',front:'giovedì',back:'Thursday',backVi:'thứ Năm',note:'Time'},
+  {id:'it_049',front:'venerdì',back:'Friday',backVi:'thứ Sáu',note:'Time'},
+  {id:'it_050',front:'sabato',back:'Saturday',backVi:'thứ Bảy',note:'Time'},
+  {id:'it_051',front:'domenica',back:'Sunday',backVi:'Chủ nhật',note:'Time'},
+  {id:'it_052',front:'gennaio',back:'January',backVi:'tháng Một',note:'Time'},
+  {id:'it_053',front:'febbraio',back:'February',backVi:'tháng Hai',note:'Time'},
+  {id:'it_054',front:'marzo',back:'March',backVi:'tháng Ba',note:'Time'},
+  {id:'it_055',front:'aprile',back:'April',backVi:'tháng Tư',note:'Time'},
+  {id:'it_056',front:'maggio',back:'May',backVi:'tháng Năm',note:'Time'},
+  {id:'it_057',front:'giugno',back:'June',backVi:'tháng Sáu',note:'Time'},
+  {id:'it_058',front:'luglio',back:'July',backVi:'tháng Bảy',note:'Time'},
+  {id:'it_059',front:'agosto',back:'August',backVi:'tháng Tám',note:'Time'},
+  {id:'it_060',front:'settembre',back:'September',backVi:'tháng Chín',note:'Time'},
+  {id:'it_061',front:'ottobre',back:'October',backVi:'tháng Mười',note:'Time'},
+  {id:'it_062',front:'novembre',back:'November',backVi:'tháng Mười Một',note:'Time'},
+  {id:'it_063',front:'dicembre',back:'December',backVi:'tháng Mười Hai',note:'Time'},
+  {id:'it_064',front:'famiglia',back:'family',backVi:'gia đình',note:'Family'},
+  {id:'it_065',front:'madre',back:'mother',backVi:'mẹ',note:'Family'},
+  {id:'it_066',front:'padre',back:'father',backVi:'bố',note:'Family'},
+  {id:'it_067',front:'fratello',back:'brother',backVi:'anh/em trai',note:'Family'},
+  {id:'it_068',front:'sorella',back:'sister',backVi:'chị/em gái',note:'Family'},
+  {id:'it_069',front:'figlio',back:'son',backVi:'con trai',note:'Family'},
+  {id:'it_070',front:'figlia',back:'daughter',backVi:'con gái',note:'Family'},
+  {id:'it_071',front:'nonno',back:'grandfather',backVi:'ông nội/ngoại',note:'Family'},
+  {id:'it_072',front:'nonna',back:'grandmother',backVi:'bà nội/ngoại',note:'Family'},
+  {id:'it_073',front:'marito',back:'husband',backVi:'chồng',note:'Family'},
+  {id:'it_074',front:'moglie',back:'wife',backVi:'vợ',note:'Family'},
+  {id:'it_075',front:'amico',back:'friend (male)',backVi:'bạn bè (nam)',note:'Family'},
+  {id:'it_076',front:'amica',back:'friend (female)',backVi:'bạn bè (nữ)',note:'Family'},
+  {id:'it_077',front:'uomo',back:'man',backVi:'đàn ông',note:'Noun'},
+  {id:'it_078',front:'donna',back:'woman',backVi:'phụ nữ',note:'Noun'},
+  {id:'it_079',front:'ragazzo',back:'boy / boyfriend',backVi:'bé trai / bạn trai',note:'Noun'},
+  {id:'it_080',front:'ragazza',back:'girl / girlfriend',backVi:'bé gái / bạn gái',note:'Noun'},
+  {id:'it_081',front:'acqua',back:'water',backVi:'nước',note:'Food'},
+  {id:'it_082',front:'caffè',back:'coffee',backVi:'cà phê',note:'Food'},
+  {id:'it_083',front:'tè',back:'tea',backVi:'trà',note:'Food'},
+  {id:'it_084',front:'vino',back:'wine',backVi:'rượu vang',note:'Food'},
+  {id:'it_085',front:'birra',back:'beer',backVi:'bia',note:'Food'},
+  {id:'it_086',front:'latte',back:'milk',backVi:'sữa',note:'Food'},
+  {id:'it_087',front:'succo',back:'juice',backVi:'nước ép',note:'Food'},
+  {id:'it_088',front:'pane',back:'bread',backVi:'bánh mì',note:'Food'},
+  {id:'it_089',front:'pasta',back:'pasta',backVi:'mì ống',note:'Food'},
+  {id:'it_090',front:'pizza',back:'pizza',backVi:'pizza',note:'Food'},
+  {id:'it_091',front:'carne',back:'meat',backVi:'thịt',note:'Food'},
+  {id:'it_092',front:'pesce',back:'fish',backVi:'cá',note:'Food'},
+  {id:'it_093',front:'pollo',back:'chicken',backVi:'gà',note:'Food'},
+  {id:'it_094',front:'verdura',back:'vegetables',backVi:'rau củ',note:'Food'},
+  {id:'it_095',front:'frutta',back:'fruit',backVi:'trái cây',note:'Food'},
+  {id:'it_096',front:'formaggio',back:'cheese',backVi:'phô mai',note:'Food'},
+  {id:'it_097',front:'uovo',back:'egg',backVi:'trứng',note:'Food'},
+  {id:'it_098',front:'riso',back:'rice',backVi:'gạo / cơm',note:'Food'},
+  {id:'it_099',front:'zucchero',back:'sugar',backVi:'đường',note:'Food'},
+  {id:'it_100',front:'sale',back:'salt',backVi:'muối',note:'Food'},
+  {id:'it_101',front:'colazione',back:'breakfast',backVi:'bữa sáng',note:'Food'},
+  {id:'it_102',front:'pranzo',back:'lunch',backVi:'bữa trưa',note:'Food'},
+  {id:'it_103',front:'cena',back:'dinner',backVi:'bữa tối',note:'Food'},
+  {id:'it_104',front:'gelato',back:'ice cream',backVi:'kem',note:'Food'},
+  {id:'it_105',front:'torta',back:'cake',backVi:'bánh kem',note:'Food'},
+  {id:'it_106',front:'mela',back:'apple',backVi:'táo',note:'Food'},
+  {id:'it_107',front:'banana',back:'banana',backVi:'chuối',note:'Food'},
+  {id:'it_108',front:'arancia',back:'orange (fruit)',backVi:'cam',note:'Food'},
+  {id:'it_109',front:'pomodoro',back:'tomato',backVi:'cà chua',note:'Food'},
+  {id:'it_110',front:'patata',back:'potato',backVi:'khoai tây',note:'Food'},
+  {id:'it_111',front:'rosso',back:'red',backVi:'màu đỏ',note:'Color'},
+  {id:'it_112',front:'blu',back:'blue',backVi:'màu xanh dương',note:'Color'},
+  {id:'it_113',front:'verde',back:'green',backVi:'màu xanh lá',note:'Color'},
+  {id:'it_114',front:'giallo',back:'yellow',backVi:'màu vàng',note:'Color'},
+  {id:'it_115',front:'bianco',back:'white',backVi:'màu trắng',note:'Color'},
+  {id:'it_116',front:'nero',back:'black',backVi:'màu đen',note:'Color'},
+  {id:'it_117',front:'grigio',back:'grey',backVi:'màu xám',note:'Color'},
+  {id:'it_118',front:'rosa',back:'pink',backVi:'màu hồng',note:'Color'},
+  {id:'it_119',front:'arancione',back:'orange (color)',backVi:'màu cam',note:'Color'},
+  {id:'it_120',front:'viola',back:'purple',backVi:'màu tím',note:'Color'},
+  {id:'it_121',front:'marrone',back:'brown',backVi:'màu nâu',note:'Color'},
+  {id:'it_122',front:'casa',back:'house / home',backVi:'nhà',note:'Noun'},
+  {id:'it_123',front:'appartamento',back:'apartment',backVi:'căn hộ',note:'Noun'},
+  {id:'it_124',front:'camera',back:'room / bedroom',backVi:'phòng ngủ',note:'Noun'},
+  {id:'it_125',front:'cucina',back:'kitchen',backVi:'bếp',note:'Noun'},
+  {id:'it_126',front:'bagno',back:'bathroom',backVi:'phòng tắm',note:'Noun'},
+  {id:'it_127',front:'salotto',back:'living room',backVi:'phòng khách',note:'Noun'},
+  {id:'it_128',front:'tavolo',back:'table',backVi:'bàn',note:'Noun'},
+  {id:'it_129',front:'sedia',back:'chair',backVi:'ghế',note:'Noun'},
+  {id:'it_130',front:'letto',back:'bed',backVi:'giường',note:'Noun'},
+  {id:'it_131',front:'finestra',back:'window',backVi:'cửa sổ',note:'Noun'},
+  {id:'it_132',front:'porta',back:'door',backVi:'cửa',note:'Noun'},
+  {id:'it_133',front:'libro',back:'book',backVi:'sách',note:'Noun'},
+  {id:'it_134',front:'penna',back:'pen',backVi:'bút',note:'Noun'},
+  {id:'it_135',front:'telefono',back:'phone',backVi:'điện thoại',note:'Noun'},
+  {id:'it_136',front:'computer',back:'computer',backVi:'máy tính',note:'Noun'},
+  {id:'it_137',front:'chiave',back:'key',backVi:'chìa khóa',note:'Noun'},
+  {id:'it_138',front:'borsa',back:'bag',backVi:'túi',note:'Noun'},
+  {id:'it_139',front:'vestiti',back:'clothes',backVi:'quần áo',note:'Noun'},
+  {id:'it_140',front:'scarpe',back:'shoes',backVi:'giày',note:'Noun'},
+  {id:'it_141',front:'città',back:'city',backVi:'thành phố',note:'Place'},
+  {id:'it_142',front:'via',back:'street',backVi:'đường phố',note:'Place'},
+  {id:'it_143',front:'piazza',back:'square / plaza',backVi:'quảng trường',note:'Place'},
+  {id:'it_144',front:'negozio',back:'shop / store',backVi:'cửa hàng',note:'Place'},
+  {id:'it_145',front:'supermercato',back:'supermarket',backVi:'siêu thị',note:'Place'},
+  {id:'it_146',front:'farmacia',back:'pharmacy',backVi:'nhà thuốc',note:'Place'},
+  {id:'it_147',front:'ospedale',back:'hospital',backVi:'bệnh viện',note:'Place'},
+  {id:'it_148',front:'scuola',back:'school',backVi:'trường học',note:'Place'},
+  {id:'it_149',front:'università',back:'university',backVi:'đại học',note:'Place'},
+  {id:'it_150',front:'ufficio',back:'office',backVi:'văn phòng',note:'Place'},
+  {id:'it_151',front:'banca',back:'bank',backVi:'ngân hàng',note:'Place'},
+  {id:'it_152',front:'stazione',back:'station',backVi:'ga tàu',note:'Place'},
+  {id:'it_153',front:'aeroporto',back:'airport',backVi:'sân bay',note:'Place'},
+  {id:'it_154',front:'albergo',back:'hotel',backVi:'khách sạn',note:'Place'},
+  {id:'it_155',front:'ristorante',back:'restaurant',backVi:'nhà hàng',note:'Place'},
+  {id:'it_156',front:'bar',back:'café / bar',backVi:'quán cà phê / bar',note:'Place'},
+  {id:'it_157',front:'museo',back:'museum',backVi:'bảo tàng',note:'Place'},
+  {id:'it_158',front:'parco',back:'park',backVi:'công viên',note:'Place'},
+  {id:'it_159',front:'mare',back:'sea',backVi:'biển',note:'Nature'},
+  {id:'it_160',front:'montagna',back:'mountain',backVi:'núi',note:'Nature'},
+  {id:'it_161',front:'macchina',back:'car',backVi:'xe hơi',note:'Transport'},
+  {id:'it_162',front:'autobus',back:'bus',backVi:'xe buýt',note:'Transport'},
+  {id:'it_163',front:'treno',back:'train',backVi:'tàu hỏa',note:'Transport'},
+  {id:'it_164',front:'aereo',back:'airplane',backVi:'máy bay',note:'Transport'},
+  {id:'it_165',front:'taxi',back:'taxi',backVi:'taxi',note:'Transport'},
+  {id:'it_166',front:'bicicletta',back:'bicycle',backVi:'xe đạp',note:'Transport'},
+  {id:'it_167',front:'metropolitana',back:'subway / metro',backVi:'tàu điện ngầm',note:'Transport'},
+  {id:'it_168',front:'testa',back:'head',backVi:'đầu',note:'Body'},
+  {id:'it_169',front:'capelli',back:'hair',backVi:'tóc',note:'Body'},
+  {id:'it_170',front:'occhio',back:'eye',backVi:'mắt',note:'Body'},
+  {id:'it_171',front:'naso',back:'nose',backVi:'mũi',note:'Body'},
+  {id:'it_172',front:'bocca',back:'mouth',backVi:'miệng',note:'Body'},
+  {id:'it_173',front:'orecchio',back:'ear',backVi:'tai',note:'Body'},
+  {id:'it_174',front:'mano',back:'hand',backVi:'tay',note:'Body'},
+  {id:'it_175',front:'piede',back:'foot',backVi:'chân',note:'Body'},
+  {id:'it_176',front:'essere',back:'to be',backVi:'là / ở',note:'Verb'},
+  {id:'it_177',front:'avere',back:'to have',backVi:'có',note:'Verb'},
+  {id:'it_178',front:'fare',back:'to do / make',backVi:'làm',note:'Verb'},
+  {id:'it_179',front:'andare',back:'to go',backVi:'đi',note:'Verb'},
+  {id:'it_180',front:'venire',back:'to come',backVi:'đến',note:'Verb'},
+  {id:'it_181',front:'parlare',back:'to speak',backVi:'nói',note:'Verb'},
+  {id:'it_182',front:'capire',back:'to understand',backVi:'hiểu',note:'Verb'},
+  {id:'it_183',front:'mangiare',back:'to eat',backVi:'ăn',note:'Verb'},
+  {id:'it_184',front:'bere',back:'to drink',backVi:'uống',note:'Verb'},
+  {id:'it_185',front:'dormire',back:'to sleep',backVi:'ngủ',note:'Verb'},
+  {id:'it_186',front:'lavorare',back:'to work',backVi:'làm việc',note:'Verb'},
+  {id:'it_187',front:'studiare',back:'to study',backVi:'học',note:'Verb'},
+  {id:'it_188',front:'leggere',back:'to read',backVi:'đọc',note:'Verb'},
+  {id:'it_189',front:'scrivere',back:'to write',backVi:'viết',note:'Verb'},
+  {id:'it_190',front:'ascoltare',back:'to listen',backVi:'nghe',note:'Verb'},
+  {id:'it_191',front:'guardare',back:'to watch / look',backVi:'nhìn / xem',note:'Verb'},
+  {id:'it_192',front:'comprare',back:'to buy',backVi:'mua',note:'Verb'},
+  {id:'it_193',front:'sapere',back:'to know (facts)',backVi:'biết (sự thật)',note:'Verb'},
+  {id:'it_194',front:'potere',back:'can / to be able to',backVi:'có thể',note:'Verb'},
+  {id:'it_195',front:'volere',back:'to want',backVi:'muốn',note:'Verb'},
+  {id:'it_196',front:'dovere',back:'must / have to',backVi:'phải',note:'Verb'},
+  {id:'it_197',front:'piacere di v.',back:'to like',backVi:'thích',note:'Verb'},
+  {id:'it_198',front:'abitare',back:'to live (reside)',backVi:'sống / ở',note:'Verb'},
+  {id:'it_199',front:'prendere',back:'to take',backVi:'lấy / đón',note:'Verb'},
+  {id:'it_200',front:'vedere',back:'to see',backVi:'thấy',note:'Verb'},
+  {id:'it_201',front:'uscire',back:'to go out',backVi:'ra ngoài',note:'Verb'},
+  {id:'it_202',front:'tornare',back:'to return',backVi:'trở về',note:'Verb'},
+  {id:'it_203',front:'partire',back:'to leave / depart',backVi:'rời đi',note:'Verb'},
+  {id:'it_204',front:'arrivare',back:'to arrive',backVi:'đến nơi',note:'Verb'},
+  {id:'it_205',front:'aspettare',back:'to wait',backVi:'chờ',note:'Verb'},
+  {id:'it_206',front:'cercare',back:'to look for',backVi:'tìm kiếm',note:'Verb'},
+  {id:'it_207',front:'trovare',back:'to find',backVi:'tìm thấy',note:'Verb'},
+  {id:'it_208',front:'portare',back:'to bring / carry',backVi:'mang / đem',note:'Verb'},
+  {id:'it_209',front:'dare',back:'to give',backVi:'cho',note:'Verb'},
+  {id:'it_210',front:'chiedere',back:'to ask',backVi:'hỏi',note:'Verb'},
+  {id:'it_211',front:'grande',back:'big / large',backVi:'to / lớn',note:'Adjective'},
+  {id:'it_212',front:'piccolo',back:'small',backVi:'nhỏ',note:'Adjective'},
+  {id:'it_213',front:'bello',back:'beautiful / nice',backVi:'đẹp',note:'Adjective'},
+  {id:'it_214',front:'brutto',back:'ugly / bad',backVi:'xấu',note:'Adjective'},
+  {id:'it_215',front:'nuovo',back:'new',backVi:'mới',note:'Adjective'},
+  {id:'it_216',front:'vecchio',back:'old',backVi:'cũ / già',note:'Adjective'},
+  {id:'it_217',front:'caldo',back:'hot / warm',backVi:'nóng / ấm',note:'Adjective'},
+  {id:'it_218',front:'freddo',back:'cold',backVi:'lạnh',note:'Adjective'},
+  {id:'it_219',front:'buono',back:'good',backVi:'tốt / ngon',note:'Adjective'},
+  {id:'it_220',front:'cattivo',back:'bad',backVi:'xấu / tệ',note:'Adjective'},
+  {id:'it_221',front:'alto',back:'tall / high',backVi:'cao',note:'Adjective'},
+  {id:'it_222',front:'basso',back:'short / low',backVi:'thấp',note:'Adjective'},
+  {id:'it_223',front:'caro',back:'expensive / dear',backVi:'đắt',note:'Adjective'},
+  {id:'it_224',front:'economico',back:'cheap',backVi:'rẻ',note:'Adjective'},
+  {id:'it_225',front:'facile',back:'easy',backVi:'dễ',note:'Adjective'},
+  {id:'it_226',front:'difficile',back:'difficult',backVi:'khó',note:'Adjective'},
+  {id:'it_227',front:'stanco',back:'tired',backVi:'mệt',note:'Adjective'},
+  {id:'it_228',front:'felice',back:'happy',backVi:'vui / hạnh phúc',note:'Adjective'},
+  {id:'it_229',front:'triste',back:'sad',backVi:'buồn',note:'Adjective'},
+  {id:'it_230',front:'arrabbiato',back:'angry',backVi:'tức giận',note:'Adjective'},
+  {id:'it_231',front:'ammalato',back:'sick / ill',backVi:'ốm / bệnh',note:'Adjective'},
+  {id:'it_232',front:'libero',back:'free',backVi:'tự do / rảnh',note:'Adjective'},
+  {id:'it_233',front:'occupato',back:'busy',backVi:'bận',note:'Adjective'},
+  {id:'it_234',front:'interessante',back:'interesting',backVi:'thú vị',note:'Adjective'},
+  {id:'it_235',front:'noioso',back:'boring',backVi:'nhàm chán',note:'Adjective'},
+  {id:'it_236',front:'lavoro',back:'work / job',backVi:'công việc',note:'Noun'},
+  {id:'it_237',front:'collega',back:'colleague',backVi:'đồng nghiệp',note:'Noun'},
+  {id:'it_238',front:'riunione',back:'meeting',backVi:'cuộc họp',note:'Noun'},
+  {id:'it_239',front:'corso',back:'course',backVi:'khóa học',note:'Noun'},
+  {id:'it_240',front:'lezione',back:'lesson / class',backVi:'bài học / lớp học',note:'Noun'},
+  {id:'it_241',front:'esame',back:'exam',backVi:'kỳ thi',note:'Noun'},
+  {id:'it_242',front:'compito',back:'homework',backVi:'bài tập về nhà',note:'Noun'},
+  {id:'it_243',front:'professore',back:'teacher / professor (male)',backVi:'giáo viên (nam)',note:'Noun'},
+  {id:'it_244',front:'professoressa',back:'teacher (female)',backVi:'giáo viên (nữ)',note:'Noun'},
+  {id:'it_245',front:'studente',back:'student (male)',backVi:'sinh viên (nam)',note:'Noun'},
+  {id:'it_246',front:'studentessa',back:'student (female)',backVi:'sinh viên (nữ)',note:'Noun'},
+  {id:'it_247',front:'stipendio',back:'salary',backVi:'lương',note:'Noun'},
+  {id:'it_248',front:'medico',back:'doctor',backVi:'bác sĩ',note:'Health'},
+  {id:'it_249',front:'medicina',back:'medicine',backVi:'thuốc',note:'Health'},
+  {id:'it_250',front:'mal di testa',back:'headache',backVi:'đau đầu',note:'Health'},
+  {id:'it_251',front:'febbre',back:'fever',backVi:'sốt',note:'Health'},
+  {id:'it_252',front:'raffreddore',back:'cold (illness)',backVi:'cảm lạnh',note:'Health'},
+  {id:'it_253',front:'dolore',back:'pain',backVi:'đau',note:'Health'},
+  {id:'it_254',front:'allergia',back:'allergy',backVi:'dị ứng',note:'Health'},
+  {id:'it_255',front:'prezzo',back:'price',backVi:'giá',note:'Shopping'},
+  {id:'it_256',front:'sconto',back:'discount',backVi:'giảm giá',note:'Shopping'},
+  {id:'it_257',front:'soldi',back:'money',backVi:'tiền',note:'Shopping'},
+  {id:'it_258',front:'euro',back:'euro',backVi:'euro',note:'Shopping'},
+  {id:'it_259',front:'scontrino',back:'receipt',backVi:'hóa đơn',note:'Shopping'},
+  {id:'it_260',front:'cassa',back:'cashier / checkout',backVi:'quầy thu ngân',note:'Shopping'},
+  {id:'it_261',front:'taglia',back:'size (clothing)',backVi:'kích cỡ',note:'Shopping'},
+  {id:'it_262',front:'sole',back:'sun',backVi:'mặt trời',note:'Nature'},
+  {id:'it_263',front:'luna',back:'moon',backVi:'mặt trăng',note:'Nature'},
+  {id:'it_264',front:'cielo',back:'sky',backVi:'bầu trời',note:'Nature'},
+  {id:'it_265',front:'nuvola',back:'cloud',backVi:'đám mây',note:'Nature'},
+  {id:'it_266',front:'pioggia',back:'rain',backVi:'mưa',note:'Nature'},
+  {id:'it_267',front:'neve',back:'snow',backVi:'tuyết',note:'Nature'},
+  {id:'it_268',front:'vento',back:'wind',backVi:'gió',note:'Nature'},
+  {id:'it_269',front:'temporale',back:'storm',backVi:'bão / giông',note:'Nature'},
+  {id:'it_270',front:'cane',back:'dog',backVi:'chó',note:'Nature'},
+  {id:'it_271',front:'gatto',back:'cat',backVi:'mèo',note:'Nature'},
+  {id:'it_272',front:'fiore',back:'flower',backVi:'hoa',note:'Nature'},
+  {id:'it_273',front:'albero',back:'tree',backVi:'cây',note:'Nature'},
+  {id:'it_274',front:'pensare',back:'to think',backVi:'nghĩ',note:'Verb'},
+  {id:'it_275',front:'credere',back:'to believe',backVi:'tin',note:'Verb'},
+  {id:'it_276',front:'sperare',back:'to hope',backVi:'hy vọng',note:'Verb'},
+  {id:'it_277',front:'provare',back:'to try',backVi:'thử',note:'Verb'},
+  {id:'it_278',front:'ricordare',back:'to remember',backVi:'nhớ',note:'Verb'},
+  {id:'it_279',front:'dimenticare',back:'to forget',backVi:'quên',note:'Verb'},
+  {id:'it_280',front:'cominciare',back:'to begin',backVi:'bắt đầu',note:'Verb'},
+  {id:'it_281',front:'finire',back:'to finish',backVi:'kết thúc',note:'Verb'},
+  {id:'it_282',front:'continuare',back:'to continue',backVi:'tiếp tục',note:'Verb'},
+  {id:'it_283',front:'aiutare',back:'to help',backVi:'giúp đỡ',note:'Verb'},
+  {id:'it_284',front:'rispondere',back:'to answer',backVi:'trả lời',note:'Verb'},
+  {id:'it_285',front:'spiegare',back:'to explain',backVi:'giải thích',note:'Verb'},
+  {id:'it_286',front:'imparare',back:'to learn',backVi:'học hỏi',note:'Verb'},
+  {id:'it_287',front:'insegnare',back:'to teach',backVi:'dạy',note:'Verb'},
+  {id:'it_288',front:'giocare',back:'to play',backVi:'chơi',note:'Verb'},
+  {id:'it_289',front:'correre',back:'to run',backVi:'chạy',note:'Verb'},
+  {id:'it_290',front:'camminare',back:'to walk',backVi:'đi bộ',note:'Verb'},
+  {id:'it_291',front:'cucinare',back:'to cook',backVi:'nấu ăn',note:'Verb'},
+  {id:'it_292',front:'prenotare',back:'to book / reserve',backVi:'đặt chỗ',note:'Verb'},
+  {id:'it_293',front:'viaggiare',back:'to travel',backVi:'đi du lịch',note:'Verb'},
+  {id:'it_294',front:'incontrare',back:'to meet',backVi:'gặp gỡ',note:'Verb'},
+  {id:'it_295',front:'scegliere',back:'to choose',backVi:'chọn',note:'Verb'},
+  {id:'it_296',front:'decidere',back:'to decide',backVi:'quyết định',note:'Verb'},
+  {id:'it_297',front:'cambiare',back:'to change',backVi:'thay đổi',note:'Verb'},
+  {id:'it_298',front:'pagare',back:'to pay',backVi:'trả tiền',note:'Verb'},
+  {id:'it_299',front:'aprire',back:'to open',backVi:'mở',note:'Verb'},
+  {id:'it_300',front:'chiudere',back:'to close',backVi:'đóng',note:'Verb'},
+  {id:'it_301',front:'molto',back:'very / a lot',backVi:'rất / nhiều',note:'Adverb'},
+  {id:'it_302',front:'poco',back:'a little / few',backVi:'ít',note:'Adverb'},
+  {id:'it_303',front:'abbastanza',back:'enough / quite',backVi:'đủ / khá',note:'Adverb'},
+  {id:'it_304',front:'troppo',back:'too much',backVi:'quá nhiều',note:'Adverb'},
+  {id:'it_305',front:'sempre',back:'always',backVi:'luôn luôn',note:'Adverb'},
+  {id:'it_306',front:'mai',back:'never',backVi:'không bao giờ',note:'Adverb'},
+  {id:'it_307',front:'spesso',back:'often',backVi:'thường xuyên',note:'Adverb'},
+  {id:'it_308',front:'a volte',back:'sometimes',backVi:'đôi khi',note:'Adverb'},
+  {id:'it_309',front:'già',back:'already',backVi:'đã rồi',note:'Adverb'},
+  {id:'it_310',front:'ancora',back:'still / yet / again',backVi:'vẫn / chưa / lại',note:'Adverb'},
+  {id:'it_311',front:'subito',back:'immediately',backVi:'ngay lập tức',note:'Adverb'},
+  {id:'it_312',front:'presto',back:'soon / early',backVi:'sớm',note:'Adverb'},
+  {id:'it_313',front:'tardi',back:'late',backVi:'muộn',note:'Adverb'},
+  {id:'it_314',front:'forse',back:'maybe / perhaps',backVi:'có lẽ',note:'Adverb'},
+  {id:'it_315',front:'sicuramente',back:'certainly',backVi:'chắc chắn',note:'Adverb'},
+  {id:'it_316',front:'quasi',back:'almost',backVi:'gần như',note:'Adverb'},
+  {id:'it_317',front:'insieme',back:'together',backVi:'cùng nhau',note:'Adverb'},
+  {id:'it_318',front:'però',back:'but / however',backVi:'nhưng / tuy nhiên',note:'Connector'},
+  {id:'it_319',front:'quindi',back:'so / therefore',backVi:'vì vậy',note:'Connector'},
+  {id:'it_320',front:'perché',back:'because / why',backVi:'vì / tại sao',note:'Connector'},
+  {id:'it_321',front:'anche',back:'also / too',backVi:'cũng',note:'Connector'},
+  {id:'it_322',front:'invece',back:'instead',backVi:'thay vào đó',note:'Connector'},
+  {id:'it_323',front:'allora',back:'so / then / well',backVi:'vậy thì / lúc đó',note:'Connector'},
+  {id:'it_324',front:'se',back:'if',backVi:'nếu',note:'Connector'},
+  {id:'it_325',front:'mentre',back:'while / whereas',backVi:'trong khi',note:'Connector'},
+  {id:'it_326',front:'io',back:'I',backVi:'tôi',note:'Pronoun'},
+  {id:'it_327',front:'tu',back:'you (informal)',backVi:'bạn',note:'Pronoun'},
+  {id:'it_328',front:'lui',back:'he',backVi:'anh ấy',note:'Pronoun'},
+  {id:'it_329',front:'lei',back:'she / you (formal)',backVi:'cô ấy / bạn (trang trọng)',note:'Pronoun'},
+  {id:'it_330',front:'noi',back:'we',backVi:'chúng tôi',note:'Pronoun'},
+  {id:'it_331',front:'voi',back:'you (plural)',backVi:'các bạn',note:'Pronoun'},
+  {id:'it_332',front:'loro',back:'they',backVi:'họ',note:'Pronoun'},
+  {id:'it_333',front:'niente',back:'nothing',backVi:'không có gì',note:'Pronoun'},
+  {id:'it_334',front:'tutto',back:'everything / all',backVi:'tất cả',note:'Pronoun'},
+  {id:'it_335',front:'qualcosa',back:'something',backVi:'điều gì đó',note:'Pronoun'},
+  {id:'it_336',front:'chi',back:'who',backVi:'ai',note:'Question'},
+  {id:'it_337',front:'che cosa',back:'what',backVi:'cái gì',note:'Question'},
+  {id:'it_338',front:'dove',back:'where',backVi:'ở đâu',note:'Question'},
+  {id:'it_339',front:'quando',back:'when',backVi:'khi nào',note:'Question'},
+  {id:'it_340',front:'come',back:'how',backVi:'như thế nào',note:'Question'},
+  {id:'it_341',front:'quanto',back:'how much / many',backVi:'bao nhiêu',note:'Question'},
+  {id:'it_342',front:'quale',back:'which',backVi:'cái nào',note:'Question'},
+  {id:'it_343',front:'non capisco',back:"I don't understand",backVi:'tôi không hiểu',note:'Phrase'},
+  {id:'it_344',front:'non lo so',back:"I don't know",backVi:'tôi không biết',note:'Phrase'},
+  {id:'it_345',front:'può ripetere?',back:'can you repeat?',backVi:'bạn có thể lặp lại không?',note:'Phrase'},
+  {id:'it_346',front:'parla più lentamente',back:'speak more slowly',backVi:'nói chậm hơn',note:'Phrase'},
+  {id:'it_347',front:"dov'è?",back:'where is?',backVi:'ở đâu?',note:'Phrase'},
+  {id:'it_348',front:'quanto costa?',back:'how much does it cost?',backVi:'giá bao nhiêu?',note:'Phrase'},
+  {id:'it_349',front:'vorrei',back:'I would like',backVi:'tôi muốn',note:'Phrase'},
+  {id:'it_350',front:'mi può aiutare?',back:'can you help me?',backVi:'bạn có thể giúp tôi không?',note:'Phrase'},
+  {id:'it_351',front:'in bocca al lupo',back:'good luck',backVi:'chúc may mắn',note:'Phrase'},
+  {id:'it_352',front:'purtroppo',back:'unfortunately',backVi:'thật không may',note:'Phrase'},
+  {id:'it_353',front:'per fortuna',back:'fortunately',backVi:'may mắn thay',note:'Phrase'},
+  {id:'it_354',front:'che peccato',back:'what a pity',backVi:'thật tiếc',note:'Phrase'},
+  {id:'it_355',front:'meno male',back:'thank goodness',backVi:'may quá',note:'Phrase'},
+  {id:'it_356',front:'di',back:'of / from',backVi:'của / từ',note:'Preposition'},
+  {id:'it_357',front:'a',back:'to / at / in',backVi:'đến / ở / tại',note:'Preposition'},
+  {id:'it_358',front:'da',back:'from / since / by',backVi:'từ / kể từ / bởi',note:'Preposition'},
+  {id:'it_359',front:'in',back:'in / to (country)',backVi:'trong / ở',note:'Preposition'},
+  {id:'it_360',front:'con',back:'with',backVi:'với / cùng',note:'Preposition'},
+  {id:'it_361',front:'su',back:'on / about',backVi:'trên / về',note:'Preposition'},
+  {id:'it_362',front:'per',back:'for / through',backVi:'cho / vì',note:'Preposition'},
+  {id:'it_363',front:'tra',back:'between / among',backVi:'giữa',note:'Preposition'},
+  {id:'it_364',front:'senza',back:'without',backVi:'không có',note:'Preposition'},
+  {id:'it_365',front:'durante',back:'during',backVi:'trong suốt',note:'Preposition'},
+  {id:'it_366',front:'prima di',back:'before',backVi:'trước khi',note:'Preposition'},
+  {id:'it_367',front:'vicino',back:'near / close',backVi:'gần',note:'Direction'},
+  {id:'it_368',front:'lontano',back:'far',backVi:'xa',note:'Direction'},
+  {id:'it_369',front:'destra',back:'right',backVi:'bên phải',note:'Direction'},
+  {id:'it_370',front:'sinistra',back:'left',backVi:'bên trái',note:'Direction'},
+  {id:'it_371',front:'dritto',back:'straight',backVi:'thẳng',note:'Direction'},
+  {id:'it_372',front:'davanti',back:'in front of',backVi:'phía trước',note:'Direction'},
+  {id:'it_373',front:'dietro',back:'behind',backVi:'phía sau',note:'Direction'},
+  {id:'it_374',front:'sopra',back:'above / on top',backVi:'phía trên',note:'Direction'},
+  {id:'it_375',front:'sotto',back:'below / under',backVi:'phía dưới',note:'Direction'},
+  {id:'it_376',front:'dentro',back:'inside',backVi:'bên trong',note:'Direction'},
+  {id:'it_377',front:'fuori',back:'outside',backVi:'bên ngoài',note:'Direction'},
+  {id:'it_378',front:'nord',back:'north',backVi:'phía bắc',note:'Direction'},
+  {id:'it_379',front:'sud',back:'south',backVi:'phía nam',note:'Direction'},
+  {id:'it_380',front:'est',back:'east',backVi:'phía đông',note:'Direction'},
+  {id:'it_381',front:'ovest',back:'west',backVi:'phía tây',note:'Direction'},
+  {id:'it_382',front:'problema',back:'problem',backVi:'vấn đề',note:'Noun'},
+  {id:'it_383',front:'idea',back:'idea',backVi:'ý tưởng',note:'Noun'},
+  {id:'it_384',front:'lingua',back:'language / tongue',backVi:'ngôn ngữ / lưỡi',note:'Noun'},
+  {id:'it_385',front:'parola',back:'word',backVi:'từ',note:'Noun'},
+  {id:'it_386',front:'storia',back:'story / history',backVi:'câu chuyện / lịch sử',note:'Noun'},
+  {id:'it_387',front:'mondo',back:'world',backVi:'thế giới',note:'Noun'},
+  {id:'it_388',front:'vita',back:'life',backVi:'cuộc sống',note:'Noun'},
+  {id:'it_389',front:'tempo',back:'time / weather',backVi:'thời gian / thời tiết',note:'Noun'},
+  {id:'it_390',front:'film',back:'film / movie',backVi:'phim',note:'Noun'},
+  {id:'it_391',front:'musica',back:'music',backVi:'âm nhạc',note:'Noun'},
+  {id:'it_392',front:'sport',back:'sport',backVi:'thể thao',note:'Noun'},
+  {id:'it_393',front:'vacanza',back:'holiday / vacation',backVi:'kỳ nghỉ',note:'Noun'},
+  {id:'it_394',front:'viaggio',back:'trip / journey',backVi:'chuyến đi',note:'Noun'},
+  {id:'it_395',front:'biglietto',back:'ticket',backVi:'vé',note:'Noun'},
+  {id:'it_396',front:'passaporto',back:'passport',backVi:'hộ chiếu',note:'Noun'},
+  {id:'it_397',front:'valigia',back:'suitcase',backVi:'vali',note:'Noun'},
+  {id:'it_398',front:'indirizzo',back:'address',backVi:'địa chỉ',note:'Noun'},
+  {id:'it_399',front:'appuntamento',back:'appointment',backVi:'cuộc hẹn',note:'Noun'},
+  {id:'it_400',front:'regalo',back:'gift',backVi:'quà tặng',note:'Noun'},
+  {id:'it_401',front:'messaggio',back:'message',backVi:'tin nhắn',note:'Noun'},
+  {id:'it_402',front:'notizia',back:'news',backVi:'tin tức',note:'Noun'},
+  {id:'it_403',front:'risposta',back:'answer',backVi:'câu trả lời',note:'Noun'},
+  {id:'it_404',front:'domanda',back:'question',backVi:'câu hỏi',note:'Noun'},
+  {id:'it_405',front:'esempio',back:'example',backVi:'ví dụ',note:'Noun'},
+  {id:'it_406',front:'informazione',back:'information',backVi:'thông tin',note:'Noun'},
+  {id:'it_407',front:'opinione',back:'opinion',backVi:'ý kiến',note:'Noun'},
+  {id:'it_408',front:'esperienza',back:'experience',backVi:'kinh nghiệm',note:'Noun'},
+  {id:'it_409',front:'risultato',back:'result',backVi:'kết quả',note:'Noun'},
+  {id:'it_410',front:'calcio',back:'football / soccer',backVi:'bóng đá',note:'Noun'},
+  {id:'it_411',front:'conto',back:'bill / check',backVi:'hóa đơn',note:'Noun'},
+  {id:'it_412',front:'menu',back:'menu',backVi:'thực đơn',note:'Noun'},
+  {id:'it_413',front:'divertente',back:'fun / entertaining',backVi:'vui / thú vị',note:'Adjective'},
+  {id:'it_414',front:'simpatico',back:'nice / likeable',backVi:'dễ mến',note:'Adjective'},
+  {id:'it_415',front:'gentile',back:'kind / polite',backVi:'tốt bụng / lịch sự',note:'Adjective'},
+  {id:'it_416',front:'intelligente',back:'intelligent',backVi:'thông minh',note:'Adjective'},
+  {id:'it_417',front:'bravo',back:'good / skilled',backVi:'giỏi',note:'Adjective'},
+  {id:'it_418',front:'fortunato',back:'lucky',backVi:'may mắn',note:'Adjective'},
+  {id:'it_419',front:'importante',back:'important',backVi:'quan trọng',note:'Adjective'},
+  {id:'it_420',front:'possibile',back:'possible',backVi:'có thể',note:'Adjective'},
+  {id:'it_421',front:'vero',back:'true / real',backVi:'thật / đúng',note:'Adjective'},
+  {id:'it_422',front:'aperto',back:'open',backVi:'mở',note:'Adjective'},
+  {id:'it_423',front:'chiuso',back:'closed',backVi:'đóng',note:'Adjective'},
+  {id:'it_424',front:'pieno',back:'full',backVi:'đầy',note:'Adjective'},
+  {id:'it_425',front:'vuoto',back:'empty',backVi:'trống',note:'Adjective'},
+  {id:'it_426',front:'pulito',back:'clean',backVi:'sạch',note:'Adjective'},
+  {id:'it_427',front:'sporco',back:'dirty',backVi:'bẩn',note:'Adjective'},
+  {id:'it_428',front:'veloce',back:'fast',backVi:'nhanh',note:'Adjective'},
+  {id:'it_429',front:'lento',back:'slow',backVi:'chậm',note:'Adjective'},
+  {id:'it_430',front:'lungo',back:'long',backVi:'dài',note:'Adjective'},
+  {id:'it_431',front:'corto',back:'short',backVi:'ngắn',note:'Adjective'},
+  {id:'it_432',front:'silenzioso',back:'quiet / silent',backVi:'yên tĩnh',note:'Adjective'},
+  {id:'it_433',front:'rumoroso',back:'noisy',backVi:'ồn ào',note:'Adjective'},
+  {id:'it_434',front:'curioso',back:'curious',backVi:'tò mò',note:'Adjective'},
+  {id:'it_435',front:'creativo',back:'creative',backVi:'sáng tạo',note:'Adjective'},
+  {id:'it_436',front:'pigro',back:'lazy',backVi:'lười biếng',note:'Adjective'},
+  {id:'it_437',front:'diligente',back:'diligent / hardworking',backVi:'chăm chỉ',note:'Adjective'},
+  {id:'it_438',front:'onesto',back:'honest',backVi:'trung thực',note:'Adjective'},
+  {id:'it_439',front:'timido',back:'shy',backVi:'nhút nhát',note:'Adjective'},
+  {id:'it_440',front:'generoso',back:'generous',backVi:'hào phóng',note:'Adjective'},
+  {id:'it_441',front:'stesso',back:'same / self',backVi:'giống nhau / chính',note:'Adjective'},
+  {id:'it_442',front:'diverso',back:'different',backVi:'khác nhau',note:'Adjective'},
+  {id:'it_443',front:'primo',back:'first',backVi:'thứ nhất / đầu tiên',note:'Adjective'},
+  {id:'it_444',front:'secondo',back:'second',backVi:'thứ hai',note:'Adjective'},
+  {id:'it_445',front:'ultimo',back:'last',backVi:'cuối cùng',note:'Adjective'},
+  {id:'it_446',front:'prossimo',back:'next',backVi:'tiếp theo',note:'Adjective'},
+  {id:'it_447',front:'ogni',back:'every / each',backVi:'mỗi / từng',note:'Adjective'},
+  {id:'it_448',front:'camicia',back:'shirt',backVi:'áo sơ mi',note:'Clothing'},
+  {id:'it_449',front:'pantaloni',back:'trousers / pants',backVi:'quần dài',note:'Clothing'},
+  {id:'it_450',front:'gonna',back:'skirt',backVi:'váy',note:'Clothing'},
+  {id:'it_451',front:'giacca',back:'jacket',backVi:'áo khoác',note:'Clothing'},
+  {id:'it_452',front:'cappotto',back:'coat',backVi:'áo khoác dài',note:'Clothing'},
+  {id:'it_453',front:'maglione',back:'sweater',backVi:'áo len',note:'Clothing'},
+  {id:'it_454',front:'vestito',back:'dress / suit',backVi:'váy đầm / bộ vest',note:'Clothing'},
+  {id:'it_455',front:'cappello',back:'hat',backVi:'mũ',note:'Clothing'},
+  {id:'it_456',front:'occhiali',back:'glasses',backVi:'kính mắt',note:'Clothing'},
+  {id:'it_457',front:'amore',back:'love',backVi:'tình yêu',note:'Emotion'},
+  {id:'it_458',front:'paura',back:'fear',backVi:'nỗi sợ',note:'Emotion'},
+  {id:'it_459',front:'gioia',back:'joy',backVi:'niềm vui',note:'Emotion'},
+  {id:'it_460',front:'sorpresa',back:'surprise',backVi:'sự ngạc nhiên',note:'Emotion'},
+  {id:'it_461',front:'orgoglio',back:'pride',backVi:'niềm tự hào',note:'Emotion'},
+  {id:'it_462',front:'fiducia',back:'trust / confidence',backVi:'tin tưởng',note:'Emotion'},
+  {id:'it_463',front:'coraggio',back:'courage',backVi:'dũng cảm',note:'Emotion'},
+  {id:'it_464',front:'pazienza',back:'patience',backVi:'kiên nhẫn',note:'Emotion'},
+  {id:'it_465',front:'permettere',back:'to allow / permit',backVi:'cho phép',note:'Verb'},
+  {id:'it_466',front:'vietare',back:'to forbid',backVi:'cấm',note:'Verb'},
+  {id:'it_467',front:'consigliare',back:'to advise / recommend',backVi:'khuyên / đề xuất',note:'Verb'},
+  {id:'it_468',front:'promettere',back:'to promise',backVi:'hứa',note:'Verb'},
+  {id:'it_469',front:'ringraziare',back:'to thank',backVi:'cảm ơn',note:'Verb'},
+  {id:'it_470',front:'festeggiare',back:'to celebrate',backVi:'ăn mừng',note:'Verb'},
+  {id:'it_471',front:'invitare',back:'to invite',backVi:'mời',note:'Verb'},
+  {id:'it_472',front:'preferire',back:'to prefer',backVi:'thích hơn',note:'Verb'},
+  {id:'it_473',front:'riuscire',back:'to succeed / manage',backVi:'thành công',note:'Verb'},
+  {id:'it_474',front:'ricevere',back:'to receive',backVi:'nhận',note:'Verb'},
+  {id:'it_475',front:'spedire',back:'to send',backVi:'gửi',note:'Verb'},
+  {id:'it_476',front:'visitare',back:'to visit',backVi:'thăm quan',note:'Verb'},
+  {id:'it_477',front:'nuotare',back:'to swim',backVi:'bơi',note:'Verb'},
+  {id:'it_478',front:'pulire',back:'to clean',backVi:'dọn dẹp',note:'Verb'},
+  {id:'it_479',front:'sentire',back:'to hear / feel',backVi:'nghe / cảm thấy',note:'Verb'},
+  {id:'it_480',front:'salvare',back:'to save',backVi:'lưu',note:'Verb'},
+  {id:'it_481',front:'caricare',back:'to upload / charge',backVi:'tải lên / sạc',note:'Verb'},
+  {id:'it_482',front:'scaricare',back:'to download',backVi:'tải xuống',note:'Verb'},
+  {id:'it_483',front:'adesso',back:'now',backVi:'bây giờ',note:'Adverb'},
+  {id:'it_484',front:'poi',back:'then / later',backVi:'sau đó',note:'Adverb'},
+  {id:'it_485',front:'prima',back:'before / first',backVi:'trước / đầu tiên',note:'Adverb'},
+  {id:'it_486',front:'comunque',back:'anyway / however',backVi:'dù sao / tuy nhiên',note:'Connector'},
+  {id:'it_487',front:'infatti',back:'in fact / indeed',backVi:'thực ra / thật vậy',note:'Connector'},
+  {id:'it_488',front:'cioè',back:'that is / meaning',backVi:'nghĩa là',note:'Connector'},
+  {id:'it_489',front:'oppure',back:'or / otherwise',backVi:'hoặc',note:'Connector'},
+  {id:'it_490',front:'passato',back:'past',backVi:'quá khứ',note:'Noun'},
+  {id:'it_491',front:'futuro',back:'future',backVi:'tương lai',note:'Noun'},
+  {id:'it_492',front:'presente',back:'present',backVi:'hiện tại',note:'Noun'},
+  {id:'it_493',front:'inizio',back:'beginning',backVi:'sự khởi đầu',note:'Noun'},
+  {id:'it_494',front:'fine',back:'end',backVi:'kết thúc',note:'Noun'},
+  {id:'it_495',front:'cioccolato',back:'chocolate',backVi:'sô cô la',note:'Food'},
+  {id:'it_496',front:'fragola',back:'strawberry',backVi:'dâu tây',note:'Food'},
+  {id:'it_497',front:'insalata',back:'salad',backVi:'salad',note:'Food'},
+  {id:'it_498',front:'minestra',back:'soup',backVi:'súp',note:'Food'},
+  {id:'it_499',front:'cipolla',back:'onion',backVi:'hành tây',note:'Food'},
+  {id:'it_500',front:'aglio',back:'garlic',backVi:'tỏi',note:'Food'},
+  {id:'it_501',front:'olio',back:'oil',backVi:'dầu',note:'Food'},
+  {id:'it_502',front:'burro',back:'butter',backVi:'bơ',note:'Food'},
+  {id:'it_503',front:'prosciutto',back:'ham',backVi:'giăm bông',note:'Food'},
+  {id:'it_504',front:'schermo',back:'screen',backVi:'màn hình',note:'Technology'},
+  {id:'it_505',front:'tastiera',back:'keyboard',backVi:'bàn phím',note:'Technology'},
+  {id:'it_506',front:'applicazione',back:'application / app',backVi:'ứng dụng',note:'Technology'},
+  {id:'it_507',front:'sito web',back:'website',backVi:'trang web',note:'Technology'},
+  {id:'it_508',front:'password',back:'password',backVi:'mật khẩu',note:'Technology'},
+  {id:'it_509',front:'email',back:'email',backVi:'email',note:'Technology'},
+  {id:'it_510',front:'foto',back:'photo',backVi:'ảnh',note:'Noun'},
+  {id:'it_511',front:'bicchiere',back:'glass',backVi:'cốc thủy tinh',note:'Noun'},
+  {id:'it_512',front:'tazza',back:'cup',backVi:'tách / cốc',note:'Noun'},
+  {id:'it_513',front:'piatto',back:'plate / dish',backVi:'đĩa',note:'Noun'},
+  {id:'it_514',front:'bottiglia',back:'bottle',backVi:'chai',note:'Noun'},
+  {id:'it_515',front:'cucchiaio',back:'spoon',backVi:'thìa',note:'Noun'},
+  {id:'it_516',front:'forchetta',back:'fork',backVi:'nĩa',note:'Noun'},
+  {id:'it_517',front:'coltello',back:'knife',backVi:'dao',note:'Noun'},
+  {id:'it_518',front:'carta geografica',back:'map',backVi:'bản đồ',note:'Noun'},
+  {id:'it_519',front:'prenotazione',back:'reservation / booking',backVi:'đặt phòng / đặt chỗ',note:'Noun'},
+  {id:'it_520',front:'camera singola',back:'single room',backVi:'phòng đơn',note:'Noun'},
+  {id:'it_521',front:'camera doppia',back:'double room',backVi:'phòng đôi',note:'Noun'},
+  {id:'it_522',front:'visita medica',back:'medical visit',backVi:'khám bệnh',note:'Health'},
+  {id:'it_523',front:'ricetta',back:'prescription / recipe',backVi:'đơn thuốc / công thức',note:'Health'},
+  {id:'it_524',front:'infermiere',back:'nurse',backVi:'y tá',note:'Health'},
+  {id:'it_525',front:'pronto soccorso',back:'emergency room',backVi:'phòng cấp cứu',note:'Health'},
+  {id:'it_526',front:'voto',back:'grade / vote',backVi:'điểm số',note:'Noun'},
+  {id:'it_527',front:'aula',back:'classroom',backVi:'phòng học',note:'Place'},
+  {id:'it_528',front:'biblioteca',back:'library',backVi:'thư viện',note:'Place'},
+  {id:'it_529',front:'mensa',back:'canteen / cafeteria',backVi:'căng tin',note:'Place'},
+  {id:'it_530',front:'festa',back:'party / holiday',backVi:'tiệc / ngày lễ',note:'Noun'},
+  {id:'it_531',front:'compleanno',back:'birthday',backVi:'sinh nhật',note:'Noun'},
+  {id:'it_532',front:'matrimonio',back:'wedding',backVi:'đám cưới',note:'Noun'},
+  {id:'it_533',front:'Natale',back:'Christmas',backVi:'Giáng sinh',note:'Noun'},
+  {id:'it_534',front:'Capodanno',back:"New Year's",backVi:'Năm mới',note:'Noun'},
+  {id:'it_535',front:'auguri',back:'best wishes / congratulations',backVi:'chúc mừng',note:'Expression'},
+  {id:'it_536',front:'salute!',back:'cheers! / bless you!',backVi:'chúc sức khỏe!',note:'Expression'},
+  {id:'it_537',front:'colloquio',back:'interview',backVi:'phỏng vấn',note:'Noun'},
+  {id:'it_538',front:'contratto',back:'contract',backVi:'hợp đồng',note:'Noun'},
+  {id:'it_539',front:'azienda',back:'company / firm',backVi:'công ty',note:'Noun'},
+  {id:'it_540',front:'cliente',back:'client / customer',backVi:'khách hàng',note:'Noun'},
+  {id:'it_541',front:'prodotto',back:'product',backVi:'sản phẩm',note:'Noun'},
+  {id:'it_542',front:'qualità',back:'quality',backVi:'chất lượng',note:'Noun'},
+  {id:'it_543',front:'ambiente',back:'environment',backVi:'môi trường',note:'Nature'},
+  {id:'it_544',front:'clima',back:'climate',backVi:'khí hậu',note:'Nature'},
+  {id:'it_545',front:'energia',back:'energy',backVi:'năng lượng',note:'Noun'},
+  {id:'it_546',front:'inquinamento',back:'pollution',backVi:'ô nhiễm',note:'Noun'},
+  {id:'it_547',front:'riciclare',back:'to recycle',backVi:'tái chế',note:'Verb'},
+  {id:'it_548',front:'campagna',back:'countryside',backVi:'vùng nông thôn',note:'Nature'},
+  {id:'it_549',front:'lago',back:'lake',backVi:'hồ',note:'Nature'},
+  {id:'it_550',front:'fiume',back:'river',backVi:'sông',note:'Nature'},
+  {id:'it_551',front:'libertà',back:'freedom',backVi:'tự do',note:'Noun'},
+  {id:'it_552',front:'pace',back:'peace',backVi:'hòa bình',note:'Noun'},
+  {id:'it_553',front:'verità',back:'truth',backVi:'sự thật',note:'Noun'},
+  {id:'it_554',front:'bellezza',back:'beauty',backVi:'vẻ đẹp',note:'Noun'},
+  {id:'it_555',front:'felicità',back:'happiness',backVi:'hạnh phúc',note:'Noun'},
+  {id:'it_556',front:'salute',back:'health',backVi:'sức khỏe',note:'Noun'},
+  {id:'it_557',front:'successo',back:'success',backVi:'thành công',note:'Noun'},
+  {id:'it_558',front:'opportunità',back:'opportunity',backVi:'cơ hội',note:'Noun'},
+  {id:'it_559',front:'responsabilità',back:'responsibility',backVi:'trách nhiệm',note:'Noun'},
+  {id:'it_560',front:'diventare',back:'to become',backVi:'trở thành',note:'Verb'},
+  {id:'it_561',front:'sembrare',back:'to seem / appear',backVi:'có vẻ / dường như',note:'Verb'},
+  {id:'it_562',front:'restare',back:'to stay / remain',backVi:'ở lại',note:'Verb'},
+  {id:'it_563',front:'lasciare',back:'to leave / let',backVi:'để / rời',note:'Verb'},
+  {id:'it_564',front:'mettere',back:'to put / place',backVi:'đặt / để',note:'Verb'},
+  {id:'it_565',front:'usare',back:'to use',backVi:'sử dụng',note:'Verb'},
+  {id:'it_566',front:'migliorare',back:'to improve',backVi:'cải thiện',note:'Verb'},
+  {id:'it_567',front:'dipendere',back:'to depend',backVi:'phụ thuộc',note:'Verb'},
+  {id:'it_568',front:'dimenticare v2',back:'to forget (reminder)',backVi:'quên (nhắc lại)',note:'Verb'},
+  {id:'it_569',front:'assicurazione',back:'insurance',backVi:'bảo hiểm',note:'Noun'},
+  {id:'it_570',front:'stipendio v2',back:'salary (reminder)',backVi:'lương (nhắc lại)',note:'Noun'},
+  {id:'it_571',front:'mezzo',back:'half',backVi:'một nửa',note:'Adjective'},
+  {id:'it_572',front:'intero',back:'whole / entire',backVi:'toàn bộ',note:'Adjective'},
+  {id:'it_573',front:'paio',back:'pair / couple',backVi:'đôi / cặp',note:'Noun'},
+  {id:'it_574',front:'pezzo',back:'piece',backVi:'mảnh / miếng',note:'Noun'},
+  {id:'it_575',front:'fiume',back:'river',backVi:'sông',note:'Nature'},
+  {id:'it_576',front:'isola',back:'island',backVi:'đảo',note:'Nature'},
+  {id:'it_577',front:'calcolo',back:'calculation',backVi:'tính toán',note:'Noun'},
+  {id:'it_578',front:'spiegazione',back:'explanation',backVi:'giải thích',note:'Noun'},
+  {id:'it_579',front:'abitudine',back:'habit',backVi:'thói quen',note:'Noun'},
+  {id:'it_580',front:'tradizione',back:'tradition',backVi:'truyền thống',note:'Noun'},
+  {id:'it_581',front:'cultura',back:'culture',backVi:'văn hóa',note:'Noun'},
+  {id:'it_582',front:'società',back:'society',backVi:'xã hội',note:'Noun'},
+  {id:'it_583',front:'governo',back:'government',backVi:'chính phủ',note:'Noun'},
+  {id:'it_584',front:'politica',back:'politics',backVi:'chính trị',note:'Noun'},
+  {id:'it_585',front:'economia',back:'economy',backVi:'kinh tế',note:'Noun'},
+  {id:'it_586',front:'tecnologia',back:'technology',backVi:'công nghệ',note:'Noun'},
+  {id:'it_587',front:'scienza',back:'science',backVi:'khoa học',note:'Noun'},
+  {id:'it_588',front:'arte',back:'art',backVi:'nghệ thuật',note:'Noun'},
+  {id:'it_589',front:'letteratura',back:'literature',backVi:'văn học',note:'Noun'},
+  {id:'it_590',front:'teatro',back:'theatre',backVi:'nhà hát',note:'Place'},
+  {id:'it_591',front:'concerto',back:'concert',backVi:'buổi hòa nhạc',note:'Noun'},
+  {id:'it_592',front:'mostra',back:'exhibition',backVi:'triển lãm',note:'Noun'},
+  {id:'it_593',front:'spettacolo',back:'show / performance',backVi:'buổi biểu diễn',note:'Noun'},
+  {id:'it_594',front:'personaggio',back:'character / person',backVi:'nhân vật',note:'Noun'},
+  {id:'it_595',front:'racconto',back:'short story / tale',backVi:'truyện ngắn',note:'Noun'},
+  {id:'it_596',front:'poesia',back:'poetry / poem',backVi:'thơ',note:'Noun'},
+  {id:'it_597',front:'pittura',back:'painting',backVi:'bức tranh / hội họa',note:'Noun'},
+  {id:'it_598',front:'scultura',back:'sculpture',backVi:'điêu khắc',note:'Noun'},
+  {id:'it_599',front:'fotografia',back:'photography',backVi:'nhiếp ảnh',note:'Noun'},
+  {id:'it_600',front:'cinema',back:'cinema / movies',backVi:'rạp chiếu phim',note:'Place'},
+];
+
 
 // Declare before renderAll so inline oninput handlers can reference them
 let goalInputVals={};
@@ -1477,13 +2086,14 @@ let fcSession = [];
 let fcSessionStats = {easy:0, hard:0, replay:0, skip:0};
 let histFilter = 'all';
 let histFilterDate = '';
-let repDays = 7; // track per session
+let repDays = 7;
+let activeStudyLang = localStorage.getItem('activeStudyLang')||'jp'; // track per session
 let fcIdx = 0;
 let fcFlipped = false;
 let fcFilter = 'all';
 let fcSortCol='', fcSortDir=1;
 let fcPlayMode = 'due';
-let fcCurrentWord = 'おはよう';
+let fcCurrentWord = '';
 let fcListSelected = new Set();
 let fcPage = 0;
 const FC_PAGE_SIZE = 8;
@@ -1631,7 +2241,7 @@ function saveLog(){
       kana:{h:Object.keys(tK.h),k:Object.keys(tK.k),j:Object.keys(tK.j)}
     };
     logs.unshift(entry);
-    localStorage.setItem('njl',JSON.stringify(logs));
+    localStorage.setItem(lsKey('njl'),JSON.stringify(logs));
     if(dbg)dbg.textContent='Saved! Total logs: '+logs.length;
     resetF();
     renderAll();
@@ -1660,7 +2270,7 @@ function resetF(){
 function delLog(id){
   if(!confirm('Delete this log entry? This cannot be undone.'))return;
   logs=logs.filter(l=>l.id!==id);
-  localStorage.setItem('njl',JSON.stringify(logs));
+  localStorage.setItem(lsKey('njl'),JSON.stringify(logs));
   renderAll();
   showToast('🗑 Entry deleted');
 }
@@ -1895,20 +2505,20 @@ function saveGoal(){
   const deadline=document.getElementById('gd').value;
   if(!name||!target){showToast('❗ Please fill in name and target amount!');return;}
   goals.push({id:Date.now(),name,type,target,unit,deadline,created:new Date().toISOString().split('T')[0],pinned:true});
-  localStorage.setItem('njg',JSON.stringify(goals));
+  localStorage.setItem(lsKey('njg'),JSON.stringify(goals));
   document.getElementById('gn').value='';document.getElementById('gtg').value='';document.getElementById('gu').value='';document.getElementById('gd').value='';
   renderGoals();renderPinnedGoals();renderGoalLogInputs();showToast('🎯 Goal added & pinned!');
 }
 function delGoal(id){
   if(!confirm('Delete this goal permanently?'))return;
   goals=goals.filter(g=>g.id!==id);
-  localStorage.setItem('njg',JSON.stringify(goals));
+  localStorage.setItem(lsKey('njg'),JSON.stringify(goals));
   renderGoals();renderPinnedGoals();renderGoalLogInputs();
   showToast('🗑 Goal deleted');
 }
 function togglePin(id){
   goals=goals.map(g=>g.id===id?{...g,pinned:!g.pinned}:g);
-  localStorage.setItem('njg',JSON.stringify(goals));
+  localStorage.setItem(lsKey('njg'),JSON.stringify(goals));
   renderGoals();renderPinnedGoals();
 }
 function renderPinnedGoals(){
@@ -1916,7 +2526,7 @@ function renderPinnedGoals(){
   if(!el)return;
   const pinned=goals.filter(g=>g.pinned);
   if(!pinned.length){
-    el.innerHTML='<div style="font-size:12px;color:var(--ink-soft);text-align:center;padding:16px 0;line-height:1.6;">No pinned goals yet.<br>Go to 🎯 Goals and click Pin.</div>';
+    const t=I18N[currentLang]||I18N.en; el.innerHTML='<div style="font-size:12px;color:var(--ink-soft);text-align:center;padding:16px 0;line-height:1.6;">'+(t.pin_empty||'No pinned goals yet.')+'<br>Go to 🎯 '+(t.nav_goals||'Goals')+' and click Pin.</div>';
     return;
   }
   const TL={days:'days',words:'words',mins:'mins',hira:'hiragana',kata:'katakana',kanji:'kanji',custom:''};
@@ -1969,7 +2579,7 @@ function pgDrop(e){
   if(fromIdx<0||toIdx<0)return;
   const moved=goals.splice(fromIdx,1)[0];
   goals.splice(toIdx,0,moved);
-  localStorage.setItem('njg',JSON.stringify(goals));
+  localStorage.setItem(lsKey('njg'),JSON.stringify(goals));
   renderPinnedGoals();renderGoals();
 }
 function pgDragEnd(e){
@@ -2049,7 +2659,7 @@ function saveEditGoal(id){
   const deadline=document.getElementById('ge-dl-'+id).value;
   if(!name||!target){showToast('❗ Name and target required');return;}
   g.name=name;g.target=target;g.deadline=deadline;
-  localStorage.setItem('njg',JSON.stringify(goals));
+  localStorage.setItem(lsKey('njg'),JSON.stringify(goals));
   renderGoals();renderPinnedGoals();renderGoalLogInputs();
   showToast('✅ Goal updated!');
 }
@@ -2098,7 +2708,46 @@ function renderReport(){
 
 
 // ===== SRS FLASHCARD ENGINE =====
-function saveFC(){ localStorage.setItem('njfc', JSON.stringify(flashcards)); }
+// ===== MIGRATE: Remove duplicate My Cards that exist in N5 =====
+function migrateDeduplicateMyCards(){
+  if(localStorage.getItem('njfc_dedup_done')) return;
+  const n5Fronts = new Map(N5_DECK.map(c=>[c.front, c.id]));
+  const n5State = JSON.parse(localStorage.getItem('njn5')||'{}');
+  let changed = false;
+  const keep = [];
+  flashcards.forEach(c=>{
+    const n5Id = n5Fronts.get(c.front);
+    if(n5Id){
+      // Duplicate of N5 card — merge state into n5State then drop from njfc
+      const ex = n5State[n5Id]||{interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null,isHard:false,lastReviewDate:null,note:''};
+      n5State[n5Id] = {
+        ...ex,
+        step: Math.max(ex.step||0, c.step||0),
+        reviewCount: Math.max(ex.reviewCount||0, c.reviewCount||0),
+        nextReview: ex.nextReview&&c.nextReview ? (ex.nextReview>c.nextReview?ex.nextReview:c.nextReview) : ex.nextReview||c.nextReview||null,
+        interval: c.interval||ex.interval||0,
+        lastRating: c.lastRating||ex.lastRating||null,
+        isHard: c.isHard||ex.isHard||false,
+        lastReviewDate: c.lastReviewDate||ex.lastReviewDate||null,
+        note: c.note||ex.note||'',
+        addedToMyCards: true
+      };
+      changed = true;
+    } else {
+      keep.push(c);
+    }
+  });
+  if(changed){
+    flashcards.length=0; keep.forEach(c=>flashcards.push(c));
+    localStorage.setItem('njfc', JSON.stringify(flashcards));
+    localStorage.setItem(lsKey('njn5'), JSON.stringify(n5State));
+  }
+  localStorage.setItem('njfc_dedup_done','1');
+}
+migrateDeduplicateMyCards();
+
+function lsKey(base){ return activeStudyLang==='it' ? base.replace('njn5','itn5').replace('njfc','itfc').replace('njl','itl').replace('njg','itg') : base; }
+function saveFC(){ localStorage.setItem(lsKey('njfc'), JSON.stringify(flashcards)); }
 
 function fcToday(){ return new Date().toISOString().split('T')[0]; }
 
@@ -2160,7 +2809,21 @@ function fcShowCard(){
   }
 
   // Step 2: Populate content while card is at front
-  document.getElementById('fc-front-text').textContent = card.front;
+  const frontTextEl = document.getElementById('fc-front-text');
+  frontTextEl.textContent = card.front;
+  // Dynamic font size based on language and word length
+  if(activeStudyLang==='it'){
+    const len=card.front.length;
+    const fs=len<=6?64:len<=12?48:len<=20?38:30;
+    frontTextEl.style.fontSize=fs+'px';
+    frontTextEl.style.fontFamily='inherit';
+  } else {
+    frontTextEl.style.fontSize='123px';
+    frontTextEl.style.fontFamily="'Zen Maru Gothic',sans-serif";
+  }
+  // Update lang label
+  const langLbl=document.getElementById('fc-front-lang-lbl');
+  if(langLbl) langLbl.textContent=activeStudyLang==='it'?'Italiano':'Japanese';
   const meaning = (currentLang==='vi' && card.backVi) ? card.backVi : card.back;
   document.getElementById('fc-back-text').textContent = meaning;
   document.getElementById('fc-back-reading').textContent = card.read||'';
@@ -2232,8 +2895,13 @@ function fcFlip(){
       if(!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(fcCurrentWord);
-      utter.lang = 'ja-JP'; utter.rate = 0.8; utter.volume = 1.0;
-      const jpVoice=getBestJpVoice(); if(jpVoice) utter.voice=jpVoice;
+      if(activeStudyLang==='it'){
+        utter.lang='it-IT'; utter.rate=0.85; utter.volume=1.0;
+        const itVoice=getBestItVoice(); if(itVoice) utter.voice=itVoice;
+      } else {
+        utter.lang='ja-JP'; utter.rate=0.8; utter.volume=1.0;
+        const jpVoice=getBestJpVoice(); if(jpVoice) utter.voice=jpVoice;
+      }
       window.speechSynthesis.speak(utter);
     }, 400);
   }
@@ -2366,7 +3034,7 @@ function fcAutoLog(){
       goalProgress: {}
     });
   }
-  localStorage.setItem('njl', JSON.stringify(logs));
+  localStorage.setItem(lsKey('njl'), JSON.stringify(logs));
   fcSessionStartTime = null;
   updStats();
   renderLog();
@@ -2486,9 +3154,20 @@ function fcRenderAll(){
     const frontEl=document.getElementById('fc-front-text');
     const backEl=document.getElementById('fc-back-text');
     const readEl=document.getElementById('fc-back-reading');
-    if(frontEl&&!frontEl.textContent.trim()){ frontEl.textContent='おはよう'; fcCurrentWord='おはよう'; }
-    if(backEl&&!backEl.textContent.trim()) backEl.textContent='Good morning';
-    if(readEl&&!readEl.textContent.trim()) readEl.textContent='Ohayou';
+    const langLbl=document.getElementById('fc-front-lang-lbl');
+    const isIt=activeStudyLang==='it';
+    const placeholder=isIt?'ciao':'おはよう';
+    const placeholderBack=isIt?'hello / bye':'Good morning';
+    const placeholderRead=isIt?'chào / tạm biệt':'Ohayou';
+    if(frontEl){
+      frontEl.textContent=placeholder; fcCurrentWord=placeholder;
+      // Dynamic font size: Italian words are longer so use smaller font
+      frontEl.style.fontSize=isIt?'56px':'123px';
+      frontEl.style.fontFamily=isIt?'inherit':"'Zen Maru Gothic',sans-serif";
+    }
+    if(langLbl) langLbl.textContent=isIt?'Italiano':'Japanese';
+    if(backEl&&!backEl.textContent.trim()) backEl.textContent=placeholderBack;
+    if(readEl&&!readEl.textContent.trim()) readEl.textContent=placeholderRead;
     document.getElementById('fc-progress-text').textContent='Press ▶ Start to begin! 🌸';
     const ratings=document.getElementById('fc-ratings');
     if(ratings) ratings.style.display='none';
@@ -2506,17 +3185,37 @@ function fcSort(col){
 function fcSortArrow(col){return fcSortCol===col?(fcSortDir===1?' ↑':' ↓'):' ↕';}
 
 function fcGetAllCards(){
-  
-  const n5State = JSON.parse(localStorage.getItem('njn5')||'{}');
-  const n5 = N5_DECK.map(c=>({...c, isN5:true, ...( n5State[c.id]||{interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null} ), note: n5State[c.id]?.note||c.note||'' }));
-  const mine = flashcards.map(c=>({...c, isN5:false}));
-  return {n5, mine, all:[...n5,...mine]};
+  const activeDeck = activeStudyLang==='it' ? IT_DECK : N5_DECK;
+  const stKey = activeStudyLang==='it' ? 'itn5' : 'njn5';
+  const n5State = JSON.parse(localStorage.getItem(stKey)||'{}');
+  const n5 = activeDeck.map(c=>({
+    ...c, isN5:true,
+    ...(n5State[c.id]||{interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null}),
+    note: n5State[c.id]?.note||c.note||''
+  }));
+  // My Cards = user-added cards + deck cards marked addedToMyCards
+  const mine = [
+    ...flashcards.map(c=>({...c, isN5:false})),
+    ...n5.filter(c=>c.addedToMyCards===true)
+  ];
+  return {n5, mine, all:[...n5,...flashcards.map(c=>({...c,isN5:false}))]};
 }
 
 function saveN5State(card){
-  const st=JSON.parse(localStorage.getItem('njn5')||'{}');
-  st[card.id]={interval:card.interval,step:card.step,nextReview:card.nextReview,reviewCount:card.reviewCount,lastRating:card.lastRating};
-  localStorage.setItem('njn5',JSON.stringify(st));
+  const stKey = activeStudyLang==='it' ? 'itn5' : 'njn5';
+  const st=JSON.parse(localStorage.getItem(stKey)||'{}');
+  st[card.id]={
+    interval:card.interval,
+    step:card.step,
+    nextReview:card.nextReview,
+    reviewCount:card.reviewCount,
+    lastRating:card.lastRating,
+    lastReviewDate:card.lastReviewDate||null,
+    isHard:card.isHard||false,
+    note:card.note||'',
+    addedToMyCards:card.addedToMyCards||st[card.id]?.addedToMyCards||false
+  };
+  localStorage.setItem(lsKey('njn5'),JSON.stringify(st));
 }
 
 function fcDetectType(front, note){
@@ -2553,9 +3252,20 @@ function fcRenderList(){
       else if(fcSortCol==='back'){av=a.back;bv=b.back;}
       else if(fcSortCol==='played'){av=a.reviewCount||0;bv=b.reviewCount||0;return(av-bv)*fcSortDir;}
       else if(fcSortCol==='next'){av=a.nextReview||'0';bv=b.nextReview||'0';}
+      else if(fcSortCol==='type'){av=fcDetectType(a.front,a.note).label;bv=fcDetectType(b.front,b.note).label;}
       return av<bv?-fcSortDir:av>bv?fcSortDir:0;
     });
-  } else { cards.sort(()=>Math.random()-0.5); }
+  } else {
+    // Stable default sort: My Cards first (reviewed/added), then N5 by ID
+    cards.sort((a,b)=>{
+      // Non-N5 (user cards) come first
+      if(!a.isN5 && b.isN5) return -1;
+      if(a.isN5 && !b.isN5) return 1;
+      // Both same type: sort by ID string for stable order
+      const aid = String(a.id), bid = String(b.id);
+      return aid < bid ? -1 : aid > bid ? 1 : 0;
+    });
+  }
   const lbl=document.getElementById('fc-filter-label');
   if(lbl)lbl.textContent=`${cards.length} words`;
   fcUpdListSelBar();
@@ -2574,7 +3284,7 @@ function fcRenderList(){
     <div></div>
     <div style="${hs}" onclick="fcSort('front')">Japanese${fcSortArrow('front')}</div>
     <div style="${hs}" onclick="fcSort('back')">${isVi?'Nghĩa':'Meaning'}${fcSortArrow('back')}</div>
-    <div style="${hs}">Type</div>
+    <div style="${hs}" onclick="fcSort('type')">Type${fcSortArrow('type')}</div>
     <div style="${hs}" onclick="fcSort('next')">${isVi?'Ôn tiếp':'Next review'}${fcSortArrow('next')}</div>
     <div style="${hs};text-align:center;" onclick="fcSort('played')">${isVi?'Đã học':'Played'}${fcSortArrow('played')}</div>
     <div></div>
@@ -2584,7 +3294,8 @@ function fcRenderList(){
     const meaning=isVi&&c.backVi?c.backVi:c.back;
     const dueLabel=isNew?`<span class="fc-due-badge fc-due-new">${isVi?'Mới':'New'}</span>`:due?`<span class="fc-due-badge fc-due-now">${isVi?'Đến hạn':'Due'}</span>`:`<span class="fc-due-badge fc-due-ok" style="font-size:11px;">${c.nextReview}</span>`;
     const pc=c.reviewCount||0,le=pc>0&&c.lastRating?re[c.lastRating]||c.lastRating:'';
-    const n5Badge=c.isN5?`<span style="font-size:9px;padding:1px 6px;border-radius:6px;background:var(--fuji-light);color:var(--fuji);font-weight:700;margin-left:4px;">N5</span>`:'';
+    const deckLabel = activeStudyLang==='it' ? 'A2' : 'N5';
+    const n5Badge=c.isN5?`<span style="font-size:9px;padding:1px 6px;border-radius:6px;background:var(--fuji-light);color:var(--fuji);font-weight:700;margin-left:4px;">${deckLabel}</span>`:'';
     const delBtn=c.isN5?`<span style="font-size:11px;color:var(--border);padding:0 8px;" title="Built-in word">🔒</span>`:`<button onclick="fcDeleteCard('${c.id}')" class="log-del" style="font-size:15px;">✕</button>`;
     // Detect script type from front text
     const typeInfo = fcDetectType(c.front, c.note);
@@ -2623,7 +3334,7 @@ function fcSaveNote(id, note, isN5){
     const st=JSON.parse(localStorage.getItem('njn5')||'{}');
     if(!st[sid]) st[sid]={interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null};
     st[sid].note=note;
-    localStorage.setItem('njn5',JSON.stringify(st));
+    localStorage.setItem(lsKey('njn5'),JSON.stringify(st));
   } else {
     const card=flashcards.find(c=>String(c.id)===sid);
     if(card){ card.note=note; saveFC(); }
@@ -2641,8 +3352,134 @@ function getBestJpVoice(){
     ||voices.find(v=>v.lang.startsWith('ja'))
     ||null;
 }
+// Best Italian voice
+function getBestItVoice(){
+  const voices=window.speechSynthesis.getVoices();
+  return voices.find(v=>v.lang==='it-IT'&&/alice|paola|female|woman/i.test(v.name))
+    ||voices.find(v=>v.lang==='it-IT')
+    ||voices.find(v=>v.lang.startsWith('it'))
+    ||null;
+}
 // Pre-load voices (Chrome needs this trigger)
-if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged=()=>getBestJpVoice();
+if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged=()=>{getBestJpVoice();getBestItVoice();};
+
+// === STUDY LANGUAGE SWITCH ===
+function switchStudyLang(lang){
+  if(lang===activeStudyLang) return;
+  activeStudyLang=lang;
+  localStorage.setItem('activeStudyLang',lang);
+
+  // Auto theme: italiano for IT, sakura (girl) for JP
+  if(lang==='it'){
+    currentTheme='italiano';
+    localStorage.setItem('njtheme','italiano');
+  } else {
+    currentTheme='girl';
+    localStorage.setItem('njtheme','girl');
+    const btn=document.getElementById('theme-girl');
+    if(btn) btn.classList.add('active');
+  }
+  applyTheme();
+
+  // Swap storage keys
+  if(lang==='it'){
+    n5State=JSON.parse(localStorage.getItem('itn5')||'{}');
+    flashcards=JSON.parse(localStorage.getItem('itfc')||'[]');
+    logs=JSON.parse(localStorage.getItem('itl')||'[]');
+    goals=JSON.parse(localStorage.getItem('itg')||'[]');
+  } else {
+    n5State=JSON.parse(localStorage.getItem('njn5')||'{}');
+    flashcards=JSON.parse(localStorage.getItem('njfc')||'[]');
+    logs=JSON.parse(localStorage.getItem('njl')||'[]');
+    goals=JSON.parse(localStorage.getItem('njg')||'[]');
+  }
+
+  // Update UI
+  applyStudyLangUI(lang);
+  renderAll();
+  fcRenderAll();
+}
+
+function toggleLangSwitch(){
+  const dd=document.getElementById('lang-switch-dd');
+  if(!dd) return;
+  dd.style.display=dd.style.display==='none'?'block':'none';
+  // Close when clicking outside
+  if(dd.style.display==='block'){
+    setTimeout(()=>document.addEventListener('click',_closeLangDd,{once:true}),10);
+  }
+}
+function _closeLangDd(e){
+  const dd=document.getElementById('lang-switch-dd');
+  const btn=document.getElementById('lang-switch-btn');
+  if(dd&&!dd.contains(e.target)&&e.target!==btn&&!btn?.contains(e.target)){
+    dd.style.display='none';
+  }
+}
+
+function applyStudyLangUI(lang){
+  const isIt=(lang==='it');
+  // Update the trigger button
+  const flag=document.getElementById('lang-flag');
+  const name=document.getElementById('lang-name');
+  if(flag) flag.textContent=isIt?'🇮🇹':'🇯🇵';
+  if(name) name.textContent=isIt?'Italiano':'日本語';
+  // Dropdown option styles
+  const slJp=document.getElementById('sl-jp');
+  const slIt=document.getElementById('sl-it');
+  if(slJp){
+    slJp.style.background=isIt?'transparent':'var(--sakura-light)';
+    slJp.style.color=isIt?'var(--ink-soft)':'var(--ink)';
+    slJp.style.fontWeight=isIt?'600':'700';
+  }
+  if(slIt){
+    slIt.style.background=isIt?'var(--sakura-light)':'transparent';
+    slIt.style.color=isIt?'var(--ink)':'var(--ink-soft)';
+    slIt.style.fontWeight=isIt?'700':'600';
+  }
+  // Close dropdown after switching
+  const dd=document.getElementById('lang-switch-dd');
+  if(dd) dd.style.display='none';
+  // App title & deco
+  const titleSpan=document.querySelector('#app-title span');
+  const deco=document.querySelector('.header-deco');
+  if(titleSpan) titleSpan.textContent=isIt?'Italiano':'Nihongo';
+  if(deco) deco.textContent=isIt?'🇮🇹 ♪ 🇮🇹':'🌸 ✿ 🌸';
+  // Hide/show Character Board nav
+  const boardBtn=document.getElementById('nav-board-btn');
+  if(boardBtn) boardBtn.style.display=isIt?'none':'';
+  // Hide JP-only flashcard modes (Hiragana, Katakana) for Italian
+  const jpOnlyBtns=['pm-hira','pm-kata'];
+  jpOnlyBtns.forEach(id=>{
+    const btn=document.getElementById(id);
+    if(btn) btn.style.display=isIt?'none':'';
+  });
+  // If active mode is hira/kata and switching to IT, reset to 'all'
+  if(isIt && (fcPlayMode==='hira'||fcPlayMode==='kata')){
+    fcSetMode('all', document.getElementById('pm-all'));
+  }
+  // If currently on board section and switching to Italian, go to flashcards
+  if(isIt){
+    const boardSec=document.getElementById('sec-board');
+    if(boardSec&&boardSec.classList.contains('active')){
+      document.querySelector('[onclick*="flash"]')?.click();
+    }
+  }
+  // Reset placeholder card
+  const frontEl=document.getElementById('fc-front-text');
+  const langLbl=document.getElementById('fc-front-lang-lbl');
+  const backEl=document.getElementById('fc-back-text');
+  const readEl=document.getElementById('fc-back-reading');
+  if(frontEl){
+    const placeholder=isIt?'ciao':'おはよう';
+    frontEl.textContent=placeholder; fcCurrentWord=placeholder;
+    frontEl.style.fontSize=isIt?'64px':'123px';
+    frontEl.style.fontFamily=isIt?'inherit':"'Zen Maru Gothic',sans-serif";
+  }
+  if(langLbl) langLbl.textContent=isIt?'Italiano':'Japanese';
+  if(backEl) backEl.textContent=isIt?'hello / bye':'Good morning';
+  if(readEl) readEl.textContent=isIt?'chào / tạm biệt':'Ohayou';
+}
 
 function fcToggleListSel(id,e){
   if(e.target.classList.contains('log-del')||e.target.closest?.('.log-del')) return;
@@ -2670,26 +3507,25 @@ function fcAddToMyCards(){
   if(!fcListSelected.size){ showToast('Select cards first'); return; }
   const {all}=fcGetAllCards();
   let added=0, skipped=0;
+  const n5State=JSON.parse(localStorage.getItem('njn5')||'{}');
+
   [...fcListSelected].forEach(sid=>{
-    // Only copy if not already in user's flashcards
-    const already=flashcards.some(c=>String(c.id)===String(sid)||
-      (all.find(x=>String(x.id)===String(sid))?.front===c.front));
-    if(already){ skipped++; return; }
     const src=all.find(c=>String(c.id)===String(sid));
     if(!src) return;
-    // Copy to user deck as a fresh card (new SRS state)
-    flashcards.push({
-      id:Date.now()+added,
-      front:src.front, back:src.back, backVi:src.backVi||'',
-      read:src.read||'', note:src.note||'',
-      interval:0, step:0, nextReview:null,
-      reviewCount:0, lastRating:null,
-      created:fcToday(), isHard:false,
-      tag: src.note||''
-    });
-    added++;
+
+    if(src.isN5){
+      // N5 card — just mark addedToMyCards, don't copy
+      if(n5State[src.id]?.addedToMyCards){ skipped++; return; }
+      if(!n5State[src.id]) n5State[src.id]={interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null,isHard:false,lastReviewDate:null,note:''};
+      n5State[src.id].addedToMyCards=true;
+      added++;
+    } else {
+      // User card — already in My Cards
+      skipped++;
+    }
   });
-  saveFC();
+
+  localStorage.setItem(lsKey('njn5'),JSON.stringify(n5State));
   fcClearListSel();
   fcRenderAll();
   if(added>0) showToast(`✍️ Added ${added} card${added>1?'s':''} to My Cards!`);
@@ -2804,7 +3640,7 @@ function fcDateRangeChange(){
 function fcUpdateModeCount(){
   const cards=fcGetModeCards();
   const el=document.getElementById('fc-mode-count');
-  if(el)el.textContent=cards.length?`${cards.length} card${cards.length>1?'s':''} selected`:'No cards match';
+  if(el){const t=I18N[currentLang]||I18N.en;el.textContent=cards.length?`${cards.length} ${t.fc_cards_selected||'cards selected'}`:(t.fc_no_cards||'No cards match');}
 }
 
 let fcSessionStartTime = null;
@@ -2829,8 +3665,13 @@ function fcSpeak(e){
   if(!window.speechSynthesis){ showToast('Audio not supported in this browser'); return; }
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(fcCurrentWord);
-  utter.lang = 'ja-JP'; utter.rate = 0.8; utter.volume = 1.0;
-  const jpVoice=getBestJpVoice(); if(jpVoice) utter.voice=jpVoice;
+  if(activeStudyLang==='it'){
+    utter.lang='it-IT'; utter.rate=0.85; utter.volume=1.0;
+    const itVoice=getBestItVoice(); if(itVoice) utter.voice=itVoice;
+  } else {
+    utter.lang='ja-JP'; utter.rate=0.8; utter.volume=1.0;
+    const jpVoice=getBestJpVoice(); if(jpVoice) utter.voice=jpVoice;
+  }
   window.speechSynthesis.speak(utter);
 }
 
@@ -2844,78 +3685,104 @@ const I18N = {
     app_sub:'頑張れ！Keep going! You\'ve got this ～',
     lang_label:'🌐 Language', theme_label:'🎨 Theme',
     nav_log:'📝 Today\'s Log', nav_board:'🔤 Character Board', nav_flash:'🃏 Flashcards',
-    nav_history:'📖 History', nav_report:'📊 Report', nav_goals:'🎯 Goals',
-    // Flashcard section
+    nav_history:'📖 History', nav_report:'📊 Report', nav_goals:'🎯 Goals', nav_ranking:'🏆 Ranking',
     fc_review:'Review', fc_start:'▶ Start 🌸', fc_add_title:'➕ Add new card',
     fc_front_lbl:'Japanese (front)', fc_back_lbl:'Meaning (back)', fc_read_lbl:'Reading — shown on back',
     fc_note_lbl:'Note (optional)', fc_add_btn:'+ Add Card',
     fc_all_title:'📋 All cards', fc_search:'🔍 Search...',
     fc_flt_all:'All', fc_flt_mine:'✍️ My Cards', fc_flt_n5:'📚 N5',
-    fc_flt_due:'Due', fc_flt_new:'New', fc_flt_learned:'Learned',
+    fc_flt_due:'Due', fc_flt_easy:'🙂 Easy', fc_flt_hard:'😓 Hard',
     fc_col_jp:'Japanese', fc_col_meaning:'Meaning', fc_col_next:'Next review', fc_col_played:'Played',
     fc_play_sel:'▶ Play selected', fc_add_mycards:'✍️ Add to My Cards', fc_clear:'Clear',
-    fc_due_tooltip:'Shows My Cards due today. Easy cards follow 1→2→3→7→14→30 day schedule. Hard cards repeat daily until marked Easy.',
+    fc_due_tooltip:'Shows My Cards due today.',
     fc_meaning_lbl:'MEANING', fc_hint:'Choose Easy or Hard to continue',
     fc_easy:'Easy', fc_hard:'Hard', fc_hard_sub:'daily until Easy',
     fc_replay:'🔁 See again later', fc_skip:'⏭ Skip',
     fc_done_title:'Session complete!', fc_done_sub:'Great work today!', fc_done_again:'▶ Play again',
-    // Log section
+    fc_no_match:'No cards match this filter. Try a different play mode!',
+    fc_cards_selected:'cards selected', fc_no_cards:'No cards match',
+    fc_mode_labels:{due:'Due Today',all:'All Cards',mine:'My Cards',hira:'Hiragana',kata:'Katakana',date:'Date Filter',hard:'Hard Words'},
     log_title:'✏️ Log Today\'s Study', log_date:'Date', log_mins:'Minutes',
     log_topics:'Topics studied', log_notes:'✍️ Notes', log_notes_ph:'What did you learn? Any thoughts...',
     log_save:'🌸 Save Log 🌸', log_added_today:'Added today (per goal)',
-    // Goals section
     goal_title:'🎯 Goals', goal_add:'➕ Add goal',
     goal_name:'Goal name', goal_type:'Type', goal_target:'Target', goal_unit:'Unit label', goal_deadline:'Deadline',
     goal_save:'Save Goal', goal_pin:'📌 Pinned Goals',
-    // History
     hist_title:'📖 Study History', hist_streak:'🔥 Streak',
     hist_days:'Total Days', hist_topics:'Topics', hist_notes_lbl:'Notes',
-    // Report
+    hist_journal:'📝 Journal', hist_all_time:'All time', hist_today:'Today',
+    hist_7days:'Last 7 days', hist_30days:'Last 30 days', hist_custom:'Custom period', hist_apply:'Apply',
+    hist_quick:'Quick select',
     rep_title:'📊 Report', rep_days:'📅 Total Days', rep_hours:'⏱ Total Hours',
     rep_avg:'📊 Avg min/day', rep_words:'📝 Words learned',
-    rep_chart_title:'📈 Minutes studied (last 7 days)',
-    rep_content_title:'📊 Content breakdown',
-    // Settings
+    rep_chart_title:'📈 Minutes studied', rep_content_title:'📊 Content breakdown',
+    rank_title:'🏆 Leaderboard', rank_desc:'Compare with other learners — updates every time you open.',
+    rank_hours:'⏱ Hours', rank_words:'📝 Words', rank_days:'📅 Days', rank_no_data:'No data yet — be the first! 🌸',
     set_lang:'🌐 Language', set_theme:'🎨 Theme',
+    set_nickname:'🏷️ Nickname (shown in ranking)', set_nickname_ph:'Enter nickname...',
+    set_save_nick:'Save', set_logout:'🚪 Sign out',
+    toast_saved:'🌸 Saved!', toast_deleted:'🗑 Deleted', toast_added:'Card added!',
+    toast_no_date:'❗ Please select a study date!',
+    toast_no_cards:'❗ No cards in this selection!',
+    toast_select_first:'Select cards first',
+    toast_no_words:'No words selected',
+    sc_days:'Total Days', sc_hours:'Total Hours', sc_avg:'Avg min/day', sc_words:'Words learned',
+    pin_goals:'📌 Pinned Goals', pin_drag:'Drag to reorder priority ↕',
+    pin_empty:'No pinned goals yet.',
+    fc_done_title2:'Session complete!', fc_done_msg:'Come back tomorrow! Keep it up!',
+    rank_you:'(you)',
   },
   vi:{
     app_title:'Hành Trình <span>Tiếng Nhật</span>',
     app_sub:'頑張れ！Cố lên! Bạn làm được ～',
     lang_label:'🌐 Ngôn ngữ', theme_label:'🎨 Giao diện',
     nav_log:'📝 Ghi hôm nay', nav_board:'🔤 Bảng chữ cái', nav_flash:'🃏 Flashcard',
-    nav_history:'📖 Lịch sử', nav_report:'📊 Báo cáo', nav_goals:'🎯 Mục tiêu',
-    // Flashcard section
+    nav_history:'📖 Lịch sử', nav_report:'📊 Báo cáo', nav_goals:'🎯 Mục tiêu', nav_ranking:'🏆 Xếp hạng',
     fc_review:'Ôn luyện', fc_start:'▶ Bắt đầu 🌸', fc_add_title:'➕ Thêm thẻ mới',
     fc_front_lbl:'Tiếng Nhật (mặt trước)', fc_back_lbl:'Nghĩa (mặt sau)', fc_read_lbl:'Cách đọc — hiển thị mặt sau',
     fc_note_lbl:'Ghi chú (tuỳ chọn)', fc_add_btn:'+ Thêm thẻ',
     fc_all_title:'📋 Tất cả thẻ', fc_search:'🔍 Tìm kiếm...',
     fc_flt_all:'Tất cả', fc_flt_mine:'✍️ Thẻ của tôi', fc_flt_n5:'📚 N5',
-    fc_flt_due:'Đến hạn', fc_flt_new:'Mới', fc_flt_learned:'Đã học',
+    fc_flt_due:'Đến hạn', fc_flt_easy:'🙂 Dễ', fc_flt_hard:'😓 Khó',
     fc_col_jp:'Tiếng Nhật', fc_col_meaning:'Nghĩa', fc_col_next:'Ôn tiếp', fc_col_played:'Đã học',
     fc_play_sel:'▶ Luyện thẻ đã chọn', fc_add_mycards:'✍️ Thêm vào thẻ của tôi', fc_clear:'Xoá',
-    fc_due_tooltip:'Hiển thị thẻ của bạn đến hạn hôm nay. Dễ theo lịch 1→2→3→7→14→30 ngày. Khó lặp mỗi ngày đến khi đánh dấu Dễ.',
+    fc_due_tooltip:'Hiển thị thẻ đến hạn hôm nay.',
     fc_meaning_lbl:'NGHĨA', fc_hint:'Chọn Dễ hoặc Khó để tiếp tục',
     fc_easy:'Dễ', fc_hard:'Khó', fc_hard_sub:'lặp mỗi ngày đến khi Dễ',
     fc_replay:'🔁 Xem lại sau', fc_skip:'⏭ Bỏ qua',
     fc_done_title:'Hoàn thành buổi học!', fc_done_sub:'Bạn học giỏi lắm!', fc_done_again:'▶ Học lại',
-    // Log section
+    fc_no_match:'Không có thẻ nào phù hợp. Thử chế độ khác!',
+    fc_cards_selected:'thẻ đã chọn', fc_no_cards:'Không có thẻ nào',
+    fc_mode_labels:{due:'Đến hạn hôm nay',all:'Tất cả thẻ',mine:'Thẻ của tôi',hira:'Hiragana',kata:'Katakana',date:'Lọc theo ngày',hard:'Từ khó'},
     log_title:'✏️ Ghi chép hôm nay', log_date:'Ngày', log_mins:'Phút',
     log_topics:'Chủ đề đã học', log_notes:'✍️ Ghi chú', log_notes_ph:'Bạn đã học gì? Cảm nghĩ...',
     log_save:'🌸 Lưu nhật ký 🌸', log_added_today:'Đã thêm hôm nay (theo mục tiêu)',
-    // Goals section
     goal_title:'🎯 Mục tiêu', goal_add:'➕ Thêm mục tiêu',
     goal_name:'Tên mục tiêu', goal_type:'Loại', goal_target:'Chỉ tiêu', goal_unit:'Đơn vị', goal_deadline:'Hạn chót',
     goal_save:'Lưu mục tiêu', goal_pin:'📌 Mục tiêu đã ghim',
-    // History
     hist_title:'📖 Lịch sử học tập', hist_streak:'🔥 Chuỗi ngày',
     hist_days:'Tổng ngày', hist_topics:'Chủ đề', hist_notes_lbl:'Ghi chú',
-    // Report
+    hist_journal:'📝 Nhật ký', hist_all_time:'Tất cả', hist_today:'Hôm nay',
+    hist_7days:'7 ngày qua', hist_30days:'30 ngày qua', hist_custom:'Khoảng thời gian', hist_apply:'Áp dụng',
+    hist_quick:'Chọn nhanh',
     rep_title:'📊 Báo cáo', rep_days:'📅 Tổng ngày', rep_hours:'⏱ Tổng giờ',
     rep_avg:'📊 Trung bình phút/ngày', rep_words:'📝 Từ đã học',
-    rep_chart_title:'📈 Số phút học (7 ngày gần nhất)',
-    rep_content_title:'📊 Phân tích nội dung',
-    // Settings
+    rep_chart_title:'📈 Số phút học', rep_content_title:'📊 Phân tích nội dung',
+    rank_title:'🏆 Bảng xếp hạng', rank_desc:'So sánh với những người học cùng — cập nhật mỗi khi bạn mở trang.',
+    rank_hours:'⏱ Giờ học', rank_words:'📝 Từ đã học', rank_days:'📅 Ngày học', rank_no_data:'Chưa có dữ liệu — hãy là người đầu tiên! 🌸',
     set_lang:'🌐 Ngôn ngữ', set_theme:'🎨 Giao diện',
+    set_nickname:'🏷️ Nickname (hiển thị trong xếp hạng)', set_nickname_ph:'Nhập nickname...',
+    set_save_nick:'Lưu', set_logout:'🚪 Đăng xuất',
+    toast_saved:'🌸 Đã lưu!', toast_deleted:'🗑 Đã xóa', toast_added:'Đã thêm thẻ!',
+    toast_no_date:'❗ Vui lòng chọn ngày học!',
+    toast_no_cards:'❗ Không có thẻ nào trong lựa chọn này!',
+    toast_select_first:'Chọn thẻ trước',
+    toast_no_words:'Chưa chọn từ nào',
+    sc_days:'Tổng ngày', sc_hours:'Tổng giờ', sc_avg:'TB phút/ngày', sc_words:'Từ đã học',
+    pin_goals:'📌 Mục tiêu ghim', pin_drag:'Kéo để sắp xếp ↕',
+    pin_empty:'Chưa có mục tiêu ghim.',
+    fc_done_title2:'Hoàn thành buổi học!', fc_done_msg:'Quay lại ngày mai ôn tập nhé! Cố lên!',
+    rank_you:'(bạn)',
   }
 };
 
@@ -2932,14 +3799,13 @@ function setLang(lang){
 
 function applyLang(){
   const t=I18N[currentLang]||I18N.en;
-  // Header
   const h1=document.getElementById('app-title');
   if(h1) h1.innerHTML=t.app_title;
   const sub=document.getElementById('app-sub');
   if(sub) sub.textContent=t.app_sub;
 
   // Nav buttons
-  const navMap={log:'nav_log',board:'nav_board',flash:'nav_flash',history:'nav_history',report:'nav_report',goals:'nav_goals'};
+  const navMap={log:'nav_log',board:'nav_board',flash:'nav_flash',history:'nav_history',report:'nav_report',goals:'nav_goals',ranking:'nav_ranking'};
   document.querySelectorAll('.nav-btn').forEach(btn=>{
     const m=btn.getAttribute('onclick')?.match(/showSec\('(\w+)'/);
     const sec=m?.[1];
@@ -2955,7 +3821,7 @@ function applyLang(){
     }
   });
 
-  // Flashcard section labels
+  // Flashcard
   _setText('fc-add-title', t.fc_add_title);
   _setLabel('fc-front-lbl', t.fc_front_lbl);
   _setLabel('fc-back-lbl', t.fc_back_lbl);
@@ -2968,22 +3834,59 @@ function applyLang(){
   _setVal('fc-play-sel-btn', t.fc_play_sel);
   _setVal('fc-add-mycards-btn', t.fc_add_mycards);
   _setVal('fc-clear-btn', t.fc_clear);
-  // Filter buttons
   _setInnerBtn('flt-all', t.fc_flt_all);
   _setInnerBtn('flt-mine', t.fc_flt_mine);
   _setInnerBtn('flt-n5', t.fc_flt_n5);
   _setInnerBtn('flt-due', t.fc_flt_due);
-  _setInnerBtn('flt-new', t.fc_flt_new);
-  _setInnerBtn('flt-learned', t.fc_flt_learned);
-  // Flashcard back
+  _setInnerBtn('flt-easy', t.fc_flt_easy);
+  _setInnerBtn('flt-hard', t.fc_flt_hard);
   const hintEl=document.querySelector('#fc-back .fc-hint');
   if(hintEl) hintEl.textContent=t.fc_hint;
   const meaningLbl=document.querySelector('#fc-back .fc-meaning-lbl');
   if(meaningLbl) meaningLbl.textContent=t.fc_meaning_lbl;
   _setEasyHard(t);
-  // Start button
   const startBtn=document.getElementById('fc-start-btn');
   if(startBtn) startBtn.textContent=t.fc_start;
+
+  // History filter dropdown
+  const hJournal=document.querySelector('#sec-history .card > div > div[style*="font-weight:700"]');
+  if(hJournal) hJournal.textContent=t.hist_journal||'📝 Journal';
+  const hLabel=document.getElementById('hist-filter-label');
+  if(hLabel&&hLabel.textContent==='All time'||hLabel?.textContent==='Tất cả') hLabel.textContent=t.hist_all_time;
+  document.querySelectorAll('#hist-filter-dd .fc-preset-btn').forEach((btn,i)=>{
+    const keys=['hist_today','hist_7days','hist_30days','hist_all_time'];
+    if(t[keys[i]]) btn.textContent=t[keys[i]];
+  });
+  const histApply=document.querySelector('#hist-filter-dd button[onclick="histSetPeriod()"]');
+  if(histApply) histApply.textContent=t.hist_apply;
+
+  // Report filter
+  const repApply=document.querySelector('#rep-filter-dd button[onclick="repSetPeriod()"]');
+  if(repApply) repApply.textContent=t.hist_apply;
+  document.querySelectorAll('#rep-filter-dd .fc-preset-btn').forEach((btn,i)=>{
+    const labels=['Last 7 days','Last 14 days','Last 30 days','Last 90 days'];
+    const viLabels=['7 ngày qua','14 ngày qua','30 ngày qua','90 ngày qua'];
+    if(currentLang==='vi') btn.textContent=viLabels[i]||btn.textContent;
+    else btn.textContent=labels[i]||btn.textContent;
+  });
+
+  // Ranking
+  _setText('rank-title-el', t.rank_title);
+  _setText('rank-desc-el', t.rank_desc);
+  const rankHours=document.getElementById('rank-tab-hours');
+  const rankWords=document.getElementById('rank-tab-words');
+  const rankDays=document.getElementById('rank-tab-days');
+  if(rankHours) rankHours.textContent=t.rank_hours;
+  if(rankWords) rankWords.textContent=t.rank_words;
+  if(rankDays) rankDays.textContent=t.rank_days;
+
+  // Settings
+  const nickLbl=document.querySelector('div[style*="font-size:11px"][style*="font-weight:600"]');
+  const nickInp=document.getElementById('nickname-input');
+  if(nickInp) nickInp.placeholder=t.set_nickname_ph;
+  const logoutBtn=document.querySelector('button[onclick="signOut()"]');
+  if(logoutBtn) logoutBtn.textContent=t.set_logout;
+
   // Log section
   _setText('log-title-el', t.log_title);
   _setLabel('log-date-lbl', t.log_date);
@@ -2992,22 +3895,38 @@ function applyLang(){
   _setLabel('log-notes-lbl', t.log_notes);
   _setPlaceholder('ln', t.log_notes_ph);
   _setVal('log-save-btn', t.log_save);
+
   // Goals
   _setText('goals-title-el', t.goal_title);
   _setText('goals-pin-lbl', t.goal_pin);
-  // Report
+
+  // Report stats
   _setText('rep-title-el', t.rep_title);
   _setText('rep-days-lbl', t.rep_days);
   _setText('rep-hours-lbl', t.rep_hours);
   _setText('rep-avg-lbl', t.rep_avg);
   _setText('rep-words-lbl', t.rep_words);
+
   // History
   _setText('hist-title-el', t.hist_title);
-  // Settings labels
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const key=el.dataset.i18n;
-    if(t[key]) el.textContent=t[key];
-  });
+
+  // Scorecard labels
+  _setText('sc-days-lbl', t.sc_days);
+  _setText('sc-hours-lbl', t.sc_hours);
+  _setText('sc-avg-lbl', t.sc_avg);
+  _setText('sc-words-lbl', t.sc_words);
+
+  // Pinned goals
+  _setText('pin-goals-lbl', t.pin_goals);
+  _setText('pin-drag-lbl', t.pin_drag);
+
+  // fc-done section
+  _setText('fc-done-title', t.fc_done_title2||t.fc_done_title);
+  _setText('fc-done-msg', t.fc_done_msg);
+
+  // Re-render dynamic sections
+  if(typeof fcRenderAll==='function') setTimeout(fcRenderAll,50);
+  if(typeof renderAll==='function') renderAll();
 }
 
 function _setText(id,val){ const el=document.getElementById(id); if(el&&val) el.innerHTML=val; }
@@ -3023,87 +3942,37 @@ function _setEasyHard(t){
 function setTheme(theme){
   currentTheme=theme;
   localStorage.setItem('njtheme',theme);
-  ['girl','ocean','frieren'].forEach(t=>{
-    const btn=document.getElementById('theme-'+t);
-    if(btn) btn.classList.toggle('active',t===theme);
-  });
+  const btn=document.getElementById('theme-girl');
+  if(btn) btn.classList.add('active');
   applyTheme();
 }
 
 function applyTheme(){
-  document.documentElement.classList.remove('theme-ocean','theme-country','theme-frieren');
-  if(currentTheme==='ocean') document.documentElement.classList.add('theme-ocean');
-  else if(currentTheme==='frieren') document.documentElement.classList.add('theme-frieren');
-  const isGirl=currentTheme==='girl';
-  document.querySelectorAll('.petal').forEach(p=>p.style.display=isGirl?'block':'none');
-  const bgMap={
-    girl:'radial-gradient(circle at 10% 20%,rgba(255,183,197,.15) 0%,transparent 50%),radial-gradient(circle at 90% 80%,rgba(179,157,219,.15) 0%,transparent 50%)',
-    ocean:'radial-gradient(circle at 10% 20%,rgba(14,165,196,.12) 0%,transparent 50%),radial-gradient(circle at 90% 80%,rgba(26,140,110,.12) 0%,transparent 50%)',
-    frieren:'radial-gradient(circle at 20% 30%,rgba(155,142,196,.15) 0%,transparent 55%),radial-gradient(circle at 80% 70%,rgba(123,168,160,.12) 0%,transparent 50%)',
-  };
-  document.body.style.backgroundImage=bgMap[currentTheme]||bgMap.girl;
-  // Frieren character
+  // Both themes are pink — italiano just adds class for emoji effect
+  document.documentElement.classList.remove('theme-ocean','theme-country','theme-frieren','theme-italiano');
+  if(currentTheme==='italiano') document.documentElement.classList.add('theme-italiano');
+  // Sakura petals: show for JP (girl), hide for IT (italiano)
+  const isJp=currentTheme==='girl';
+  document.querySelectorAll('.petal').forEach(p=>p.style.display=isJp?'block':'none');
+  // Same pink background for both
+  const pinkBg='radial-gradient(circle at 10% 20%,rgba(255,183,197,.15) 0%,transparent 50%),radial-gradient(circle at 90% 80%,rgba(179,157,219,.15) 0%,transparent 50%)';
+  document.body.style.backgroundImage=pinkBg;
+  // Remove Frieren character if exists
   const existing=document.getElementById('frieren-char');
-  if(currentTheme==='frieren'){
-    if(!existing){
-      const el=document.createElement('div');
-      el.id='frieren-char';
-      el.style.cssText='position:fixed;bottom:0;right:320px;z-index:10;pointer-events:none;width:160px;';
-      el.innerHTML=`<svg viewBox="0 0 160 260" xmlns="http://www.w3.org/2000/svg" width="160" height="260">
-        <!-- Body / cloak -->
-        <ellipse cx="80" cy="210" rx="55" ry="60" fill="#E8E4F0"/>
-        <rect x="30" y="160" width="100" height="80" rx="20" fill="#D8D0EC"/>
-        <!-- Cape clasp -->
-        <circle cx="80" cy="165" r="7" fill="#9B8EC4"/>
-        <circle cx="80" cy="165" r="4" fill="#6B5BA0"/>
-        <!-- Arms resting on ledge -->
-        <ellipse cx="52" cy="185" rx="18" ry="10" fill="#E8E4F0" transform="rotate(-15 52 185)"/>
-        <ellipse cx="108" cy="185" rx="18" ry="10" fill="#E8E4F0" transform="rotate(15 108 185)"/>
-        <!-- Hands propped up -->
-        <ellipse cx="55" cy="174" rx="12" ry="9" fill="#FAE8D8"/>
-        <ellipse cx="105" cy="174" rx="12" ry="9" fill="#FAE8D8"/>
-        <!-- Chin resting on hands -->
-        <!-- Neck -->
-        <rect x="72" y="130" width="16" height="18" rx="6" fill="#FAE8D8"/>
-        <!-- Head -->
-        <ellipse cx="80" cy="118" rx="36" ry="34" fill="#FAE8D8"/>
-        <!-- Long white/silver hair - left -->
-        <path d="M46 108 Q20 140 28 200" stroke="#F0EEF8" stroke-width="18" fill="none" stroke-linecap="round"/>
-        <path d="M50 106 Q18 145 24 210" stroke="#E8E5F5" stroke-width="10" fill="none" stroke-linecap="round"/>
-        <!-- Long white/silver hair - right -->
-        <path d="M114 108 Q140 140 132 200" stroke="#F0EEF8" stroke-width="18" fill="none" stroke-linecap="round"/>
-        <path d="M110 106 Q142 145 136 210" stroke="#E8E5F5" stroke-width="10" fill="none" stroke-linecap="round"/>
-        <!-- Hair top -->
-        <ellipse cx="80" cy="90" rx="36" ry="20" fill="#EEEAF8"/>
-        <!-- Bangs -->
-        <path d="M46 100 Q52 78 80 84 Q108 78 114 100" fill="#E8E4F4"/>
-        <path d="M56 106 Q60 90 70 92" stroke="#D8D2F0" stroke-width="3" fill="none"/>
-        <path d="M104 106 Q100 90 90 92" stroke="#D8D2F0" stroke-width="3" fill="none"/>
-        <!-- Eyes — slightly droopy, bored expression -->
-        <ellipse cx="66" cy="118" rx="9" ry="7" fill="white"/>
-        <ellipse cx="94" cy="118" rx="9" ry="7" fill="white"/>
-        <ellipse cx="67" cy="120" rx="6" ry="5" fill="#4A3A6A"/>
-        <ellipse cx="95" cy="120" rx="6" ry="5" fill="#4A3A6A"/>
-        <ellipse cx="68" cy="119" rx="3" ry="3" fill="#2A1A4A"/>
-        <ellipse cx="96" cy="119" rx="3" ry="3" fill="#2A1A4A"/>
-        <!-- Eyelids — half closed / bored -->
-        <path d="M57 115 Q66 112 75 115" stroke="#C8A878" stroke-width="2" fill="none"/>
-        <path d="M85 115 Q94 112 103 115" stroke="#C8A878" stroke-width="2" fill="none"/>
-        <!-- Small nose -->
-        <ellipse cx="80" cy="126" rx="3" ry="2" fill="#E8C8A8" opacity=".5"/>
-        <!-- Neutral mouth — slight pout -->
-        <path d="M71 134 Q80 138 89 134" stroke="#C8A878" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <!-- Small blush -->
-        <ellipse cx="60" cy="128" rx="8" ry="4" fill="#FFB7C5" opacity=".3"/>
-        <ellipse cx="100" cy="128" rx="8" ry="4" fill="#FFB7C5" opacity=".3"/>
-        <!-- Ear accessories -->
-        <circle cx="44" cy="120" r="4" fill="#9B8EC4"/>
-        <circle cx="116" cy="120" r="4" fill="#9B8EC4"/>
-      </svg>`;
-      document.body.appendChild(el);
+  if(existing) existing.remove();
+  // Italian floating emojis
+  const existingIt=document.getElementById('italiano-petals');
+  if(currentTheme==='italiano'){
+    if(!existingIt){
+      const itDiv=document.createElement('div');
+      itDiv.id='italiano-petals';
+      const itEmojis=['🍋','🌿','🫐','☕','🍊','🌸'];
+      const itAnims=itEmojis.map((em,i)=>`<div style="position:fixed;font-size:20px;opacity:.25;pointer-events:none;animation:fall ${6+i*1.3}s linear ${i*0.8}s infinite;left:${8+i*14}%;top:-40px;">${em}</div>`).join('');
+      itDiv.innerHTML=itAnims;
+      document.body.appendChild(itDiv);
     }
-  } else if(existing){
-    existing.remove();
+  } else if(existingIt){
+    existingIt.remove();
   }
 }
 
@@ -3214,9 +4083,13 @@ document.addEventListener('click',function(e){
   const savedTheme=localStorage.getItem('njtheme')||'girl';
   const savedLang=localStorage.getItem('njlang')||'en';
   currentTheme=savedTheme; currentLang=savedLang;
-  ['girl','ocean','frieren'].forEach(t=>{const btn=document.getElementById('theme-'+t);if(btn)btn.classList.toggle('active',t===savedTheme);});
+  const gBtn=document.getElementById('theme-girl'); if(gBtn) gBtn.classList.add('active');
   ['en','vi'].forEach(l=>{const btn=document.getElementById('lang-'+l);if(btn)btn.classList.toggle('active',l===savedLang);});
   applyTheme(); applyLang();
+  // Apply study language UI state on load
+  if(typeof applyStudyLangUI==='function') applyStudyLangUI(activeStudyLang);
+  // If Italian was active, override to italiano theme
+  if(activeStudyLang==='it'){ currentTheme='italiano'; applyTheme(); }
 })();
 
 
@@ -3295,7 +4168,7 @@ async function renderRanking(){
       <div style="font-size:20px;width:28px;text-align:center;flex-shrink:0;">${rank}</div>
       ${u.avatar_url?`<img src="${u.avatar_url}" width="32" height="32" style="border-radius:50%;flex-shrink:0;">`:`<div style="width:32px;height:32px;border-radius:50%;background:var(--sakura);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0;">${initials}</div>`}
       <div style="flex:1;min-width:0;">
-        <div style="font-size:14px;font-weight:700;color:var(--ink);">${u.display_name||'User'}${isMe?' <span style="font-size:11px;color:var(--sakura-deep);">(bạn)</span>':''}</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);">${u.display_name||'User'}${isMe?' <span style="font-size:11px;color:var(--sakura-deep);">'+(((I18N[currentLang]||I18N.en).rank_you)||'(you)')+'</span>':''}</div>
         <div style="font-size:11px;color:var(--ink-soft);">${u.total_mins}ph · ${u.words_learned} từ · ${u.total_days} ngày</div>
       </div>
       <div style="font-size:16px;font-weight:800;color:var(--sakura-deep);flex-shrink:0;">${val}</div>
@@ -3309,6 +4182,19 @@ function showToast(msg){const t=document.createElement('div');t.className='toast
 // ===== SUPABASE AUTH & SYNC =====
 const SUPA_URL = 'https://ziavhtbquwxwuueywnia.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppYXZodGJxdXd4d3V1ZXl3bmlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMDUyNzcsImV4cCI6MjA5NDY4MTI3N30.qgWJszQbwl-jTypshyxVsX1fmNu4xR0YS_kfRvVyUAo';
+
+// Clear OAuth hash from URL IMMEDIATELY — before Supabase client init
+// This prevents the token from being re-processed on every navigation
+if(window.location.hash.includes('access_token')){
+  // Extract and store token temporarily so Supabase can read it
+  const hashStr = window.location.hash;
+  // Supabase reads from hash automatically via createClient
+  // After a tiny delay, clean the URL so it doesn't re-trigger
+  setTimeout(()=>{
+    window.history.replaceState(null, '', window.location.pathname);
+  }, 500);
+}
+
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
   auth: {
     detectSessionInUrl: true,
@@ -3412,8 +4298,8 @@ async function migrateToCloud(userId){
 
 // Load data from Supabase → localStorage
 async function loadFromCloud(userId){
-  // Flashcards
-  const {data:fc} = await supa.from('flashcards').select('*').eq('user_id',userId).eq('is_n5',false);
+  // JP Flashcards
+  const {data:fc} = await supa.from('flashcards').select('*').eq('user_id',userId);
   if(fc?.length){
     const cards = fc.map(c=>({
       id:c.card_id, front:c.front, back:c.back, backVi:c.back_vi,
@@ -3423,12 +4309,30 @@ async function loadFromCloud(userId){
       lastRating:c.last_rating, isHard:c.is_hard, created:c.created_at
     }));
     localStorage.setItem('njfc', JSON.stringify(cards));
-    flashcards = cards;
+    if(activeStudyLang==='jp') flashcards = cards;
   }
 
-  // N5 state
+  // IT Flashcards
+  const {data:itfc} = await supa.from('it_flashcards').select('*').eq('user_id',userId);
+  if(itfc?.length){
+    const itCards = itfc.map(c=>({
+      id:c.card_id, front:c.front, back:c.back, backVi:c.back_vi,
+      read:c.reading, note:c.note,
+      step:c.step, interval:c.interval, nextReview:c.next_review,
+      lastReviewDate:c.last_review_date, reviewCount:c.review_count,
+      lastRating:c.last_rating, isHard:c.is_hard, created:c.created_at
+    }));
+    localStorage.setItem('itfc', JSON.stringify(itCards));
+    if(activeStudyLang==='it') flashcards = itCards;
+  }
+
+  // N5 state (JP)
   const {data:n5d} = await supa.from('n5_state').select('state').eq('user_id',userId).single();
   if(n5d?.state) localStorage.setItem('njn5', JSON.stringify(n5d.state));
+
+  // IT state
+  const {data:itd} = await supa.from('it_state').select('state').eq('user_id',userId).single();
+  if(itd?.state) localStorage.setItem('itn5', JSON.stringify(itd.state));
 
   // Logs
   const {data:lg} = await supa.from('logs').select('*').eq('user_id',userId).order('date',{ascending:false});
@@ -3455,6 +4359,7 @@ async function loadFromCloud(userId){
 // Save flashcards to cloud (called after every card change)
 async function saveFC_cloud(){
   if(!currentUser) return;
+  const table = activeStudyLang==='it' ? 'it_flashcards' : 'flashcards';
   const cards = flashcards.map(c=>({
     user_id:currentUser.id, card_id:String(c.id),
     front:c.front, back:c.back, back_vi:c.backVi||'',
@@ -3464,17 +4369,22 @@ async function saveFC_cloud(){
     last_review_date:c.lastReviewDate||null,
     review_count:c.reviewCount||0,
     last_rating:c.lastRating||null,
-    is_hard:c.isHard||false, is_n5:false,
+    is_hard:c.isHard||false,
     created_at:c.created||new Date().toISOString().split('T')[0]
   }));
-  await supa.from('flashcards').upsert(cards,{onConflict:'user_id,card_id'});
+  await supa.from(table).upsert(cards,{onConflict:'user_id,card_id'});
 }
 
-// Save N5 state to cloud
+// Save N5/IT state to cloud
 async function saveN5_cloud(){
   if(!currentUser) return;
-  const n5 = JSON.parse(localStorage.getItem('njn5')||'{}');
-  await supa.from('n5_state').upsert({user_id:currentUser.id, state:n5},{onConflict:'user_id'});
+  if(activeStudyLang==='it'){
+    const st = JSON.parse(localStorage.getItem('itn5')||'{}');
+    await supa.from('it_state').upsert({user_id:currentUser.id, state:st},{onConflict:'user_id'});
+  } else {
+    const n5 = JSON.parse(localStorage.getItem('njn5')||'{}');
+    await supa.from('n5_state').upsert({user_id:currentUser.id, state:n5},{onConflict:'user_id'});
+  }
 }
 
 // Save logs to cloud
@@ -3519,29 +4429,41 @@ if(!IS_LOCAL){
 
   supa.auth.onAuthStateChange(async (event, session)=>{
     authResolved = true;
+
     if(session?.user){
       currentUser = session.user;
       hideLogin();
       addLogoutBtn();
       updateSettingsUser(currentUser);
+      // Clean URL hash to prevent re-triggering
       if(window.location.hash.includes('access_token')){
         window.history.replaceState(null,'',window.location.pathname);
       }
-      const {data:existing} = await supa.from('n5_state').select('user_id').eq('user_id',currentUser.id).single();
-      if(!existing){
-        await migrateToCloud(currentUser.id);
-      } else {
-        await loadFromCloud(currentUser.id);
+      // Only load data on initial sign in, not on every token refresh
+      if(event === 'SIGNED_IN' || event === 'INITIAL_SESSION'){
+        const {data:existing} = await supa.from('n5_state').select('user_id').eq('user_id',currentUser.id).single();
+        if(!existing){
+          await migrateToCloud(currentUser.id);
+        } else {
+          await loadFromCloud(currentUser.id);
+        }
+        if(event === 'SIGNED_IN') showToast(`👋 Xin chào ${currentUser.user_metadata?.full_name||'bạn'}!`);
       }
-      showToast(`👋 Xin chào ${currentUser.user_metadata?.full_name||'bạn'}!`);
-    } else {
+
+    } else if(event === 'SIGNED_OUT'){
+      // Only show login when user explicitly signs out
       currentUser = null;
       showLogin();
     }
+    // TOKEN_REFRESHED and other events: do nothing if already logged in
   });
 
-  // Fallback: if onAuthStateChange hasn't fired after 4s, show login
-  setTimeout(()=>{ if(!authResolved) showLogin(); }, 4000);
+  // Fallback: show login only if no auth after 5s and not in OAuth flow
+  setTimeout(()=>{
+    if(!authResolved && !window.location.hash.includes('access_token')){
+      showLogin();
+    }
+  }, 5000);
 }
 </script>
 <!-- LOGIN OVERLAY -->
