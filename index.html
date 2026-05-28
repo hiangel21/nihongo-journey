@@ -799,8 +799,10 @@ const KANJI=[
 
 // Fresh start — only use current keys, no migration from old versions
 function loadAndMigrate(){
-  const logs=JSON.parse(localStorage.getItem('njl')||'[]');
-  const goals=JSON.parse(localStorage.getItem('njg')||'[]');
+  const _lang = localStorage.getItem('activeStudyLang')||'jp';
+  const lKey = (base) => _lang==='it' ? base.replace('njn5','itn5').replace('njfc','itfc').replace('njl','itl').replace('njg','itg') : base;
+  const logs=JSON.parse(localStorage.getItem(lKey('njl'))||'[]');
+  const goals=JSON.parse(localStorage.getItem(lKey('njg'))||'[]');
   const curM=JSON.parse(localStorage.getItem('njm')||'{"h":{},"k":{},"j":{}}');
   return {logs,goals,ML:curM};
 }
@@ -2081,7 +2083,7 @@ const IT_DECK = [
 // Declare before renderAll so inline oninput handlers can reference them
 let goalInputVals={};
 let pgDragId=null;
-let flashcards = JSON.parse(localStorage.getItem('njfc')||'[]');
+let flashcards = JSON.parse(localStorage.getItem((localStorage.getItem('activeStudyLang')||'jp')==='it'?'itfc':'njfc')||'[]');
 let fcSession = [];
 let fcSessionStats = {easy:0, hard:0, replay:0, skip:0};
 let histFilter = 'all';
@@ -2285,8 +2287,9 @@ function updStats(){
   set(['st','rt'],td);
   set(['sm','ravg'],avgMin);
   set(['sc-hours','rh'],totalHours);
-  // Words learned = My Cards that have been reviewed at least once
-  const wordsLearned = flashcards.filter(c=>c.reviewCount>0).length;
+  // Words learned = My Cards + N5/IT deck cards reviewed at least once
+  const {all: allForCount} = fcGetAllCards();
+  const wordsLearned = allForCount.filter(c=>c.reviewCount>0).length;
   const fc=document.getElementById('sc-cards');if(fc)fc.textContent=wordsLearned;
   const rwords=document.getElementById('r-words');if(rwords)rwords.textContent=wordsLearned;
 }
@@ -2710,6 +2713,7 @@ function renderReport(){
 // ===== SRS FLASHCARD ENGINE =====
 // ===== MIGRATE: Remove duplicate My Cards that exist in N5 =====
 function migrateDeduplicateMyCards(){
+  if(activeStudyLang==='it') return; // IT has its own deck, no JP dedup needed
   if(localStorage.getItem('njfc_dedup_done')) return;
   const n5Fronts = new Map(N5_DECK.map(c=>[c.front, c.id]));
   const n5State = JSON.parse(localStorage.getItem('njn5')||'{}');
@@ -2744,7 +2748,7 @@ function migrateDeduplicateMyCards(){
   }
   localStorage.setItem('njfc_dedup_done','1');
 }
-migrateDeduplicateMyCards();
+migrateDeduplicateMyCards(); // JP-only migration, safe to call always
 
 function lsKey(base){ return activeStudyLang==='it' ? base.replace('njn5','itn5').replace('njfc','itfc').replace('njl','itl').replace('njg','itg') : base; }
 function saveFC(){ localStorage.setItem(lsKey('njfc'), JSON.stringify(flashcards)); }
@@ -3139,40 +3143,42 @@ function fcFilterSet(f, btn){
 function fcRenderAll(){
   const el = id => document.getElementById(id);
   if(el('fc-queue-label')){
-    const allCards = [...flashcards,...N5_DECK];
-    const d=allCards.filter(fcIsDue).length;
+    const {all} = fcGetAllCards();
+    const d = all.filter(fcIsDue).length;
     el('fc-queue-label').textContent = d>0?`(${d} due)`:'';
   }
   fcUpdateModeCount();
-  // Always keep card visible — show default if no active session
+  // Always reset session state when calling fcRenderAll (e.g. after lang switch)
+  // Force back to idle card display
   const sessionDiv = document.getElementById('fc-session');
   const emptyDiv = document.getElementById('fc-empty');
   const doneDiv = document.getElementById('fc-done');
-  if(sessionDiv && sessionDiv.style.display==='none' && doneDiv && doneDiv.style.display==='none'){
-    emptyDiv && (emptyDiv.style.display='none');
-    sessionDiv.style.display='block';
+  const shouldShowPlaceholder = !fcSession.length || sessionDiv?.style.display==='none';
+  if(shouldShowPlaceholder){
+    // Reset session
+    fcSession=[]; fcIdx=0; fcFlipped=false;
+    if(emptyDiv) emptyDiv.style.display='none';
+    if(doneDiv) doneDiv.style.display='none';
+    if(sessionDiv) sessionDiv.style.display='block';
     const frontEl=document.getElementById('fc-front-text');
     const backEl=document.getElementById('fc-back-text');
     const readEl=document.getElementById('fc-back-reading');
     const langLbl=document.getElementById('fc-front-lang-lbl');
     const isIt=activeStudyLang==='it';
     const placeholder=isIt?'ciao':'おはよう';
-    const placeholderBack=isIt?'hello / bye':'Good morning';
-    const placeholderRead=isIt?'chào / tạm biệt':'Ohayou';
     if(frontEl){
       frontEl.textContent=placeholder; fcCurrentWord=placeholder;
-      // Dynamic font size: Italian words are longer so use smaller font
-      frontEl.style.fontSize=isIt?'56px':'123px';
+      frontEl.style.fontSize=isIt?'64px':'123px';
       frontEl.style.fontFamily=isIt?'inherit':"'Zen Maru Gothic',sans-serif";
     }
-    if(langLbl) langLbl.textContent=isIt?'Italiano':'Japanese';
-    if(backEl&&!backEl.textContent.trim()) backEl.textContent=placeholderBack;
-    if(readEl&&!readEl.textContent.trim()) readEl.textContent=placeholderRead;
-    document.getElementById('fc-progress-text').textContent='Press ▶ Start to begin! 🌸';
+    if(langLbl) langLbl.textContent=isIt?'ITALIANO':'JAPANESE';
+    if(backEl) backEl.textContent=isIt?'hello / bye':'Good morning';
+    if(readEl) readEl.textContent=isIt?'chào / tạm biệt':'Ohayou';
+    const progEl=document.getElementById('fc-progress-text');
+    if(progEl) progEl.textContent='Press ▶ Start to begin! 🌸';
     const ratings=document.getElementById('fc-ratings');
     if(ratings) ratings.style.display='none';
     document.getElementById('fc-card-inner')?.classList.remove('flipped');
-    fcFlipped=false;
   }
   updStats();
   fcRenderList();
@@ -3331,7 +3337,8 @@ function fcRenderList(){
 function fcSaveNote(id, note, isN5){
   const sid=String(id);
   if(isN5){
-    const st=JSON.parse(localStorage.getItem('njn5')||'{}');
+    const stKey = activeStudyLang==='it' ? 'itn5' : 'njn5';
+    const st=JSON.parse(localStorage.getItem(stKey)||'{}');
     if(!st[sid]) st[sid]={interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null};
     st[sid].note=note;
     localStorage.setItem(lsKey('njn5'),JSON.stringify(st));
@@ -3393,6 +3400,10 @@ function switchStudyLang(lang){
     logs=JSON.parse(localStorage.getItem('njl')||'[]');
     goals=JSON.parse(localStorage.getItem('njg')||'[]');
   }
+
+  // Reset flashcard session — must clear before fcRenderAll so placeholder shows correct lang
+  fcSession=[]; fcIdx=0; fcFlipped=false;
+  fcSessionStats={easy:0,hard:0,replay:0,skip:0};
 
   // Update UI
   applyStudyLangUI(lang);
@@ -3507,7 +3518,8 @@ function fcAddToMyCards(){
   if(!fcListSelected.size){ showToast('Select cards first'); return; }
   const {all}=fcGetAllCards();
   let added=0, skipped=0;
-  const n5State=JSON.parse(localStorage.getItem('njn5')||'{}');
+  const stKey = activeStudyLang==='it' ? 'itn5' : 'njn5';
+  const n5State=JSON.parse(localStorage.getItem(stKey)||'{}');
 
   [...fcListSelected].forEach(sid=>{
     const src=all.find(c=>String(c.id)===String(sid));
@@ -4146,7 +4158,8 @@ async function renderRanking(){
   if(currentUser){
     const totalMins=logs.reduce((s,l)=>s+(l.mins||0),0);
     const totalDays=[...new Set(logs.map(l=>l.date))].length;
-    const wordsLearned=flashcards.filter(c=>c.reviewCount>0).length;
+    const {all: allRank} = fcGetAllCards();
+    const wordsLearned=allRank.filter(c=>c.reviewCount>0).length;
     const displayName=currentUser.user_metadata?.full_name||currentUser.email?.split('@')[0]||'User';
     await supa.from('leaderboard').upsert({
       user_id:currentUser.id, display_name:displayName,
