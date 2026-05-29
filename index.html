@@ -330,12 +330,7 @@ textarea{resize:vertical;min-height:70px;}
       <div>
         <label>📚 Topics studied today</label>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;" id="topic-picker">
-          <button type="button" class="script-btn" data-val="hiragana" onclick="togTopic2(this)">🌸 Hiragana</button>
-          <button type="button" class="script-btn" data-val="katakana" onclick="togTopic2(this)">💜 Katakana</button>
-          <button type="button" class="script-btn" data-val="kanji" onclick="togTopic2(this)">漢 Kanji</button>
-          <button type="button" class="script-btn" data-val="grammar" onclick="togTopic2(this)">🔤 Grammar</button>
-          <button type="button" class="script-btn" data-val="vocabulary" onclick="togTopic2(this)">📝 Vocabulary</button>
-          <button type="button" class="script-btn" data-val="anime" onclick="togTopic2(this)">📺 Anime</button>
+          <!-- Populated dynamically by renderTopicPicker() -->
         </div>
       </div>
     </div>
@@ -346,8 +341,8 @@ textarea{resize:vertical;min-height:70px;}
       <textarea id="ln" placeholder="What did you learn? Any thoughts..." style="margin-top:4px;min-height:42px;height:42px;width:100%;"></textarea>
     </div>
 
-    <!-- Kana picker -->
-    <div class="kana-dropdown-wrap">
+    <!-- Kana picker — JP only -->
+    <div class="kana-dropdown-wrap" id="kana-picker-wrap">
       <label>🔤 Characters learned today (tick to select)</label>
       <div class="kana-dd-header" id="kddh" onclick="togDD()">
         <div class="kana-dd-header-left" id="kdds">Click to select characters learned today...</div>
@@ -373,7 +368,7 @@ textarea{resize:vertical;min-height:70px;}
     <button type="button" id="log-save-btn" class="btn-primary" onclick="saveLog()">✿ Save Log ✿</button>
     <p id="save-debug" style="font-size:11px;color:var(--ink-soft);text-align:center;margin-top:8px;"></p>
   </div>
-  <div class="tip-box">💡 <b>Tip:</b> Angel, tick characters in the dropdown to auto-update your progress bars above! 頑張って～ 🌸</div>
+  <div class="tip-box" id="log-tip-box">💡 <b>Tip:</b> Angel, tick characters in the dropdown to auto-update your progress bars above! 頑張って～ 🌸</div>
 </div>
 
 <!-- BOARD -->
@@ -2107,7 +2102,27 @@ setTimeout(function(){
   try{ fcRenderAll(); } catch(e){ console.error('fcRenderAll init error:',e); }
 }, 50);
 
-function renderAll(){updStats();updProg();renderLog();renderGoals();renderMasterBoard();renderPinnedGoals();renderGoalLogInputs();}
+// Topic picker — different topics for JP vs IT
+const TOPICS_JP = [
+  {val:'hiragana', label:'🌸 Hiragana'},
+  {val:'katakana', label:'💜 Katakana'},
+  {val:'kanji',    label:'漢 Kanji'},
+  {val:'grammar',  label:'🔤 Grammar'},
+  {val:'vocabulary',label:'📝 Vocabulary'},
+  {val:'anime',    label:'📺 Anime'},
+];
+const TOPICS_IT = [
+  {val:'vocabulary', label:'📝 Vocabulary'},
+  {val:'grammar',    label:'🔤 Grammar'},
+  {val:'listening',  label:'👂 Listening'},
+  {val:'speaking',   label:'🗣 Speaking'},
+  {val:'reading',    label:'📖 Reading'},
+  {val:'writing',    label:'✍️ Writing'},
+  {val:'culture',    label:'🇮🇹 Culture'},
+  {val:'movie',      label:'🎬 Movie/Series'},
+];
+
+function renderAll(){updStats();updProg();renderLog();renderGoals();renderMasterBoard();renderPinnedGoals();renderGoalLogInputs();renderTopicPicker();}
 function showSec(n,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -2117,7 +2132,25 @@ function showSec(n,btn){
   if(n==='flash'){ fcSession=[]; fcIdx=0; fcFlipped=false; fcRenderAll(); }
   if(n==='ranking') renderRanking();
 }
-function togScript(btn){btn.classList.toggle('sel');const v=btn.dataset.val;sScripts.includes(v)?sScripts=sScripts.filter(x=>x!==v):sScripts.push(v);}
+
+function renderTopicPicker(){
+  const wrap = document.getElementById('topic-picker');
+  if(!wrap) return;
+  const topics = activeStudyLang==='it' ? TOPICS_IT : TOPICS_JP;
+  wrap.innerHTML = topics.map(t=>
+    `<button type="button" class="script-btn${sScripts.includes(t.val)?' sel':''}" data-val="${t.val}" onclick="togTopic2(this)">${t.label}</button>`
+  ).join('');
+  // Show/hide kana picker — JP only
+  const kanawrap = document.getElementById('kana-picker-wrap');
+  if(kanawrap) kanawrap.style.display = activeStudyLang==='it' ? 'none' : '';
+  // Update tip box
+  const tip = document.getElementById('log-tip-box');
+  if(tip){
+    tip.innerHTML = activeStudyLang==='it'
+      ? '💡 <b>Tip:</b> Log what you studied every day to build your streak! Forza～ 🇮🇹'
+      : '💡 <b>Tip:</b> Angel, tick characters in the dropdown to auto-update your progress bars above! 頑張って～ 🌸';
+  }
+}
 function pickM(btn){document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');sMood=btn.dataset.val;}
 function pickLv(btn){document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');sLevel=btn.dataset.val;}
 
@@ -2296,11 +2329,11 @@ function updStats(){
 function calcStreak(){
   const dates=[...new Set(logs.map(l=>l.date))].sort().reverse();
   if(!dates.length)return 0;
-  const today=new Date().toISOString().split('T')[0];
-  const yesterday=new Date(Date.now()-86400000).toISOString().split('T')[0];
+  const today=fcToday();
+  const yesterday=localDateOffset(1);
   if(dates[0]!==today&&dates[0]!==yesterday)return 0;
   let s=1,cur=new Date(dates[0]);
-  for(let i=1;i<dates.length;i++){const p=new Date(cur-86400000).toISOString().split('T')[0];if(dates[i]===p){s++;cur=new Date(dates[i]);}else break;}
+  for(let i=1;i<dates.length;i++){const prevD=new Date(dates[i-1]+'T12:00:00');prevD.setDate(prevD.getDate()-1);const p=`${prevD.getFullYear()}-${String(prevD.getMonth()+1).padStart(2,'0')}-${String(prevD.getDate()).padStart(2,'0')}`;if(dates[i]===p){s++;cur=new Date(dates[i]);}else break;}
   return s;
 }
 function updProg(){
@@ -2390,7 +2423,7 @@ function repQuick(days,label){
 function repSetPeriod(){
   repDays=0;
   const from=document.getElementById('rep-from')?.value;
-  const to=document.getElementById('rep-to')?.value||new Date().toISOString().split('T')[0];
+  const to=document.getElementById('rep-to')?.value||fcToday();
   const lbl=document.getElementById('rep-filter-label');
   if(lbl) lbl.textContent=(from||'...')+' → '+(to||'...');
   document.getElementById('rep-filter-dd').style.display='none';
@@ -2428,15 +2461,15 @@ function renderLog(){
   const el=document.getElementById('llist');
   if(!el) return;
   // Filter logs by histFilter
-  const todayStr=new Date().toISOString().split('T')[0];
+  const todayStr=fcToday();
   let filtered=logs;
   if(histFilter==='today') filtered=logs.filter(l=>l.date===todayStr);
-  else if(histFilter==='7days'){const d=new Date(Date.now()-6*86400000).toISOString().split('T')[0];filtered=logs.filter(l=>l.date>=d);}
-  else if(histFilter==='30days'){const d=new Date(Date.now()-29*86400000).toISOString().split('T')[0];filtered=logs.filter(l=>l.date>=d);}
+  else if(histFilter==='7days'){const d=localDateOffset(6);filtered=logs.filter(l=>l.date>=d);}
+  else if(histFilter==='30days'){const d=localDateOffset(29);filtered=logs.filter(l=>l.date>=d);}
   else if(histFilter==='date'&&histFilterDate) filtered=logs.filter(l=>l.date===histFilterDate);
   else if(histFilter==='period'){
     const from=document.getElementById('hist-from')?.value||'2020-01-01';
-    const to=document.getElementById('hist-to')?.value||new Date().toISOString().split('T')[0];
+    const to=document.getElementById('hist-to')?.value||fcToday();
     filtered=logs.filter(l=>l.date>=from&&l.date<=to);
   }
   // 'all' = no filter
@@ -2492,8 +2525,8 @@ function renderStreak(){
   const ld=new Set(logs.map(l=>l.date));
   const today=new Date();let html='';
   for(let i=29;i>=0;i--){
-    const d=new Date(today-i*86400000).toISOString().split('T')[0];
-    const day=new Date(d+'T00:00:00').getDate();
+    const d=localDateOffset(i);
+    const day=new Date(d+'T12:00:00').getDate();
     html+=`<div class="streak-day ${ld.has(d)?'hl':''} ${i===0?'td':''}" title="${d}">${day}</div>`;
   }
   el.innerHTML=html;
@@ -2507,7 +2540,7 @@ function saveGoal(){
   const unit=document.getElementById('gu').value.trim();
   const deadline=document.getElementById('gd').value;
   if(!name||!target){showToast('❗ Please fill in name and target amount!');return;}
-  goals.push({id:Date.now(),name,type,target,unit,deadline,created:new Date().toISOString().split('T')[0],pinned:true});
+  goals.push({id:Date.now(),name,type,target,unit,deadline,created:fcToday(),pinned:true});
   localStorage.setItem(lsKey('njg'),JSON.stringify(goals));
   document.getElementById('gn').value='';document.getElementById('gtg').value='';document.getElementById('gu').value='';document.getElementById('gd').value='';
   renderGoals();renderPinnedGoals();renderGoalLogInputs();showToast('🎯 Goal added & pinned!');
@@ -2611,7 +2644,7 @@ function getGC(g){
 function renderGoals(){
   const el=document.getElementById('golist');
   if(!goals.length){el.innerHTML='<div class="empty"><div class="ico">🎯</div>No goals yet. Add your first goal above!</div>';return;}
-  const today=new Date().toISOString().split('T')[0];
+  const today=fcToday();
   const TL={days:'days',words:'words',mins:'mins',hira:'hiragana',kata:'katakana',kanji:'kanji',custom:''};
   el.innerHTML=goals.map(g=>{
     const cur=getGC(g);const pct=Math.min(100,Math.round(cur/g.target*100));
@@ -2674,12 +2707,12 @@ function renderReport(){
   if(repDays===0){
     // Custom period from date inputs
     const from=document.getElementById('rep-from')?.value;
-    const to=document.getElementById('rep-to')?.value||new Date().toISOString().split('T')[0];
+    const to=document.getElementById('rep-to')?.value||fcToday();
     if(from){
       let cur=new Date(from+'T00:00:00');
       const end=new Date(to+'T00:00:00');
       while(cur<=end){
-        const d=cur.toISOString().split('T')[0];
+        const d=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
         labels.push(cur.toLocaleDateString('en-US',{month:'short',day:'2-digit'}));
         data.push(logs.filter(l=>l.date===d).reduce((s,l)=>s+(l.mins||0),0));
         cur=new Date(cur.getTime()+86400000);
@@ -2687,7 +2720,7 @@ function renderReport(){
     }
   } else {
     for(let i=repDays-1;i>=0;i--){
-      const d=new Date(Date.now()-i*86400000).toISOString().split('T')[0];
+      const d=localDateOffset(i);
       labels.push(new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',day:'2-digit'}));
       data.push(logs.filter(l=>l.date===d).reduce((s,l)=>s+(l.mins||0),0));
     }
@@ -2750,10 +2783,72 @@ function migrateDeduplicateMyCards(){
 }
 migrateDeduplicateMyCards(); // JP-only migration, safe to call always
 
+// One-time migration: fix nextReview dates that were saved in UTC instead of local time
+// Cards reviewed after 17:00 VN (UTC+7) had nextReview shifted 1 day back
+function migrateFixUTCDates(){
+  if(localStorage.getItem('njtz_fix_done')) return;
+  const tzOffset = new Date().getTimezoneOffset(); // minutes behind UTC (VN = -420)
+  // Only matters if UTC offset > 0 hours (i.e. ahead of UTC like VN/Asia)
+  // If offset is negative, local is ahead of UTC → dates could be 1 day behind
+  if(tzOffset >= 0){ localStorage.setItem('njtz_fix_done','1'); return; }
+
+  const fixState = (key) => {
+    const st = JSON.parse(localStorage.getItem(key)||'{}');
+    let changed = false;
+    const today = fcToday();
+    Object.keys(st).forEach(id => {
+      const card = st[id];
+      if(!card.nextReview || !card.lastReviewDate) return;
+      // If nextReview < lastReviewDate, it's clearly wrong (UTC shift)
+      if(card.nextReview < card.lastReviewDate){
+        // Shift nextReview forward by 1 day
+        const d = new Date(card.nextReview + 'T12:00:00');
+        d.setDate(d.getDate()+1);
+        card.nextReview = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        changed = true;
+      }
+    });
+    if(changed) localStorage.setItem(key, JSON.stringify(st));
+  };
+
+  const fixCards = (key) => {
+    const cards = JSON.parse(localStorage.getItem(key)||'[]');
+    let changed = false;
+    cards.forEach(card => {
+      if(!card.nextReview || !card.lastReviewDate) return;
+      if(card.nextReview < card.lastReviewDate){
+        const d = new Date(card.nextReview + 'T12:00:00');
+        d.setDate(d.getDate()+1);
+        card.nextReview = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        changed = true;
+      }
+    });
+    if(changed) localStorage.setItem(key, JSON.stringify(cards));
+  };
+
+  fixState('njn5'); fixState('itn5');
+  fixCards('njfc'); fixCards('itfc');
+  localStorage.setItem('njtz_fix_done','1');
+}
+migrateFixUTCDates();
+
 function lsKey(base){ return activeStudyLang==='it' ? base.replace('njn5','itn5').replace('njfc','itfc').replace('njl','itl').replace('njg','itg') : base; }
 function saveFC(){ localStorage.setItem(lsKey('njfc'), JSON.stringify(flashcards)); }
 
-function fcToday(){ return new Date().toISOString().split('T')[0]; }
+function fcToday(){
+  const d = new Date();
+  // Use local date (not UTC) to avoid timezone shift bug
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+// Local date N days ago (positive = past, negative = future)
+function localDateOffset(n){
+  const d = new Date();
+  d.setDate(d.getDate()-n);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 
 function fcIsDue(card){
   if(!card.nextReview) return true; // new card
@@ -2847,7 +2942,8 @@ function fcShowCard(){
 
   // Update labels
   const step = card.step||0;
-  const todayStr = new Date().toISOString().split('T')[0];
+  const d = new Date();
+  const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const easyLbl = document.getElementById('fc-easy-label');
   if(easyLbl){
     const nextReview = card.nextReview || null;
@@ -2862,8 +2958,9 @@ function fcShowCard(){
       const nextStep = Math.min((card.step||0)+1, SRS_INTERVALS.length-1);
       easyLbl.textContent = `+${SRS_INTERVALS[nextStep]} day${SRS_INTERVALS[nextStep]>1?'s':''}`;
     } else {
-      // Late — reset to day 1
-      easyLbl.textContent = '+1 day (reset)';
+      // Late — still advance step
+      const nextStep = Math.min((card.step||0)+1, SRS_INTERVALS.length-1);
+      easyLbl.textContent = `+${SRS_INTERVALS[nextStep]} day${SRS_INTERVALS[nextStep]>1?'s':''}`;
     }
   }
   document.getElementById('fc-progress-text').textContent = `${fcIdx+1} of ${fcSession.length}`;
@@ -2919,11 +3016,19 @@ function fcRate(rating){
   if(!fc){ fcIdx++; setTimeout(()=>fcIdx<fcSession.length?fcShowCard():fcEndSession(),100); return; }
 
   const today = new Date();
+  // Helper: get local YYYY-MM-DD (avoid UTC timezone shift bug)
+  const toLocalDate = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  };
+  const todayStr = toLocalDate(today);
+
   let step = fc.step||0;
   let daysAhead;
 
   if(rating==='easy'){
-    const todayStr = today.toISOString().split('T')[0];
     const nextReview = fc.nextReview || null;
 
     if(!nextReview){
@@ -2943,9 +3048,9 @@ function fcRate(rating){
       daysAhead = null; // signal: don't change nextReview
 
     } else {
-      // CASE 4: Late — reset to step 1, restart from today
-      step = 1;
-      daysAhead = SRS_INTERVALS[1];
+      // CASE 4: Late — still advance step (don't penalise, like Anki)
+      step = Math.min(step+1, SRS_INTERVALS.length-1);
+      daysAhead = SRS_INTERVALS[step];
       fc.lastReviewDate = todayStr;
     }
 
@@ -2960,7 +3065,7 @@ function fcRate(rating){
   const next = new Date(today);
   if(daysAhead !== null){
     next.setDate(today.getDate()+(daysAhead||1));
-    fc.nextReview = next.toISOString().split('T')[0];
+    fc.nextReview = toLocalDate(next);
   }
   // If daysAhead===null (early review), keep fc.nextReview unchanged
   fc.step=step; fc.interval=daysAhead||fc.interval;
@@ -3476,6 +3581,8 @@ function applyStudyLangUI(lang){
       document.querySelector('[onclick*="flash"]')?.click();
     }
   }
+  // Update topic picker for new language
+  if(typeof renderTopicPicker==='function') renderTopicPicker();
   // Reset placeholder card
   const frontEl=document.getElementById('fc-front-text');
   const langLbl=document.getElementById('fc-front-lang-lbl');
@@ -3621,7 +3728,7 @@ function fcGetModeCards(){
 
 function fcQuickDate(preset){
   const today=fcToday();
-  const d=(n)=>new Date(Date.now()-n*86400000).toISOString().split('T')[0];
+  const d=(n)=>localDateOffset(n);
   let from='',to=today;
   if(preset==='today')     {from=today;}
   if(preset==='yesterday') {from=d(1);to=d(1);}
@@ -4277,7 +4384,7 @@ async function migrateToCloud(userId){
       review_count:c.reviewCount||0,
       last_rating:c.lastRating||null,
       is_hard:c.isHard||false, is_n5:false,
-      created_at:c.created||new Date().toISOString().split('T')[0]
+      created_at:c.created||fcToday()
     }));
     await supa.from('flashcards').upsert(rows,{onConflict:'user_id,card_id'});
   }
@@ -4383,7 +4490,7 @@ async function saveFC_cloud(){
     review_count:c.reviewCount||0,
     last_rating:c.lastRating||null,
     is_hard:c.isHard||false,
-    created_at:c.created||new Date().toISOString().split('T')[0]
+    created_at:c.created||fcToday()
   }));
   await supa.from(table).upsert(cards,{onConflict:'user_id,card_id'});
 }
