@@ -752,10 +752,6 @@ textarea{resize:vertical;min-height:70px;}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-// Early declarations — must be before any function that references them
-var currentTheme = localStorage.getItem('njtheme')||'girl';
-var currentLang = localStorage.getItem('njlang')||'en';
-
 const HIRA=[
   {r:'あ行',c:[{c:'あ',r:'a'},{c:'い',r:'i'},{c:'う',r:'u'},{c:'え',r:'e'},{c:'お',r:'o'}]},
   {r:'か行',c:[{c:'か',r:'ka'},{c:'き',r:'ki'},{c:'く',r:'ku'},{c:'け',r:'ke'},{c:'こ',r:'ko'}]},
@@ -3799,6 +3795,8 @@ function fcSpeak(e){
 }
 
 // ===== SETTINGS =====
+let currentLang = localStorage.getItem('njlang')||'en';
+let currentTheme = localStorage.getItem('njtheme')||'girl';
 
 const I18N = {
   en:{
