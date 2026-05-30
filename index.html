@@ -3398,14 +3398,10 @@ function renderReport(){
 } // end renderReport
 
 
-// ===== SRS FLASHCARD ENGINE =====
 // ===== MIGRATE: Remove duplicate My Cards that exist in N5 =====
+// Runs every load — idempotent, fast (just array filter)
 function migrateDeduplicateMyCards(){
-  if(activeStudyLang==='it') return; // IT has its own deck, no JP dedup needed
-  if(localStorage.getItem('njfc_dedup_v3')) return; // v3 = force re-run
-  // Clear old flags
-  localStorage.removeItem('njfc_dedup_done');
-  localStorage.removeItem('njfc_dedup_v2');
+  if(activeStudyLang==='it') return;
   const n5Fronts = new Map(N5_DECK.map(c=>[c.front, c.id]));
   const n5State = JSON.parse(localStorage.getItem('njn5')||'{}');
   let changed = false;
@@ -3413,7 +3409,7 @@ function migrateDeduplicateMyCards(){
   flashcards.forEach(c=>{
     const n5Id = n5Fronts.get(c.front);
     if(n5Id){
-      // Duplicate of N5 card — merge state into n5State then drop from njfc
+      // Merge SRS state into n5State, drop from flashcards
       const ex = n5State[n5Id]||{interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null,isHard:false,lastReviewDate:null,note:''};
       n5State[n5Id] = {
         ...ex,
@@ -3437,9 +3433,8 @@ function migrateDeduplicateMyCards(){
     localStorage.setItem('njfc', JSON.stringify(flashcards));
     localStorage.setItem('njn5', JSON.stringify(n5State));
   }
-  localStorage.setItem('njfc_dedup_v3','1');
 }
-migrateDeduplicateMyCards(); // JP-only migration, safe to call always
+migrateDeduplicateMyCards();
 
 // One-time migration: fix nextReview dates that were saved in UTC instead of local time
 // Cards reviewed after 17:00 VN (UTC+7) had nextReview shifted 1 day back
@@ -4114,16 +4109,21 @@ function fcGetAllCards(){
     ...(n5State[c.id]||{interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null}),
     note: n5State[c.id]?.note||c.note||''
   }));
-  // My Cards = user-added flashcards + deck cards marked addedToMyCards
+
+  // Key dedup set: front texts already covered by the deck
+  const n5Fronts = new Set(n5.map(c=>c.front));
+
+  // flashcards that are NOT already in the deck (by front text)
+  const uniqueFlashcards = flashcards.filter(c => !n5Fronts.has(c.front));
+
+  // My Cards = unique user flashcards + deck cards marked addedToMyCards
   const mine = [
-    ...flashcards.map(c=>({...c, isN5:false})),
+    ...uniqueFlashcards.map(c=>({...c, isN5:false})),
     ...n5.filter(c=>c.addedToMyCards===true)
   ];
-  // all = n5 deck + user flashcards that are NOT duplicates of deck cards
-  // (deck cards with addedToMyCards:true are already in n5, don't add from flashcards again)
-  const n5Ids = new Set(n5.map(c=>String(c.id)));
-  const uniqueFlashcards = flashcards.filter(c=>!n5Ids.has(String(c.id)));
-  return {n5, mine, all:[...n5,...uniqueFlashcards.map(c=>({...c,isN5:false}))]};
+
+  // All = full deck + unique user flashcards only
+  return {n5, mine, all:[...n5, ...uniqueFlashcards.map(c=>({...c,isN5:false}))]};
 }
 
 function saveN5State(card){
