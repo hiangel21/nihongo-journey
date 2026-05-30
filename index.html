@@ -307,6 +307,7 @@ textarea{resize:vertical;min-height:70px;}
 
 <div class="nav" style="margin:0 0 16px;justify-content:flex-start;">
   <button class="nav-btn active" onclick="showSec('flash',this)">🃏 Flashcards</button>
+  <button class="nav-btn" onclick="showSec('grammar',this)">📖 Grammar</button>
   <button class="nav-btn" onclick="showSec('goals',this)">🎯 Goals</button>
   <button class="nav-btn" onclick="showSec('log',this)">📝 Today's Log</button>
   <button class="nav-btn" onclick="showSec('history',this)">📖 History</button>
@@ -317,6 +318,140 @@ textarea{resize:vertical;min-height:70px;}
 
 
 <!-- LOG -->
+<div class="section" id="sec-grammar">
+  <div class="sec-header">📖 Grammar — Language Transfer</div>
+  <div class="card" id="lt-main-card">
+    <div id="lt-main-view"><!-- rendered by JS --></div>
+  </div>
+  <!-- Flashcard overlay — replaces the card when studying -->
+  <div class="card" id="lt-fc-card" style="display:none;">
+  <div id="lt-fc-view">
+    <!-- Header row -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <button onclick="ltExitFC()" style="padding:5px 12px;border-radius:var(--border-radius-md);border:1px solid var(--border);background:white;font-size:12px;cursor:pointer;">← Back</button>
+      <span id="lt-fc-mod-name" style="font-size:14px;font-weight:600;color:var(--ink);"></span>
+    </div>
+
+    <!-- Progress bar -->
+    <div style="height:3px;background:var(--border);border-radius:4px;margin-bottom:14px;">
+      <div id="lt-fc-prog" style="height:100%;background:var(--fuji);border-radius:4px;transition:width .3s;width:0%;"></div>
+    </div>
+
+    <!-- Same grid as flashcard: 1fr 120px -->
+    <div id="lt-fc-grid" style="display:grid;grid-template-columns:1fr 120px;gap:16px;align-items:start;">
+
+      <!-- LEFT: flip card -->
+      <div>
+        <div style="perspective:1000px;cursor:pointer;" onclick="ltFlipCard()">
+          <div id="lt-fc-inner" style="position:relative;width:100%;min-height:340px;transform-style:preserve-3d;transition:transform 0.45s;border-radius:20px;">
+
+            <!-- FRONT -->
+            <div id="lt-fc-front" style="position:absolute;width:100%;min-height:340px;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:linear-gradient(135deg,var(--sakura-light),white);border:2.5px solid var(--sakura);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;box-sizing:border-box;">
+              <div id="lt-fc-front-lang" style="font-size:12px;color:var(--ink-soft);margin-bottom:20px;letter-spacing:2px;text-transform:uppercase;">English</div>
+              <div id="lt-fc-front-text" style="font-size:52px;font-weight:700;color:var(--ink);line-height:1.15;text-align:center;text-shadow:0 3px 16px rgba(232,130,154,0.3);"></div>
+              <div id="lt-fc-front-note" style="font-size:13px;color:var(--ink-soft);margin-top:10px;font-style:italic;display:none;"></div>
+              <button id="lt-hint-btn" onclick="event.stopPropagation();ltShowHint()" style="margin-top:14px;padding:4px 14px;border-radius:20px;border:1px dashed var(--border);background:transparent;color:var(--ink-soft);font-size:12px;cursor:pointer;display:none;">show hint</button>
+              <div style="font-size:14px;color:var(--sakura-deep);margin-top:28px;font-weight:600;">Tap to reveal ↓</div>
+            </div>
+
+            <!-- BACK -->
+            <div id="lt-fc-back" style="position:absolute;width:100%;min-height:340px;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:rotateY(180deg);background:linear-gradient(135deg,var(--fuji-light),white);border:2.5px solid var(--fuji);border-radius:20px;display:flex;flex-direction:column;padding:20px 28px;box-sizing:border-box;gap:0;">
+
+              <!-- Top row: ‹ Front | ANSWER 🔊 | rate me → -->
+              <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:18px;">
+                <div onclick="event.stopPropagation();ltFlipBack()" style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border-radius:8px;background:rgba(255,255,255,.7);border:1px solid var(--border);justify-self:start;">
+                  <span style="font-size:12px;color:var(--ink-soft);">‹</span>
+                  <span style="font-size:11px;font-weight:600;color:var(--ink-soft);">Front</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;justify-self:center;">
+                  <span style="font-size:11px;color:var(--ink-soft);letter-spacing:2px;text-transform:uppercase;">Answer</span>
+                  <button onclick="event.stopPropagation();ltSpeakAnswer()" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--fuji);background:white;color:var(--fuji);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button>
+                </div>
+                <div style="font-size:11px;color:var(--fuji);opacity:.8;font-weight:500;justify-self:end;">rate me →</div>
+              </div>
+
+              <!-- Answer text -->
+              <div style="text-align:center;flex:0 0 auto;">
+                <div id="lt-fc-back-text" style="font-size:52px;font-weight:700;color:var(--ink);text-align:center;line-height:1.15;opacity:0.9;"></div>
+                <div id="lt-fc-back-pron" style="font-size:22px;color:var(--sakura-deep);margin-top:6px;text-align:center;"></div>
+                <div id="lt-fc-back-sub" style="font-size:14px;color:var(--fuji);margin-top:6px;font-style:italic;text-align:center;"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--ink-soft);" id="lt-fc-counter"></div>
+      </div>
+
+      <!-- RIGHT: same rating panel as flashcard section -->
+      <div id="lt-fc-ratings" style="display:none;flex-direction:column;gap:8px;">
+        <button onclick="ltRate('easy')" style="width:100%;padding:14px 8px;border-radius:16px;border:none;background:#E8F5E9;color:#2E7D32;cursor:pointer;text-align:center;line-height:1.4;transition:transform .1s,box-shadow .1s;box-shadow:0 4px 10px rgba(46,125,50,.15);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+          <div style="margin-bottom:4px;">
+            <svg viewBox="0 0 50 50" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="25" cy="28" r="20" fill="#FDDCCC"/>
+              <path d="M7 21 Q13 6 25 9 Q37 6 43 21" fill="#C4AAEA"/>
+              <ellipse cx="18" cy="27" rx="5.5" ry="6" fill="white"/>
+              <ellipse cx="32" cy="27" rx="5.5" ry="6" fill="white"/>
+              <path d="M13 23 Q18 20 23 23" fill="#3A2A90"/>
+              <path d="M27 23 Q32 20 37 23" fill="#3A2A90"/>
+              <ellipse cx="18" cy="26" rx="3" ry="3.5" fill="#1A0A4A"/>
+              <ellipse cx="32" cy="26" rx="3" ry="3.5" fill="#1A0A4A"/>
+              <ellipse cx="19.5" cy="24.5" rx="1.2" ry="1.2" fill="white"/>
+              <ellipse cx="33.5" cy="24.5" rx="1.2" ry="1.2" fill="white"/>
+              <path d="M16 36 Q25 43 34 36" fill="#FF6080"/>
+              <ellipse cx="13" cy="33" rx="5" ry="3" fill="#FF8090" opacity=".85"/>
+              <ellipse cx="37" cy="33" rx="5" ry="3" fill="#FF8090" opacity=".85"/>
+            </svg>
+          </div>
+          <div style="font-size:15px;font-weight:800;">Easy</div>
+          <div style="font-size:10px;color:#4CAF50;margin-top:2px;">got it</div>
+        </button>
+        <button onclick="ltRate('hard')" style="width:100%;padding:14px 8px;border-radius:16px;border:none;background:#FFEBEE;color:#C62828;cursor:pointer;text-align:center;line-height:1.4;transition:transform .1s,box-shadow .1s;box-shadow:0 4px 10px rgba(198,40,40,.15);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+          <div style="margin-bottom:4px;">
+            <svg viewBox="0 0 50 50" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="25" cy="28" r="20" fill="#FDDCCC"/>
+              <path d="M7 21 Q13 6 25 9 Q37 6 43 21" fill="#C4AAEA"/>
+              <ellipse cx="18" cy="27" rx="5.5" ry="6" fill="white"/>
+              <ellipse cx="32" cy="27" rx="5.5" ry="6" fill="white"/>
+              <ellipse cx="18" cy="28" rx="3.2" ry="3.8" fill="#1A0A4A"/>
+              <ellipse cx="32" cy="28" rx="3.2" ry="3.8" fill="#1A0A4A"/>
+              <ellipse cx="19.5" cy="26.5" rx="1.2" ry="1.2" fill="white"/>
+              <path d="M13 21 Q18 18 23 21" stroke="#1A0A4A" stroke-width="2" fill="none"/>
+              <path d="M27 21 Q32 18 37 21" stroke="#1A0A4A" stroke-width="2" fill="none"/>
+              <ellipse cx="25" cy="38" rx="7" ry="5" fill="#CC3333"/>
+              <ellipse cx="25" cy="37" rx="5" ry="3.5" fill="#991111"/>
+              <path d="M11 32 Q9 41 7 48" stroke="#70AAFF" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+              <path d="M39 32 Q41 41 43 48" stroke="#70AAFF" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+              <ellipse cx="12" cy="31" rx="3.5" ry="4.5" fill="#AAD0FF" opacity=".9"/>
+              <ellipse cx="38" cy="31" rx="3.5" ry="4.5" fill="#AAD0FF" opacity=".9"/>
+            </svg>
+          </div>
+          <div style="font-size:15px;font-weight:800;">Hard</div>
+          <div style="font-size:10px;color:#EF5350;margin-top:2px;">missed</div>
+        </button>
+        <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+        <button onclick="ltSkip()" style="width:100%;padding:8px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--paper-warm);color:var(--ink-soft);font-size:12px;font-weight:600;cursor:pointer;text-align:center;">⏭ Skip</button>
+      </div>
+
+    </div><!-- end grid -->
+    <div id="lt-fc-done" style="display:none;"></div>
+  </div><!-- end lt-fc-view -->
+  </div><!-- end lt-fc-card -->
+
+  <!-- Reference card — module word list shown below during study -->
+  <div class="card" id="lt-ref-card" style="display:none;margin-top:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:700;color:var(--ink);">📋 Module Reference</div>
+      <input type="text" placeholder="Search..." oninput="ltFilterRef(this.value)"
+        style="padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;width:140px;outline:none;">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 70px;gap:6px;padding:4px 10px;font-size:10px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);margin-bottom:6px;">
+      <span>English</span><span>Italiano</span><span>Type</span>
+    </div>
+    <div id="lt-ref-list" style="max-height:320px;overflow-y:auto;"></div>
+  </div>
+</div>
+
 <div class="section" id="sec-log">
   <div class="card">
     <div class="card-title" id="log-title-el"><span>✏️</span> Log Today's Study</div>
@@ -2893,6 +3028,7 @@ function showSec(n,btn){
   if(n==='report') renderReport();
   if(n==='flash'){ fcSession=[]; fcIdx=0; fcFlipped=false; fcRenderAll(); }
   if(n==='ranking') renderRanking();
+  if(n==='grammar'){ ltRenderMain(); }
 }
 
 function renderTopicPicker(){
@@ -4493,6 +4629,16 @@ function applyStudyLangUI(lang){
   // Hide/show Character Board nav
   const boardBtn=document.getElementById('nav-board-btn');
   if(boardBtn) boardBtn.style.display=isIt?'none':'';
+  // Grammar tab — IT only
+  const grammarBtn=document.querySelector('[onclick*="grammar"]');
+  if(grammarBtn) grammarBtn.style.display=isIt?'':'none';
+  // If on grammar section and switching to JP, go to flashcards
+  if(!isIt){
+    const grammarSec=document.getElementById('sec-grammar');
+    if(grammarSec&&grammarSec.classList.contains('active')){
+      document.querySelector('[onclick*="flash"]')?.click();
+    }
+  }
   // Hide JP-only flashcard modes (Hiragana, Katakana) for Italian
   const jpOnlyBtns=['pm-hira','pm-kata'];
   jpOnlyBtns.forEach(id=>{
@@ -4766,7 +4912,7 @@ function applyLang(){
   if(sub) sub.textContent=t.app_sub;
 
   // Nav buttons
-  const navMap={log:'nav_log',board:'nav_board',flash:'nav_flash',history:'nav_history',report:'nav_report',goals:'nav_goals',ranking:'nav_ranking'};
+  const navMap={log:'nav_log',board:'nav_board',flash:'nav_flash',history:'nav_history',report:'nav_report',goals:'nav_goals',ranking:'nav_ranking',grammar:'nav_grammar'};
   document.querySelectorAll('.nav-btn').forEach(btn=>{
     const m=btn.getAttribute('onclick')?.match(/showSec\('(\w+)'/);
     const sec=m?.[1];
@@ -5438,6 +5584,648 @@ if(!IS_LOCAL){
     }
   }, 5000);
 }
+
+
+// ===== LANGUAGE TRANSFER GRAMMAR ENGINE =====
+
+const LT_MODULES = [
+  {
+    id:'m1', name:'Module 1', tracks:'Tracks 1–3',
+    pattern:'-al → -ale · -ly → -mente', lsKey:'lt_m1',
+    cards:[{"en": "normal", "it": "normale", "type": "word", "pron": "nor-MA-le"}, {"en": "general", "it": "generale", "type": "word", "pron": "dʒe-ne-RA-le"}, {"en": "legal", "it": "legale", "type": "word", "pron": "le-GA-le"}, {"en": "illegal", "it": "illegale", "type": "word", "pron": "il-le-GA-le"}, {"en": "global", "it": "globale", "type": "word", "pron": "glo-BA-le"}, {"en": "plural", "it": "plurale", "type": "word", "pron": "plu-RA-le"}, {"en": "royal", "it": "regale", "type": "word", "pron": "re-GA-le"}, {"en": "loyal", "it": "leale", "type": "word", "pron": "le-A-le"}, {"en": "ideal", "it": "ideale", "type": "word", "pron": "i-de-A-le"}, {"en": "original", "it": "originale", "type": "word", "pron": "o-ri-dʒi-NA-le"}, {"en": "real / true", "it": "reale", "type": "word", "pron": "re-A-le"}, {"en": "natural", "it": "naturale", "type": "word", "pron": "na-tu-RA-le"}, {"en": "digital", "it": "digitale", "type": "word", "pron": "di-dʒi-TA-le"}, {"en": "final", "it": "finale", "type": "word", "pron": "fi-NA-le"}, {"en": "normal (adv)", "it": "normalmente", "type": "word", "pron": "nor-mal-MEN-te"}, {"en": "generally", "it": "generalmente", "type": "word", "pron": "dʒe-ne-ral-MEN-te"}, {"en": "globally", "it": "globalmente", "type": "word", "pron": "glo-bal-MEN-te"}, {"en": "originally", "it": "originalmente", "type": "word", "pron": "o-ri-dʒi-nal-MEN-te"}, {"en": "really", "it": "realmente", "type": "word", "pron": "re-al-MEN-te"}, {"en": "naturally", "it": "naturalmente", "type": "word", "pron": "na-tu-ral-MEN-te"}, {"en": "personal", "it": "personale", "type": "ext", "pron": "per-so-NA-le"}, {"en": "national", "it": "nazionale", "type": "ext", "pron": "nat-syo-NA-le"}, {"en": "special", "it": "speciale", "type": "ext", "pron": "spe-CHA-le"}, {"en": "formal", "it": "formale", "type": "ext", "pron": "for-MA-le"}, {"en": "central", "it": "centrale", "type": "ext", "pron": "chen-TRA-le"}, {"en": "cultural", "it": "culturale", "type": "ext", "pron": "kul-tu-RA-le"}, {"en": "musical", "it": "musicale", "type": "ext", "pron": "mu-zi-KA-le"}, {"en": "officially", "it": "ufficialmente", "type": "ext", "pron": "uf-fi-chal-MEN-te"}, {"en": "practically", "it": "praticamente", "type": "ext", "pron": "pra-ti-ka-MEN-te"}, {"en": "physically", "it": "fisicamente", "type": "ext", "pron": "fi-zi-ka-MEN-te"}, {"en": "it is global", "it": "è globale", "type": "sentence"}, {"en": "it is normal", "it": "è normale", "type": "sentence"}, {"en": "it is natural", "it": "è naturale", "type": "sentence"}, {"en": "it is not ideal", "it": "non è ideale", "type": "sentence"}, {"en": "it is original", "it": "è originale", "type": "sentence"}, {"en": "it is not original", "it": "non è originale", "type": "sentence"}, {"en": "it is real and original", "it": "è reale e originale", "type": "sentence"}, {"en": "it is normal and natural", "it": "è normale e naturale", "type": "sentence"}, {"en": "she is loyal", "it": "è leale", "type": "sentence"}, {"en": "normally he is loyal", "it": "normalmente è leale", "type": "sentence"}, {"en": "generally it is legal", "it": "generalmente è legale", "type": "sentence"}, {"en": "it is not global", "it": "non è globale", "type": "sentence"}, {"en": "it is personal", "it": "è personale", "type": "sentence"}, {"en": "it is not normal", "it": "non è normale", "type": "sentence"}, {"en": "officially it is legal", "it": "ufficialmente è legale", "type": "sentence"}, {"en": "it is practically natural", "it": "è praticamente naturale", "type": "sentence"}, {"en": "it is culturally special", "it": "è culturalmente speciale", "type": "sentence"}, {"en": "it is not real", "it": "non è reale", "type": "sentence"}, {"en": "it is practically ideal", "it": "è praticamente ideale", "type": "sentence"}]
+  },
+  {
+    id:'m2', name:'Module 2', tracks:'Track 4',
+    pattern:'-ible/-able → -ibile/-abile', lsKey:'lt_m2',
+    cards:[{"en": "possible", "it": "possibile", "type": "word", "pron": "pos-SI-bi-le"}, {"en": "probable", "it": "probabile", "type": "word", "pron": "pro-BA-bi-le"}, {"en": "incredible", "it": "incredibile", "type": "word", "pron": "in-kre-DI-bi-le"}, {"en": "impossible", "it": "impossibile", "type": "word", "pron": "im-pos-SI-bi-le"}, {"en": "believable", "it": "credibile", "type": "word", "pron": "kre-DI-bi-le"}, {"en": "probably", "it": "probabilmente", "type": "word", "pron": "pro-ba-bil-MEN-te"}, {"en": "possibly", "it": "possibilmente", "type": "word", "pron": "pos-si-bil-MEN-te"}, {"en": "of course / obviously", "it": "naturalmente", "type": "word", "pron": "na-tu-ral-MEN-te"}, {"en": "responsible", "it": "responsabile", "type": "word", "pron": "res-pon-SA-bi-le"}, {"en": "comfortable", "it": "comfortabile", "type": "ext", "pron": "kom-for-TA-bi-le"}, {"en": "comparable", "it": "comparabile", "type": "ext", "pron": "kom-pa-RA-bi-le"}, {"en": "acceptable", "it": "accettabile", "type": "ext", "pron": "a-chet-TA-bi-le"}, {"en": "visible", "it": "visibile", "type": "ext", "pron": "vi-ZI-bi-le"}, {"en": "flexible", "it": "flessibile", "type": "ext", "pron": "fles-SI-bi-le"}, {"en": "reasonable", "it": "ragionevole", "type": "ext", "pron": "ra-dʒo-NE-vo-le"}, {"en": "available", "it": "disponibile", "type": "ext", "pron": "dis-po-NI-bi-le"}, {"en": "adorable", "it": "adorabile", "type": "ext", "pron": "a-do-RA-bi-le"}, {"en": "predictable", "it": "prevedibile", "type": "ext", "pron": "pre-ve-DI-bi-le"}, {"en": "invincible", "it": "invincibile", "type": "ext", "pron": "in-vin-CHI-bi-le"}, {"en": "it is possible", "it": "è possibile", "type": "sentence"}, {"en": "it is probable", "it": "è probabile", "type": "sentence"}, {"en": "it is incredible", "it": "è incredibile", "type": "sentence"}, {"en": "it is believable", "it": "è credibile", "type": "sentence"}, {"en": "it is impossible", "it": "è impossibile", "type": "sentence"}, {"en": "probably it is real", "it": "probabilmente è reale", "type": "sentence"}, {"en": "probably it is original", "it": "probabilmente è originale", "type": "sentence"}, {"en": "obviously it is original", "it": "naturalmente è originale", "type": "sentence"}, {"en": "normally it is digital", "it": "normalmente è digitale", "type": "sentence"}, {"en": "it is not possible", "it": "non è possibile", "type": "sentence"}, {"en": "it is not probable", "it": "non è probabile", "type": "sentence"}, {"en": "it is comfortable", "it": "è comfortabile", "type": "sentence"}, {"en": "it is acceptable", "it": "è accettabile", "type": "sentence"}, {"en": "it is not acceptable", "it": "non è accettabile", "type": "sentence"}, {"en": "it is visible", "it": "è visibile", "type": "sentence"}, {"en": "it is not visible", "it": "non è visibile", "type": "sentence"}, {"en": "possibly it is original", "it": "possibilmente è originale", "type": "sentence"}, {"en": "it is probably responsible", "it": "è probabilmente responsabile", "type": "sentence"}, {"en": "it is adorable", "it": "è adorabile", "type": "sentence"}, {"en": "it is not flexible", "it": "non è flessibile", "type": "sentence"}]
+  },
+  {
+    id:'m3', name:'Module 3', tracks:'Tracks 5–6',
+    pattern:'-ation → -are · voglio + verb · lo, ti', lsKey:'lt_m3',
+    cards:[{"en": "to invite", "it": "invitare", "type": "word", "pron": "in-vi-TA-re"}, {"en": "to donate", "it": "donare", "type": "word", "pron": "do-NA-re"}, {"en": "to celebrate", "it": "celebrare", "type": "word", "pron": "che-le-BRA-re"}, {"en": "to coordinate", "it": "coordinare", "type": "word", "pron": "ko-or-di-NA-re"}, {"en": "to terminate", "it": "terminare", "type": "word", "pron": "ter-mi-NA-re"}, {"en": "to finish", "it": "finire", "type": "word", "pron": "fi-NI-re"}, {"en": "to separate", "it": "separare", "type": "word", "pron": "se-pa-RA-re"}, {"en": "to use", "it": "usare", "type": "word", "pron": "u-ZA-re"}, {"en": "to imagine", "it": "immaginare", "type": "word", "pron": "im-ma-dʒi-NA-re"}, {"en": "to visit", "it": "visitare", "type": "word", "pron": "vi-zi-TA-re"}, {"en": "to cancel", "it": "cancellare", "type": "word", "pron": "kan-chel-LA-re"}, {"en": "well", "it": "bene", "type": "word", "pron": "BE-ne"}, {"en": "to educate", "it": "educare", "type": "ext", "note": "education → educare", "pron": "e-du-KA-re"}, {"en": "to create", "it": "creare", "type": "ext", "note": "creation → creare", "pron": "kre-A-re"}, {"en": "to prepare", "it": "preparare", "type": "ext", "note": "preparation → preparare", "pron": "pre-pa-RA-re"}, {"en": "to motivate", "it": "motivare", "type": "ext", "note": "motivation → motivare", "pron": "mo-ti-VA-re"}, {"en": "to liberate", "it": "liberare", "type": "ext", "note": "liberation → liberare", "pron": "li-be-RA-re"}, {"en": "to decorate", "it": "decorare", "type": "ext", "note": "decoration → decorare", "pron": "de-ko-RA-re"}, {"en": "to explore", "it": "esplorare", "type": "ext", "note": "exploration → esplorare", "pron": "es-plo-RA-re"}, {"en": "to admire", "it": "ammirare", "type": "ext", "note": "admiration → ammirare", "pron": "am-mi-RA-re"}, {"en": "I want to donate", "it": "voglio donare", "type": "sentence"}, {"en": "I want to use it", "it": "lo voglio usare", "type": "sentence"}, {"en": "I want to finish", "it": "voglio finire", "type": "sentence"}, {"en": "I want to finish it", "it": "lo voglio terminare", "type": "sentence"}, {"en": "I do not want to finish it", "it": "non lo voglio terminare", "type": "sentence"}, {"en": "I do not want to imagine", "it": "non voglio immaginare", "type": "sentence"}, {"en": "I love you", "it": "ti voglio bene", "type": "sentence"}, {"en": "I want to visit you", "it": "ti voglio visitare", "type": "sentence"}, {"en": "I want to invite you", "it": "ti voglio invitare", "type": "sentence"}, {"en": "I want to cancel it", "it": "lo voglio cancellare", "type": "sentence"}, {"en": "I do not want to cancel it", "it": "non lo voglio cancellare", "type": "sentence"}, {"en": "I want to celebrate", "it": "voglio celebrare", "type": "sentence"}, {"en": "I want to create it", "it": "lo voglio creare", "type": "sentence"}, {"en": "I want to educate you", "it": "ti voglio educare", "type": "sentence"}, {"en": "I do not want to separate", "it": "non voglio separare", "type": "sentence"}, {"en": "I want to prepare it", "it": "lo voglio preparare", "type": "sentence"}, {"en": "I do not want to use it", "it": "non lo voglio usare", "type": "sentence"}, {"en": "I want to motivate you", "it": "ti voglio motivare", "type": "sentence"}, {"en": "I want to explore", "it": "voglio esplorare", "type": "sentence"}, {"en": "I do not want to imagine it", "it": "non lo voglio immaginare", "type": "sentence"}]
+  }
+];
+
+const LT_SRS = [1,3,7,14,30]; // days
+
+function ltGetState(lsKey){
+  return JSON.parse(localStorage.getItem(lsKey)||'{}');
+}
+function ltSaveState(lsKey, state){
+  localStorage.setItem(lsKey, JSON.stringify(state));
+}
+
+function ltGetModuleStatus(mod){
+  const state = ltGetState(mod.lsKey);
+  const total = mod.cards.length;
+  const done = mod.cards.filter(c => state[c.en] && state[c.en].seen).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  const firstSeen = state.__firstSeen || null;
+  const lastReview = state.__lastReview || null;
+  const reviewCount = state.__reviewCount || 0;
+  // Next review date
+  let nextReview = null;
+  if(firstSeen){
+    const interval = LT_SRS[Math.min(reviewCount, LT_SRS.length-1)];
+    const base = lastReview || firstSeen;
+    const d = new Date(base);
+    d.setDate(d.getDate() + interval);
+    nextReview = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  return {total, done, pct, firstSeen, lastReview, reviewCount, nextReview};
+}
+
+function ltIsDueToday(mod){
+  const s = ltGetModuleStatus(mod);
+  if(!s.firstSeen) return false; // not started
+  const today = fcToday();
+  return s.nextReview && s.nextReview <= today;
+}
+
+function ltIsNew(mod){
+  const s = ltGetModuleStatus(mod);
+  return !s.firstSeen;
+}
+
+function ltReviewAll(){
+  // Study first module that has been started
+  const first = LT_MODULES.find(m => !ltIsNew(m));
+  if(first) ltStartSession(first.id, 'review');
+}
+
+function ltFilterRef(query){
+  const q = query.toLowerCase().trim();
+  document.querySelectorAll('.lt-ref-row').forEach(row => {
+    row.style.display = (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+
+function ltFilterCards(query){
+  const q = query.toLowerCase().trim();
+  const rows = document.querySelectorAll('#lt-all-cards-list .fc-card-row');
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = (!q || text.includes(q)) ? '' : 'none';
+  });
+}
+
+function ltRenderMain(){
+  const el = document.getElementById('lt-main-view');
+  if(!el) return;
+  const today = fcToday();
+
+  // Build today's plan
+  const dueMods = LT_MODULES.filter(m => ltIsDueToday(m));
+  const newMods = LT_MODULES.filter(m => ltIsNew(m));
+  const doneTodayMods = LT_MODULES.filter(m => {
+    const s = ltGetState(m.lsKey);
+    return s.__lastReview === today;
+  });
+
+  let todayHTML = '';
+  dueMods.forEach(m => {
+    if(doneTodayMods.find(d=>d.id===m.id)) return;
+    const s = ltGetModuleStatus(m);
+    todayHTML += `<div class="lt-today-item lt-review" onclick="ltStartSession('${m.id}','review')">
+      <div class="lt-ti-left">
+        <div class="lt-ti-icon lt-review-ic">🔁</div>
+        <div>
+          <div class="lt-ti-name">${m.name} — review</div>
+          <div class="lt-ti-sub">${m.pattern}</div>
+        </div>
+      </div>
+      <div class="lt-ti-right">
+        <span class="lt-badge lt-badge-review">due today</span>
+        <button class="lt-btn lt-btn-primary" onclick="event.stopPropagation();ltStartSession('${m.id}','review')">Start</button>
+      </div>
+    </div>`;
+  });
+
+  // Show first unstarted module as "new"
+  const firstNew = newMods[0];
+  if(firstNew){
+    todayHTML += `<div class="lt-today-item lt-new" onclick="ltStartSession('${firstNew.id}','new')">
+      <div class="lt-ti-left">
+        <div class="lt-ti-icon lt-new-ic">📖</div>
+        <div>
+          <div class="lt-ti-name">${firstNew.name} — new</div>
+          <div class="lt-ti-sub">${firstNew.pattern}</div>
+        </div>
+      </div>
+      <div class="lt-ti-right">
+        <span class="lt-badge lt-badge-new">new</span>
+        <button class="lt-btn lt-btn-primary" onclick="event.stopPropagation();ltStartSession('${firstNew.id}','new')">Start</button>
+      </div>
+    </div>`;
+  }
+
+  doneTodayMods.forEach(m => {
+    const s = ltGetModuleStatus(m);
+    const nextInterval = LT_SRS[Math.min(s.reviewCount, LT_SRS.length-1)];
+    todayHTML += `<div class="lt-today-item lt-done">
+      <div class="lt-ti-left">
+        <div class="lt-ti-icon lt-done-ic">✅</div>
+        <div>
+          <div class="lt-ti-name">${m.name} — done today</div>
+          <div class="lt-ti-sub">Next review in ${nextInterval} days</div>
+        </div>
+      </div>
+      <div class="lt-ti-right"><span class="lt-badge lt-badge-done">done</span></div>
+    </div>`;
+  });
+
+  // Modules studied before but not due and not done today — show as "available to review"
+  const availMods = LT_MODULES.filter(m =>
+    !ltIsNew(m) && !ltIsDueToday(m) &&
+    !doneTodayMods.find(d=>d.id===m.id)
+  );
+  availMods.forEach(m => {
+    const s = ltGetModuleStatus(m);
+    todayHTML += `<div class="lt-today-item" style="border-left:3px solid var(--border);opacity:.75;" onclick="ltStartSession('${m.id}','review')">
+      <div class="lt-ti-left">
+        <div class="lt-ti-icon" style="background:var(--border);font-size:16px;">📖</div>
+        <div>
+          <div class="lt-ti-name">${m.name}</div>
+          <div class="lt-ti-sub">Next due: ${s.nextReview||'—'} · Available to review anytime</div>
+        </div>
+      </div>
+      <div class="lt-ti-right">
+        <button class="lt-btn" onclick="event.stopPropagation();ltStartSession('${m.id}','review')" style="font-size:11px;">▶ Review</button>
+      </div>
+    </div>`;
+  });
+
+  if(!todayHTML){
+    todayHTML = `<div style="font-size:13px;color:var(--ink-soft);padding:12px 0;">Start a module below to begin learning! 👇</div>`;
+  }
+
+  // Build modules list
+  let modsHTML = LT_MODULES.map(m => {
+    const s = ltGetModuleStatus(m);
+    const progColor = s.pct===100 ? 'var(--matcha)' : 'var(--fuji)';
+    const reviewLabel = !s.firstSeen ? 'not started' :
+      ltIsDueToday(m) ? '<span style="color:#993C1D;">due today</span>' :
+      s.nextReview ? `next: ${s.nextReview}` : '';
+    const flip = localStorage.getItem('lt_flip_'+m.id)||'en';
+
+    // ALL cards with EN, IT, pronunciation
+    const cardRows = m.cards.map(c => {
+      const pron = c.pron
+        ? `<div style="font-size:11px;color:var(--sakura-deep);font-style:italic;margin-top:1px;">${c.pron}</div>`
+        : '';
+      const note = c.note
+        ? `<div style="font-size:10px;color:var(--ink-soft);margin-top:1px;">${c.note}</div>`
+        : '';
+      const tagColor = c.type==='word' ? 'lt-tag-word' : c.type==='sentence' ? 'lt-tag-sentence' : 'lt-tag-ext';
+      return `<div class="fc-card-row" style="grid-template-columns:1fr 1fr auto;">
+        <span style="font-size:13px;color:var(--ink);">${c.en}</span>
+        <div>
+          <div style="font-size:13px;color:var(--fuji);font-weight:500;">${c.it}</div>
+          ${pron}${note}
+        </div>
+        <span class="lt-tag ${tagColor}">${c.type}</span>
+      </div>`;
+    }).join('');
+
+    return `<div class="lt-mod-row" id="lt-mod-${m.id}">
+      <div class="lt-mod-header" onclick="ltToggleMod('${m.id}')">
+        <div class="lt-mh-left">
+          <div>
+            <div class="lt-mh-name">${m.name} · ${m.tracks}</div>
+            <div class="lt-mh-pattern">${m.pattern}</div>
+          </div>
+        </div>
+        <div class="lt-mh-right">
+          <div style="width:80px;">
+            <div style="font-size:10px;color:var(--ink-soft);text-align:right;margin-bottom:3px;">${s.pct}%</div>
+            <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden;">
+              <div style="height:100%;width:${s.pct}%;background:${progColor};border-radius:4px;"></div>
+            </div>
+          </div>
+          <span style="font-size:10px;color:var(--ink-soft);white-space:nowrap;">${reviewLabel}</span>
+          <button class="lt-btn ${s.firstSeen ? 'lt-btn-primary' : ''}" onclick="event.stopPropagation();ltStartSession('${m.id}','${!s.firstSeen?'new':'review'}')" style="font-size:11px;padding:4px 12px;">
+            ${!s.firstSeen ? '📖 Start' : ltIsDueToday(m) ? '🔁 Review' : '▶ Study'}
+          </button>
+          <span class="lt-chevron" id="lt-chev-${m.id}">▾</span>
+        </div>
+      </div>
+      <div class="lt-mod-body" id="lt-body-${m.id}" style="display:none;">
+        <!-- card list — same style as All Cards -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;color:var(--ink-soft);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:6px 12px 8px;display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;">
+            <span>English</span><span>Italiano</span><span></span>
+          </div>
+          ${cardRows}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px dashed var(--border);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:var(--ink-soft);">IT front</span>
+            <div class="lt-toggle ${flip==='en'?'lt-toggle-on':''}" id="lt-toggle-${m.id}" onclick="ltToggleFlip('${m.id}')">
+              <div class="lt-knob"></div>
+            </div>
+            <span style="font-size:11px;color:${flip==='en'?'var(--ink)':'var(--ink-soft)'};">EN front</span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            ${s.firstSeen ? `<button class="lt-btn" onclick="event.stopPropagation();ltStartSession('${m.id}','review')" style="font-size:11px;">🔁 Review again</button>` : ''}
+            <button class="lt-btn lt-btn-primary" onclick="event.stopPropagation();ltStartSession('${m.id}','${!s.firstSeen?'new':'review'}')">
+              ${!s.firstSeen ? '📖 Start' : ltIsDueToday(m) ? '🔁 Review due' : '▶ Study'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Build All Cards table — all LT cards across all modules
+  const allCards = LT_MODULES.flatMap(m => m.cards.map(c=>({...c, mod:m.name})));
+  const allCardsHTML = allCards.map(c => {
+    const pron = c.pron ? `<div style="font-size:11px;color:var(--sakura-deep);font-style:italic;">${c.pron}</div>` : '';
+    const note = c.note ? `<div style="font-size:10px;color:var(--ink-soft);">${c.note}</div>` : '';
+    const tagColor = c.type==='word' ? 'lt-tag-word' : c.type==='sentence' ? 'lt-tag-sentence' : 'lt-tag-ext';
+    return `<div class="fc-card-row" style="grid-template-columns:1fr 1fr 80px 70px;">
+      <span style="font-size:13px;color:var(--ink);">${c.en}</span>
+      <div>
+        <div style="font-size:13px;color:var(--fuji);font-weight:500;">${c.it}</div>
+        ${pron}${note}
+      </div>
+      <span class="lt-tag ${tagColor}" style="align-self:start;">${c.type}</span>
+      <span style="font-size:10px;color:var(--ink-soft);align-self:start;">${c.mod}</span>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <!-- Today's plan — pink bg -->
+    <div style="background:var(--sakura-light);border-radius:14px;padding:16px;margin-bottom:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="lt-sec-title" style="margin:0;">Today's Plan — ${today}</div>
+        ${LT_MODULES.some(m=>!ltIsNew(m)) ? `<button class="lt-btn lt-btn-primary" onclick="ltReviewAll()" style="font-size:11px;padding:4px 12px;">🔁 Review all modules</button>` : ''}
+      </div>
+      <div class="lt-today-list">${todayHTML}</div>
+    </div>
+    <!-- All Modules -->
+    <div class="lt-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="lt-sec-title" style="margin:0;">All Modules</div>
+      </div>
+      <div class="lt-mod-list">${modsHTML}</div>
+    </div>
+    <!-- All Cards table -->
+    <div style="margin-top:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="lt-sec-title" style="margin:0;">All Cards <span style="font-size:11px;color:var(--ink-soft);font-weight:400;">${allCards.length} words</span></div>
+        <input id="lt-search" type="text" placeholder="Search..." oninput="ltFilterCards(this.value)"
+          style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;width:160px;outline:none;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 80px 70px;gap:8px;padding:6px 12px;font-size:10px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);margin-bottom:6px;">
+        <span>English</span><span>Italiano</span><span>Type</span><span>Module</span>
+      </div>
+      <div id="lt-all-cards-list">${allCardsHTML}</div>
+    </div>`;
+}
+
+function ltToggleMod(id){
+  const body = document.getElementById('lt-body-'+id);
+  const chev = document.getElementById('lt-chev-'+id);
+  if(!body) return;
+  const open = body.style.display !== 'none';
+  // Close all
+  LT_MODULES.forEach(m => {
+    const b = document.getElementById('lt-body-'+m.id);
+    const c = document.getElementById('lt-chev-'+m.id);
+    if(b) b.style.display='none';
+    if(c) c.style.transform='';
+  });
+  if(!open){
+    body.style.display='block';
+    if(chev) chev.style.transform='rotate(180deg)';
+  }
+}
+
+function ltToggleFlip(id){
+  const cur = localStorage.getItem('lt_flip_'+id)||'en';
+  const next = cur==='en' ? 'it' : 'en';
+  localStorage.setItem('lt_flip_'+id, next);
+  const toggle = document.getElementById('lt-toggle-'+id);
+  if(toggle) toggle.classList.toggle('lt-toggle-on');
+  ltRenderMain();
+}
+
+// ===== SESSION =====
+let ltSession = [];
+let ltSessionIdx = 0;
+let ltSessionFlipped = false;
+let ltSessionModId = null;
+let ltSessionStartTime = null;
+
+function ltStartSession(modId, type){
+  const mod = LT_MODULES.find(m=>m.id===modId);
+  if(!mod) return;
+  ltSessionModId = modId;
+  ltSessionStartTime = Date.now();
+  ltSessionFlipped = false;
+
+  const flip = localStorage.getItem('lt_flip_'+modId)||'en';
+  const learned = mod.cards.filter(c=>c.type!=='ext');
+  const ext = mod.cards.filter(c=>c.type==='ext');
+  ltSession = [...learned.sort(()=>Math.random()-.5), ...ext.sort(()=>Math.random()-.5)];
+  ltSession = ltSession.map(c=>({...c, flip}));
+  ltSessionIdx = 0;
+
+  // Show fc card, hide main card
+  document.getElementById('lt-main-card').style.display='none';
+  document.getElementById('lt-fc-card').style.display='block';
+  document.getElementById('lt-fc-view').style.display='block';
+  document.getElementById('lt-fc-mod-name').textContent = mod.name + ' — ' + mod.pattern;
+  document.getElementById('lt-fc-prog').style.width='0%';
+  document.getElementById('lt-fc-ratings').style.display='none';
+  // Reset grid/done state
+  const gridEl = document.getElementById('lt-fc-grid');
+  if(gridEl) gridEl.style.display='grid';
+  const doneEl = document.getElementById('lt-fc-done');
+  if(doneEl) doneEl.style.display='none';
+
+  // Show reference card with module word list
+  const refCard = document.getElementById('lt-ref-card');
+  const refList = document.getElementById('lt-ref-list');
+  if(refCard && refList){
+    refList.innerHTML = mod.cards.map(c => {
+      const pron = c.pron ? `<div style="font-size:11px;color:var(--sakura-deep);font-style:italic;">${c.pron}</div>` : '';
+      const note = c.note ? `<div style="font-size:10px;color:var(--ink-soft);">${c.note}</div>` : '';
+      const tagColor = c.type==='word'?'lt-tag-word':c.type==='sentence'?'lt-tag-sentence':'lt-tag-ext';
+      return `<div class="fc-card-row lt-ref-row" style="grid-template-columns:1fr 1fr 70px;">
+        <span style="font-size:12px;color:var(--ink);">${c.en}</span>
+        <div><div style="font-size:12px;color:var(--fuji);font-weight:500;">${c.it}</div>${pron}${note}</div>
+        <span class="lt-tag ${tagColor}" style="align-self:start;">${c.type}</span>
+      </div>`;
+    }).join('');
+    refCard.style.display='block';
+  }
+
+  ltShowCard();
+}
+
+function ltShowCard(){
+  if(ltSessionIdx >= ltSession.length){
+    ltSessionComplete();
+    return;
+  }
+  const card = ltSession[ltSessionIdx];
+  const total = ltSession.length;
+  ltSessionFlipped = false;
+
+  document.getElementById('lt-fc-prog').style.width = (ltSessionIdx/total*100)+'%';
+  document.getElementById('lt-fc-counter').textContent = (ltSessionIdx+1)+' / '+total;
+
+  // FIX BUG 3: hide back, disable transition, reset, then re-enable
+  const inner = document.getElementById('lt-fc-inner');
+  const backEl = document.getElementById('lt-fc-back');
+  if(backEl) backEl.style.visibility='hidden';
+  inner.style.transition='none';
+  inner.style.transform='';
+  inner.getBoundingClientRect(); // force reflow
+  inner.style.transition='transform 0.45s';
+  setTimeout(()=>{ if(backEl) backEl.style.visibility='visible'; },10);
+
+  const frontText = card.flip==='en' ? card.en : card.it;
+  const backText  = card.flip==='en' ? card.it : card.en;
+  const backSub   = card.flip==='en' && card.note ? card.note : '';
+
+  document.getElementById('lt-fc-front-lang').textContent = card.flip==='en' ? 'English → guess Italian' : 'Italian → guess English';
+  document.getElementById('lt-fc-front-text').textContent = frontText;
+
+  const hintBtn = document.getElementById('lt-hint-btn');
+  const noteEl  = document.getElementById('lt-fc-front-note');
+  if(card.note && card.flip==='en'){
+    hintBtn.style.display='inline-block'; hintBtn.textContent='show hint';
+    noteEl.style.display='none'; noteEl.textContent=card.note;
+  } else { hintBtn.style.display='none'; noteEl.style.display='none'; }
+
+  document.getElementById('lt-fc-back-text').textContent = backText;
+
+  // Pronunciation — show for both directions
+  const pronEl = document.getElementById('lt-fc-back-pron');
+  if(pronEl){
+    if(card.flip==='en'){
+      // Front=EN, Back=IT: show pronunciation of IT word
+      pronEl.textContent = card.pron || '';
+    } else {
+      // Front=IT, Back=EN: show pronunciation of IT word (front word)
+      pronEl.textContent = card.pron || '';
+    }
+  }
+
+  // Sub line: show note/pattern hint
+  const subEl = document.getElementById('lt-fc-back-sub');
+  if(subEl) subEl.textContent = card.note || '';
+
+  document.getElementById('lt-fc-ratings').style.display='none';
+  inner.style.minHeight='340px';
+}
+
+function ltFlipCard(){
+  if(ltSessionFlipped) return;
+  ltSessionFlipped = true;
+  document.getElementById('lt-fc-inner').style.transform='rotateY(180deg)';
+  document.getElementById('lt-fc-ratings').style.display='flex';
+
+  // auto-speak after flip
+  setTimeout(()=>{
+    const card = ltSession[ltSessionIdx];
+    if(!card||!window.speechSynthesis) return;
+    const text = card.flip==='en' ? card.it : card.en;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = card.flip==='en'?'it-IT':'en-US'; u.rate=0.85;
+    if(card.flip==='en'){ const v=getBestItVoice(); if(v) u.voice=v; }
+    window.speechSynthesis.speak(u);
+  },480);
+}
+
+function ltFlipBack(){
+  ltSessionFlipped=false;
+  window.speechSynthesis&&window.speechSynthesis.cancel();
+  document.getElementById('lt-fc-inner').style.transform='';
+  document.getElementById('lt-fc-ratings').style.display='none';
+}
+
+function ltSkip(){
+  window.speechSynthesis&&window.speechSynthesis.cancel();
+  ltSessionIdx++;
+  ltShowCard();
+}
+
+function ltRate(rating){
+  window.speechSynthesis&&window.speechSynthesis.cancel();
+  const card=ltSession[ltSessionIdx];
+  const mod=LT_MODULES.find(m=>m.id===ltSessionModId);
+  if(mod){
+    const state=ltGetState(mod.lsKey);
+    if(!state.__stats) state.__stats={easy:0,hard:0};
+    state[card.en]={seen:true,rating,date:fcToday()};
+    if(rating==='easy') state.__stats.easy++;
+    else state.__stats.hard++;
+    ltSaveState(mod.lsKey,state);
+  }
+  ltSessionIdx++;
+  ltShowCard();
+}
+function ltExitFC(){
+  document.getElementById('lt-fc-card').style.display='none';
+  document.getElementById('lt-fc-view').style.display='none';
+  document.getElementById('lt-main-card').style.display='block';
+  const refCard = document.getElementById('lt-ref-card');
+  if(refCard) refCard.style.display='none';
+  ltRenderMain();
+}
+
+// Inject Grammar CSS
+(function(){
+  const style = document.createElement('style');
+  style.textContent = `
+.lt-section{margin-bottom:0;}
+.lt-sec-title{font-size:11px;font-weight:500;color:var(--ink-soft);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+.lt-today-list{display:flex;flex-direction:column;gap:8px;}
+.lt-today-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:white;border:0.5px solid var(--border);border-radius:14px;cursor:pointer;}
+.lt-today-item.lt-review{border-left:3px solid var(--fuji);}
+.lt-today-item.lt-new{border-left:3px solid var(--matcha);}
+.lt-today-item.lt-done{opacity:.55;cursor:default;}
+.lt-ti-left{display:flex;align-items:center;gap:12px;}
+.lt-ti-icon{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.lt-review-ic{background:var(--fuji-light);}
+.lt-new-ic{background:var(--matcha-light);}
+.lt-done-ic{background:var(--border);}
+.lt-ti-name{font-size:13px;font-weight:600;color:var(--ink);}
+.lt-ti-sub{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+.lt-ti-right{display:flex;align-items:center;gap:8px;}
+.lt-badge{font-size:10px;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.lt-badge-review{background:var(--fuji-light);color:var(--fuji);}
+.lt-badge-new{background:var(--matcha-light);color:var(--matcha);}
+.lt-badge-done{background:var(--border);color:var(--ink-soft);}
+.lt-btn{font-size:12px;padding:5px 12px;border-radius:10px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--ink);}
+.lt-btn-primary{background:var(--fuji);color:white;border-color:var(--fuji);}
+.lt-mod-list{display:flex;flex-direction:column;gap:8px;}
+.lt-mod-row{background:white;border:0.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.lt-mod-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;}
+.lt-mod-header:hover{background:var(--sakura-light);}
+.lt-mh-left{display:flex;align-items:center;gap:12px;}
+.lt-mh-name{font-size:13px;font-weight:600;color:var(--ink);}
+.lt-mh-pattern{font-size:11px;color:var(--fuji);font-style:italic;margin-top:2px;}
+.lt-mh-right{display:flex;align-items:center;gap:10px;}
+.lt-chevron{font-size:14px;color:var(--ink-soft);transition:transform .2s;display:inline-block;}
+.lt-mod-body{border-top:0.5px solid var(--border);padding:14px 16px;}
+.lt-tag{font-size:10px;padding:2px 6px;border-radius:20px;white-space:nowrap;}
+.lt-tag-word{background:var(--fuji-light);color:var(--fuji);}
+.lt-tag-sentence{background:var(--matcha-light);color:var(--matcha);}
+.lt-tag-ext{background:var(--yuzu-light);color:#854F0B;}
+.lt-toggle{width:28px;height:16px;background:var(--border);border-radius:20px;position:relative;cursor:pointer;transition:background .2s;}
+.lt-toggle-on{background:var(--fuji);}
+.lt-knob{width:12px;height:12px;background:white;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.lt-toggle-on .lt-knob{left:14px;}
+`;
+  document.head.appendChild(style);
+})();
+
+
+function ltSpeakAnswer(){
+  const card = ltSession[ltSessionIdx];
+  if(!card || !window.speechSynthesis) return;
+  const text = card.flip==='en' ? card.it : card.en;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  if(card.flip==='en'){ u.lang='it-IT'; u.rate=0.85; const v=getBestItVoice(); if(v)u.voice=v; }
+  else { u.lang='en-US'; u.rate=0.9; }
+  window.speechSynthesis.speak(u);
+}
+
+function ltSessionComplete(){
+  const mod = LT_MODULES.find(m=>m.id===ltSessionModId);
+  const mins = Math.max(1, Math.round((Date.now()-ltSessionStartTime)/60000));
+  const today = fcToday();
+  let easy=0, hard=0;
+
+  if(mod){
+    const state = ltGetState(mod.lsKey);
+    if(!state.__firstSeen) state.__firstSeen = today;
+    state.__lastReview = today;
+    state.__reviewCount = (state.__reviewCount||0) + 1;
+    easy = state.__stats?.easy||0;
+    hard = state.__stats?.hard||0;
+    state.__stats = {easy:0, hard:0};
+    ltSaveState(mod.lsKey, state);
+
+    // Log time — always to active language log, same format as flashcard session
+    const wordsReviewed = easy + hard;
+    const autoNote = `📖 Grammar: ${mod.name} · ${wordsReviewed} cards · ${mins} min`;
+    const logKey = lsKey('njl'); // use active lang log so it shows in history
+    const logs = JSON.parse(localStorage.getItem(logKey)||'[]');
+    const entry = logs.find(l=>l.date===today);
+    if(entry){
+      entry.mins = (entry.mins||0) + mins;
+      entry.words = (entry.words||0) + wordsReviewed;
+      if(!entry.scripts) entry.scripts=[];
+      if(!entry.scripts.includes('grammar')) entry.scripts.push('grammar');
+      entry.note = (entry.note ? entry.note+'\n' : '') + autoNote;
+    } else {
+      logs.unshift({
+        id: Date.now(),
+        date: today,
+        mins,
+        words: wordsReviewed,
+        scripts: ['grammar'],
+        note: autoNote,
+        goalProgress: {}
+      });
+    }
+    localStorage.setItem(logKey, JSON.stringify(logs));
+    // Reload global logs from storage so renderLog() sees new entry
+    window.logs = JSON.parse(localStorage.getItem(logKey)||'[]');
+    updStats();
+    if(typeof renderLog === 'function') renderLog();
+  }
+
+  const s = ltGetModuleStatus(mod);
+  const nextInterval = LT_SRS[Math.min((s.reviewCount||1)-1, LT_SRS.length-1)];
+  const pct = Math.round((easy/(easy+hard||1))*100);
+
+  document.getElementById('lt-fc-prog').style.width='100%';
+  document.getElementById('lt-fc-counter').textContent='Complete!';
+  // Hide card grid, show done screen (preserves DOM elements for re-use)
+  const gridEl = document.getElementById('lt-fc-grid');
+  if(gridEl) gridEl.style.display='none';
+  const refCard = document.getElementById('lt-ref-card');
+  if(refCard) refCard.style.display='none';
+  const doneEl = document.getElementById('lt-fc-done');
+  if(doneEl){
+    doneEl.style.display='block';
+    doneEl.innerHTML = `<div style="text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;">
+      <div style="font-size:56px;margin-bottom:16px;">🎉</div>
+      <div style="font-size:24px;font-weight:700;color:var(--ink);margin-bottom:6px;">Session complete!</div>
+      <div style="font-size:14px;color:var(--ink-soft);margin-bottom:24px;">${mod?.name||''} · ${ltSession.length} cards · ${mins} min</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;">
+        <div style="background:var(--matcha-light);border-radius:14px;padding:16px 8px;">
+          <div style="font-size:28px;font-weight:700;color:var(--matcha);">${easy}</div>
+          <div style="font-size:12px;color:var(--matcha);margin-top:2px;">😊 Got it</div>
+        </div>
+        <div style="background:var(--sakura-light);border-radius:14px;padding:16px 8px;">
+          <div style="font-size:28px;font-weight:700;color:var(--sakura-deep);">${hard}</div>
+          <div style="font-size:12px;color:var(--sakura-deep);margin-top:2px;">😢 Missed</div>
+        </div>
+        <div style="background:var(--fuji-light);border-radius:14px;padding:16px 8px;">
+          <div style="font-size:28px;font-weight:700;color:var(--fuji);">${pct}%</div>
+          <div style="font-size:12px;color:var(--fuji);margin-top:2px;">✨ Score</div>
+        </div>
+      </div>
+      <div style="background:var(--fuji-light);border-radius:12px;padding:12px 16px;margin-bottom:24px;font-size:13px;color:var(--fuji);">
+        📅 Next review in <strong>${nextInterval} days</strong>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button onclick="ltStartSession('${ltSessionModId}','review')" style="padding:10px 20px;border-radius:12px;border:2px solid var(--fuji);background:white;color:var(--fuji);font-size:13px;font-weight:700;cursor:pointer;">🔁 Study again</button>
+        <button onclick="ltExitFC()" style="padding:10px 24px;border-radius:12px;border:none;background:var(--fuji);color:white;font-size:13px;font-weight:700;cursor:pointer;">← Back to Grammar</button>
+      </div>
+    </div>`;
+  }
+}
+
 </script>
 <!-- LOGIN OVERLAY -->
 <div id="login-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,var(--sakura-light),var(--fuji-light));z-index:9999;align-items:center;justify-content:center;">
