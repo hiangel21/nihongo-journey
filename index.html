@@ -3402,9 +3402,10 @@ function renderReport(){
 // ===== MIGRATE: Remove duplicate My Cards that exist in N5 =====
 function migrateDeduplicateMyCards(){
   if(activeStudyLang==='it') return; // IT has its own deck, no JP dedup needed
-  if(localStorage.getItem('njfc_dedup_v2')) return; // v2 = updated migration
-  // Clear old flag so this runs fresh
+  if(localStorage.getItem('njfc_dedup_v3')) return; // v3 = force re-run
+  // Clear old flags
   localStorage.removeItem('njfc_dedup_done');
+  localStorage.removeItem('njfc_dedup_v2');
   const n5Fronts = new Map(N5_DECK.map(c=>[c.front, c.id]));
   const n5State = JSON.parse(localStorage.getItem('njn5')||'{}');
   let changed = false;
@@ -3436,7 +3437,7 @@ function migrateDeduplicateMyCards(){
     localStorage.setItem('njfc', JSON.stringify(flashcards));
     localStorage.setItem('njn5', JSON.stringify(n5State));
   }
-  localStorage.setItem('njfc_dedup_v2','1');
+  localStorage.setItem('njfc_dedup_v3','1');
 }
 migrateDeduplicateMyCards(); // JP-only migration, safe to call always
 
