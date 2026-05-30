@@ -8,6 +8,10 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root{--sakura:#FFB7C5;--sakura-light:#FFE4EC;--sakura-deep:#E8829A;--matcha:#7BAE7F;--matcha-light:#C8E6C9;--yuzu:#FFD966;--yuzu-light:#FFF3C4;--fuji:#B39DDB;--fuji-light:#EDE7F6;--ink:#3D2B1F;--ink-soft:#6B4C3B;--paper:#FFF9F5;--paper-warm:#FFF0E8;--border:#F5D0DC;--shadow:rgba(255,183,197,0.3);}
+/* Furigana styling — ruby above kanji like textbooks */
+ruby{display:ruby;ruby-align:center;ruby-position:over;}
+rt{display:ruby-text;font-size:0.45em;color:var(--fuji);font-weight:400;letter-spacing:0;}
+#fc-example-sentence{font-size:32px;line-height:1;padding-top:1.2em;}
 /* Italiano theme — same Sakura pink, different falling effect */
 .theme-italiano{--sakura:#FFB7C5;--sakura-light:#FFE4EC;--sakura-deep:#E8829A;--matcha:#7BAE7F;--matcha-light:#C8E6C9;--yuzu:#FFD966;--yuzu-light:#FFF3C4;--fuji:#B39DDB;--fuji-light:#EDE7F6;--ink:#3D2B1F;--ink-soft:#6B4C3B;--paper:#FFF9F5;--paper-warm:#FFF0E8;--border:#F5D0DC;--shadow:rgba(255,183,197,0.3);}
 /* Preset date buttons */
@@ -613,19 +617,55 @@ textarea{resize:vertical;min-height:70px;}
                 <div id="fc-front-text" style="font-family:'Zen Maru Gothic',sans-serif;font-size:123px;font-weight:700;color:var(--ink);line-height:1;text-align:center;text-shadow:0 3px 16px rgba(232,130,154,0.3);">おはよう</div>
                 <div style="font-size:14px;color:var(--sakura-deep);margin-top:28px;font-weight:600;">Tap to reveal ↓</div>
               </div>
-              <!-- BACK: 46 * 1.4 = ~64px, reading 26*1.4=~36px -->
-              <div id="fc-back" style="position:absolute;width:100%;min-height:340px;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:rotateY(180deg);background:linear-gradient(135deg,var(--fuji-light),white);border:2.5px solid var(--fuji);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;box-sizing:border-box;">
-                <!-- Back to front button — top left corner -->
-                <div onclick="event.stopPropagation();fcFlipBack()" style="position:absolute;top:12px;left:14px;display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border-radius:8px;background:rgba(255,255,255,.7);border:1px solid var(--border);transition:background .15s;" title="See front" onmouseover="this.style.background='white'" onmouseout="this.style.background='rgba(255,255,255,.7)'">
-                  <span style="font-size:12px;color:var(--ink-soft);">‹</span>
-                  <span style="font-size:11px;font-weight:600;color:var(--ink-soft);">Front</span>
+              <!-- BACK -->
+              <div id="fc-back" style="position:absolute;width:100%;min-height:340px;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:rotateY(180deg);background:linear-gradient(135deg,var(--fuji-light),white);border:2.5px solid var(--fuji);border-radius:20px;display:flex;flex-direction:column;padding:20px 28px 20px;box-sizing:border-box;gap:0;">
+
+                <!-- Top row: ‹ Front  ···  MEANING 🔊 (centered)  ···  rate me to continue -->
+                <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:18px;">
+                  <div onclick="event.stopPropagation();fcFlipBack()" style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border-radius:8px;background:rgba(255,255,255,.7);border:1px solid var(--border);justify-self:start;" title="See front">
+                    <span style="font-size:12px;color:var(--ink-soft);">‹</span>
+                    <span style="font-size:11px;font-weight:600;color:var(--ink-soft);">Front</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;justify-self:center;">
+                    <span class="fc-meaning-lbl" style="font-size:11px;color:var(--ink-soft);letter-spacing:2px;text-transform:uppercase;">Meaning</span>
+                    <button onclick="fcSpeak(event)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--fuji);background:white;color:var(--fuji);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;" title="Listen">🔊</button>
+                  </div>
+                  <div class="fc-hint" style="font-size:11px;color:var(--fuji);opacity:.8;font-weight:500;justify-self:end;">rate me to continue →</div>
                 </div>
-                <div class="fc-meaning-lbl" style="font-size:12px;color:var(--ink-soft);margin-bottom:14px;letter-spacing:2px;text-transform:uppercase;">Meaning</div>
-                <div id="fc-back-text" style="font-size:64px;font-weight:700;color:var(--ink);text-align:center;line-height:1.2;">Good morning</div>
-                <div id="fc-back-reading" style="font-family:'Zen Maru Gothic',sans-serif;font-size:36px;font-weight:500;color:var(--sakura-deep);margin-top:12px;text-align:center;">Ohayou</div>
-                <div id="fc-back-note" style="font-size:14px;color:var(--sakura-deep);margin-top:10px;text-align:center;background:var(--sakura-light);padding:6px 16px;border-radius:10px;display:none;max-width:90%;"></div>
-                <div class="fc-hint" style="font-size:12px;color:var(--fuji);margin-top:20px;font-weight:500;opacity:.7;">Choose Easy or Hard to continue</div>
-                <button onclick="fcSpeak(event)" style="margin-top:10px;padding:7px 18px;border-radius:12px;border:2px solid var(--fuji);background:white;color:var(--fuji);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='var(--fuji-light)'" onmouseout="this.style.background='white'">🔊 Listen</button>
+
+                <!-- Meaning text — centered, large -->
+                <div style="text-align:center;flex:0 0 auto;">
+                  <div id="fc-back-text" style="font-size:52px;font-weight:700;color:var(--ink);text-align:center;line-height:1.15;opacity:0.9;">Good morning</div>
+                  <div id="fc-back-reading" style="font-family:'Zen Maru Gothic',sans-serif;font-size:26px;font-weight:500;color:var(--sakura-deep);margin-top:6px;text-align:center;">Ohayou</div>
+                  <div id="fc-back-note" style="font-size:13px;color:var(--sakura-deep);margin-top:6px;text-align:center;background:var(--sakura-light);padding:4px 14px;border-radius:10px;display:none;"></div>
+                </div>
+
+                <!-- EXAMPLE section -->
+                <div id="fc-example-wrap" style="display:none;margin-top:8px;width:100%;">
+                  <div style="border-top:1.5px dashed var(--border);margin-bottom:10px;"></div>
+                  <!-- 2-col: left=labels, right=content -->
+                  <div style="display:grid;grid-template-columns:auto 1fr;gap:0 16px;">
+                    <!-- LEFT col: EXAMPLE label + あ romaji button -->
+                    <div style="display:flex;flex-direction:column;">
+                      <div style="display:flex;align-items:center;gap:6px;padding-top:4px;">
+                        <span style="font-size:10px;font-weight:700;color:var(--fuji);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;">✨ example</span>
+                        <button onclick="fcSpeakExample(event)" style="width:22px;height:22px;border-radius:50%;border:1.5px solid var(--fuji);background:white;color:var(--fuji);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;" title="Listen to example">🔊</button>
+                        <span id="fc-example-loading" style="font-size:11px;color:var(--ink-soft);font-style:italic;display:none;"></span>
+                      </div>
+                      <!-- あ romaji button — pushed down to align with romaji line -->
+                      <div style="margin-top:auto;padding-top:6px;">
+                        <button id="fc-show-romaji-btn" onclick="fcToggleRomaji()" style="padding:4px 12px;border-radius:20px;border:1.5px solid var(--fuji);background:transparent;color:var(--fuji);font-size:11px;cursor:pointer;white-space:nowrap;display:none;">あ romaji</button>
+                      </div>
+                    </div>
+                    <!-- RIGHT col: JP sentence / romaji / meaning -->
+                    <div style="display:flex;flex-direction:column;">
+                      <div id="fc-example-sentence" style="font-size:32px;font-weight:400;color:var(--ink);line-height:1;padding-top:1.2em;"></div>
+                      <div id="fc-example-romaji" style="display:none;font-size:13px;color:var(--fuji);font-style:italic;margin-top:4px;margin-bottom:0;line-height:1.4;"></div>
+                      <div id="fc-example-translation" style="font-size:14px;color:var(--ink-soft);margin-top:4px;line-height:1.4;"></div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -1474,6 +1514,616 @@ const N5_DECK = [
   {id:'n5_629',front:'週',read:'しゅう',back:'week',backVi:'tuần',note:'Kanji'},
   {id:'n5_630',front:'花',read:'はな・か',back:'flower',backVi:'hoa',note:'Kanji'},
 ];
+
+const N5_EXAMPLES = {
+  'n5_01':{s:'おとうさんは<ruby>毎日<rt>まいにち</rt></ruby><ruby>新聞<rt>しんぶん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>みます。',r:'Otousan wa mainichi shinbun wo yomimasu.',en:'My father reads the newspaper every day.'},
+  'n5_02':{s:'おかあさんは<ruby>料理<rt>りょうり</rt></ruby>が<ruby>上手<rt>じょうず</rt></ruby>です。',r:'Okaasan wa ryouri ga jouzu desu.',en:'My mother is good at cooking.'},
+  'n5_03':{s:'おにいさんは<ruby>大学生<rt>だいがくせい</rt></ruby>です。',r:'Oniisan wa daigakusei desu.',en:'My older brother is a university student.'},
+  'n5_04':{s:'おねえさんは<ruby>東京<rt>とうきょう</rt></ruby>に<ruby>住<rt>す</rt></ruby>んでいます。',r:'Oneesan wa Toukyou ni sunde imasu.',en:'My older sister lives in Tokyo.'},
+  'n5_05':{s:'<ruby>友達<rt>ともだち</rt></ruby>と<ruby>公園<rt>こうえん</rt></ruby>で<ruby>遊<rt>あそ</rt></ruby>びます。',r:'Tomodachi to kouen de asobimasu.',en:'I play with my friend at the park.'},
+  'n5_06':{s:'<ruby>先生<rt>せんせい</rt></ruby>は<ruby>英語<rt>えいご</rt></ruby>を<ruby>教<rt>おし</rt></ruby>えます。',r:'Sensei wa eigo wo oshiemasu.',en:'The teacher teaches English.'},
+  'n5_07':{s:'<ruby>学生<rt>がくせい</rt></ruby>は<ruby>図書館<rt>としょかん</rt></ruby>で<ruby>勉強<rt>べんきょう</rt></ruby>します。',r:'Gakusei wa toshokan de benkyou shimasu.',en:'The student studies at the library.'},
+  'n5_08':{s:'あの<ruby>人<rt>ひと</rt></ruby>は<ruby>親切<rt>しんせつ</rt></ruby>です。',r:'Ano hito wa shinsetsu desu.',en:'That person is kind.'},
+  'n5_09':{s:'<ruby>子供<rt>こども</rt></ruby>が<ruby>公園<rt>こうえん</rt></ruby>で<ruby>遊<rt>あそ</rt></ruby>んでいます。',r:'Kodomo ga kouen de asonde imasu.',en:'The child is playing at the park.'},
+  'n5_10':{s:'あの<ruby>男<rt>おとこ</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>は<ruby>背<rt>せ</rt></ruby>が<ruby>高<rt>たか</rt></ruby>いです。',r:'Ano otoko no hito wa se ga takai desu.',en:'That man is tall.'},
+  'n5_11':{s:'<ruby>目<rt>め</rt></ruby>が<ruby>痛<rt>いた</rt></ruby>いです。',r:'Me ga itai desu.',en:'My eyes hurt.'},
+  'n5_12':{s:'<ruby>耳<rt>みみ</rt></ruby>で<ruby>音楽<rt>おんがく</rt></ruby>を<ruby>聴<rt>き</rt></ruby>きます。',r:'Mimi de ongaku wo kikimasu.',en:'I listen to music with my ears.'},
+  'n5_13':{s:'<ruby>口<rt>くち</rt></ruby>を<ruby>開<rt>あ</rt></ruby>けてください。',r:'Kuchi wo akete kudasai.',en:'Please open your mouth.'},
+  'n5_14':{s:'<ruby>手<rt>て</rt></ruby>を<ruby>洗<rt>あら</rt></ruby>ってください。',r:'Te wo aratte kudasai.',en:'Please wash your hands.'},
+  'n5_15':{s:'<ruby>足<rt>あし</rt></ruby>が<ruby>痛<rt>いた</rt></ruby>いです。',r:'Ashi ga itai desu.',en:'My leg hurts.'},
+  'n5_16':{s:'<ruby>頭<rt>あたま</rt></ruby>が<ruby>痛<rt>いた</rt></ruby>いです。',r:'Atama ga itai desu.',en:'I have a headache.'},
+  'n5_17':{s:'<ruby>鼻<rt>はな</rt></ruby>が<ruby>痛<rt>いた</rt></ruby>いです。',r:'Hana ga itai desu.',en:'My nose hurts.'},
+  'n5_18':{s:'<ruby>顔<rt>かお</rt></ruby>を<ruby>洗<rt>あら</rt></ruby>います。',r:'Kao wo araimasu.',en:'I wash my face.'},
+  'n5_19':{s:'<ruby>一<rt>いち</rt></ruby>から<ruby>十<rt>じゅう</rt></ruby>まで<ruby>数<rt>かぞ</rt></ruby>えます。',r:'Ichi kara juu made kazoemasu.',en:'I count from one to ten.'},
+  'n5_20':{s:'<ruby>二<rt>に</rt></ruby>つの<ruby>りんごがあります。',r:'Futatsu no ringo ga arimasu.',en:'There are two apples.'},
+  'n5_21':{s:'<ruby>三<rt>さん</rt></ruby><ruby>人<rt>にん</rt></ruby>で<ruby>食<rt>た</rt></ruby>べます。',r:'San nin de tabemasu.',en:'Three people eat together.'},
+  'n5_22':{s:'<ruby>四<rt>よん</rt></ruby><ruby>時<rt>じ</rt></ruby>に<ruby>来<rt>き</rt></ruby>てください。',r:'Yoji ni kite kudasai.',en:'Please come at four o\'clock.'},
+  'n5_23':{s:'<ruby>五<rt>ご</rt></ruby><ruby>分<rt>ふん</rt></ruby>だけ<ruby>待<rt>ま</rt></ruby>ってください。',r:'Gofun dake matte kudasai.',en:'Please wait just five minutes.'},
+  'n5_24':{s:'いまは<ruby>三時<rt>さんじ</rt></ruby>です。',r:'Ima wa sanji desu.',en:'It is three o\'clock now.'},
+  'n5_25':{s:'<ruby>今日<rt>きょう</rt></ruby>は<ruby>月曜日<rt>げつようび</rt></ruby>です。',r:'Kyou wa getsuyoubi desu.',en:'Today is Monday.'},
+  'n5_26':{s:'<ruby>明日<rt>あした</rt></ruby>は<ruby>テスト<rt>てすと</rt></ruby>があります。',r:'Ashita wa tesuto ga arimasu.',en:'There is a test tomorrow.'},
+  'n5_27':{s:'<ruby>昨日<rt>きのう</rt></ruby>は<ruby>映画<rt>えいが</rt></ruby>を<ruby>見<rt>み</rt></ruby>ました。',r:'Kinou wa eiga wo mimashita.',en:'I watched a movie yesterday.'},
+  'n5_28':{s:'<ruby>毎日<rt>まいにち</rt></ruby><ruby>日本語<rt>にほんご</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>します。',r:'Mainichi nihongo wo benkyou shimasu.',en:'I study Japanese every day.'},
+  'n5_29':{s:'<ruby>学校<rt>がっこう</rt></ruby>は<ruby>八時<rt>はちじ</rt></ruby>に<ruby>始<rt>はじ</rt></ruby>まります。',r:'Gakkou wa hachiji ni hajimarimasu.',en:'School starts at eight o\'clock.'},
+  'n5_30':{s:'<ruby>家<rt>いえ</rt></ruby>に<ruby>帰<rt>かえ</rt></ruby>ります。',r:'Ie ni kaerimasu.',en:'I go home.'},
+  'n5_31':{s:'<ruby>駅<rt>えき</rt></ruby>で<ruby>友達<rt>ともだち</rt></ruby>に<ruby>会<rt>あ</rt></ruby>います。',r:'Eki de tomodachi ni aimasu.',en:'I meet my friend at the station.'},
+  'n5_32':{s:'この<ruby>店<rt>みせ</rt></ruby>は<ruby>安<rt>やす</rt></ruby>いです。',r:'Kono mise wa yasui desu.',en:'This shop is cheap.'},
+  'n5_33':{s:'<ruby>図書館<rt>としょかん</rt></ruby>で<ruby>本<rt>ほん</rt></ruby>を<ruby>借<rt>か</rt></ruby>ります。',r:'Toshokan de hon wo karimasu.',en:'I borrow books from the library.'},
+  'n5_34':{s:'<ruby>病院<rt>びょういん</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Byouin ni ikimasu.',en:'I go to the hospital.'},
+  'n5_35':{s:'<ruby>銀行<rt>ぎんこう</rt></ruby>で<ruby>お金<rt>おかね</rt></ruby>を<ruby>引<rt>ひ</rt></ruby>き<ruby>出<rt>だ</rt></ruby>します。',r:'Ginkou de okane wo hikidashimasu.',en:'I withdraw money at the bank.'},
+  'n5_36':{s:'<ruby>公園<rt>こうえん</rt></ruby>で<ruby>散歩<rt>さんぽ</rt></ruby>します。',r:'Kouen de sanpo shimasu.',en:'I take a walk in the park.'},
+  'n5_37':{s:'あの<ruby>レストラン<rt>れすとらん</rt></ruby>は<ruby>おいしいです。',r:'Ano resutoran wa oishii desu.',en:'That restaurant is delicious.'},
+  'n5_38':{s:'<ruby>トイレ<rt>といれ</rt></ruby>はどこですか。',r:'Toire wa doko desu ka.',en:'Where is the restroom?'},
+  'n5_39':{s:'<ruby>水<rt>みず</rt></ruby>を<ruby>一杯<rt>いっぱい</rt></ruby>ください。',r:'Mizu wo ippai kudasai.',en:'Please give me a glass of water.'},
+  'n5_40':{s:'<ruby>ご飯<rt>ごはん</rt></ruby>を<ruby>食<rt>た</rt></ruby>べます。',r:'Gohan wo tabemasu.',en:'I eat rice.'},
+  'n5_41':{s:'<ruby>朝<rt>あさ</rt></ruby>にパンを<ruby>食<rt>た</rt></ruby>べます。',r:'Asa ni pan wo tabemasu.',en:'I eat bread in the morning.'},
+  'n5_42':{s:'<ruby>卵<rt>たまご</rt></ruby>を<ruby>二個<rt>にこ</rt></ruby><ruby>食<rt>た</rt></ruby>べました。',r:'Tamago wo niko tabemashita.',en:'I ate two eggs.'},
+  'n5_43':{s:'<ruby>肉<rt>にく</rt></ruby>が<ruby>好<rt>す</rt></ruby>きです。',r:'Niku ga suki desu.',en:'I like meat.'},
+  'n5_44':{s:'<ruby>魚<rt>さかな</rt></ruby>を<ruby>焼<rt>や</rt></ruby>きます。',r:'Sakana wo yakimasu.',en:'I grill the fish.'},
+  'n5_45':{s:'<ruby>野菜<rt>やさい</rt></ruby>を<ruby>毎日<rt>まいにち</rt></ruby><ruby>食<rt>た</rt></ruby>べます。',r:'Yasai wo mainichi tabemasu.',en:'I eat vegetables every day.'},
+  'n5_46':{s:'<ruby>果物<rt>くだもの</rt></ruby>が<ruby>好<rt>す</rt></ruby>きです。',r:'Kudamono ga suki desu.',en:'I like fruit.'},
+  'n5_47':{s:'<ruby>お茶<rt>おちゃ</rt></ruby>を<ruby>一杯<rt>いっぱい</rt></ruby><ruby>飲<rt>の</rt></ruby>みます。',r:'Ocha wo ippai nomimasu.',en:'I drink a cup of green tea.'},
+  'n5_48':{s:'<ruby>毎朝<rt>まいあさ</rt></ruby>コーヒーを<ruby>飲<rt>の</rt></ruby>みます。',r:'Maiasa koohii wo nomimasu.',en:'I drink coffee every morning.'},
+  'n5_49':{s:'<ruby>空<rt>そら</rt></ruby>が<ruby>青<rt>あお</rt></ruby>いです。',r:'Sora ga aoi desu.',en:'The sky is blue.'},
+  'n5_50':{s:'<ruby>海<rt>うみ</rt></ruby>で<ruby>泳<rt>およ</rt></ruby>ぎます。',r:'Umi de oyogimasu.',en:'I swim in the sea.'},
+  'n5_51':{s:'<ruby>山<rt>やま</rt></ruby>に<ruby>登<rt>のぼ</rt></ruby>ります。',r:'Yama ni noborimasu.',en:'I climb the mountain.'},
+  'n5_52':{s:'<ruby>川<rt>かわ</rt></ruby>の<ruby>水<rt>みず</rt></ruby>はきれいです。',r:'Kawa no mizu wa kirei desu.',en:'The river water is clean.'},
+  'n5_53':{s:'<ruby>木<rt>き</rt></ruby>の<ruby>下<rt>した</rt></ruby>で<ruby>休<rt>やす</rt></ruby>みます。',r:'Ki no shita de yasumimasu.',en:'I rest under the tree.'},
+  'n5_54':{s:'<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>っています。',r:'Ame ga futte imasu.',en:'It is raining.'},
+  'n5_55':{s:'<ruby>雪<rt>ゆき</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>りました。',r:'Yuki ga furimashita.',en:'It snowed.'},
+  'n5_56':{s:'<ruby>風<rt>かぜ</rt></ruby>が<ruby>強<rt>つよ</rt></ruby>いです。',r:'Kaze ga tsuyoi desu.',en:'The wind is strong.'},
+  'n5_57':{s:'この<ruby>犬<rt>いぬ</rt></ruby>は<ruby>大<rt>おお</rt></ruby>きいです。',r:'Kono inu wa ookii desu.',en:'This dog is big.'},
+  'n5_58':{s:'この<ruby>猫<rt>ねこ</rt></ruby>は<ruby>小<rt>ちい</rt></ruby>さいです。',r:'Kono neko wa chiisai desu.',en:'This cat is small.'},
+  'n5_59':{s:'この<ruby>本<rt>ほん</rt></ruby>は<ruby>新<rt>あたら</rt></ruby>しいです。',r:'Kono hon wa atarashii desu.',en:'This book is new.'},
+  'n5_60':{s:'この<ruby>建物<rt>たてもの</rt></ruby>は<ruby>古<rt>ふる</rt></ruby>いです。',r:'Kono tatemono wa furui desu.',en:'This building is old.'},
+  'n5_61':{s:'この<ruby>山<rt>やま</rt></ruby>は<ruby>高<rt>たか</rt></ruby>いです。',r:'Kono yama wa takai desu.',en:'This mountain is high.'},
+  'n5_62':{s:'この<ruby>店<rt>みせ</rt></ruby>は<ruby>安<rt>やす</rt></ruby>いです。',r:'Kono mise wa yasui desu.',en:'This shop is cheap.'},
+  'n5_63':{s:'この<ruby>料理<rt>りょうり</rt></ruby>は<ruby>いいです。',r:'Kono ryouri wa ii desu.',en:'This dish is good.'},
+  'n5_64':{s:'この<ruby>天気<rt>てんき</rt></ruby>は<ruby>悪<rt>わる</rt></ruby>いです。',r:'Kono tenki wa warui desu.',en:'This weather is bad.'},
+  'n5_65':{s:'この<ruby>映画<rt>えいが</rt></ruby>は<ruby>面白<rt>おもしろ</rt></ruby>いです。',r:'Kono eiga wa omoshiroi desu.',en:'This movie is interesting.'},
+  'n5_66':{s:'<ruby>旅行<rt>りょこう</rt></ruby>はとても<ruby>楽<rt>たの</rt></ruby>しかったです。',r:'Ryokou wa totemo tanoshikatta desu.',en:'The trip was very fun.'},
+  'n5_67':{s:'<ruby>昼<rt>ひる</rt></ruby>ごはんに<ruby>寿司<rt>すし</rt></ruby>を<ruby>食<rt>た</rt></ruby>べます。',r:'Hirugohan ni sushi wo tabemasu.',en:'I eat sushi for lunch.'},
+  'n5_68':{s:'<ruby>水<rt>みず</rt></ruby>をたくさん<ruby>飲<rt>の</rt></ruby>みます。',r:'Mizu wo takusan nomimasu.',en:'I drink a lot of water.'},
+  'n5_69':{s:'<ruby>テレビ<rt>てれび</rt></ruby>でニュースを<ruby>見<rt>み</rt></ruby>ます。',r:'Terebi de nyuusu wo mimasu.',en:'I watch the news on TV.'},
+  'n5_70':{s:'<ruby>毎日<rt>まいにち</rt></ruby><ruby>音楽<rt>おんがく</rt></ruby>を<ruby>聴<rt>き</rt></ruby>きます。',r:'Mainichi ongaku wo kikimasu.',en:'I listen to music every day.'},
+  'n5_71':{s:'<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>みます。',r:'Hon wo yomimasu.',en:'I read a book.'},
+  'n5_72':{s:'<ruby>手紙<rt>てがみ</rt></ruby>を<ruby>書<rt>か</rt></ruby>きます。',r:'Tegami wo kakimasu.',en:'I write a letter.'},
+  'n5_73':{s:'<ruby>日本語<rt>にほんご</rt></ruby>で<ruby>話<rt>はな</rt></ruby>します。',r:'Nihongo de hanashimasu.',en:'I speak in Japanese.'},
+  'n5_74':{s:'<ruby>学校<rt>がっこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Gakkou ni ikimasu.',en:'I go to school.'},
+  'n5_75':{s:'<ruby>友達<rt>ともだち</rt></ruby>が<ruby>家<rt>いえ</rt></ruby>に<ruby>来<rt>き</rt></ruby>ます。',r:'Tomodachi ga ie ni kimasu.',en:'My friend comes to my house.'},
+  'n5_76':{s:'<ruby>六時<rt>ろくじ</rt></ruby>に<ruby>家<rt>いえ</rt></ruby>に<ruby>帰<rt>かえ</rt></ruby>ります。',r:'Rokuji ni ie ni kaerimasu.',en:'I return home at six o\'clock.'},
+  'n5_77':{s:'<ruby>七時<rt>しちじ</rt></ruby>に<ruby>起<rt>お</rt></ruby>きます。',r:'Shichiji ni okimasu.',en:'I wake up at seven o\'clock.'},
+  'n5_78':{s:'<ruby>十一時<rt>じゅういちじ</rt></ruby>に<ruby>寝<rt>ね</rt></ruby>ます。',r:'Juuichiji ni nemasu.',en:'I sleep at eleven o\'clock.'},
+  'n5_79':{s:'<ruby>宿題<rt>しゅくだい</rt></ruby>を<ruby>します。',r:'Shukudai wo shimasu.',en:'I do my homework.'},
+  'n5_80':{s:'<ruby>図書館<rt>としょかん</rt></ruby>で<ruby>勉強<rt>べんきょう</rt></ruby>します。',r:'Toshokan de benkyou shimasu.',en:'I study at the library.'},
+  'n5_81':{s:'ありがとうございます。<ruby>助<rt>たす</rt></ruby>かりました。',r:'Arigatou gozaimasu. Tasukarimashita.',en:'Thank you. You saved me.'},
+  'n5_82':{s:'すみません、<ruby>駅<rt>えき</rt></ruby>はどこですか。',r:'Sumimasen, eki wa doko desu ka.',en:'Excuse me, where is the station?'},
+  'n5_83':{s:'「<ruby>行<rt>い</rt></ruby>きますか。」「はい、<ruby>行<rt>い</rt></ruby>きます。」',r:'"Ikimasu ka?" "Hai, ikimasu."',en:'"Will you go?" "Yes, I will."'},
+  'n5_84':{s:'「<ruby>猫<rt>ねこ</rt></ruby>が<ruby>好<rt>す</rt></ruby>きですか。」「いいえ、<ruby>好<rt>す</rt></ruby>きじゃないです。」',r:'"Neko ga suki desu ka?" "Iie, suki ja nai desu."',en:'"Do you like cats?" "No, I don\'t."'},
+  'n5_85':{s:'<ruby>先生<rt>せんせい</rt></ruby>の<ruby>説明<rt>せつめい</rt></ruby>が<ruby>わかります。',r:'Sensei no setsumei ga wakarimasu.',en:'I understand the teacher\'s explanation.'},
+  'n5_86':{s:'<ruby>先生<rt>せんせい</rt></ruby>の<ruby>話<rt>はなし</rt></ruby>がわかりません。',r:'Sensei no hanashi ga wakarimasen.',en:'I don\'t understand what the teacher is saying.'},
+  'n5_87':{s:'これは<ruby>何<rt>なに</rt></ruby>ですか。',r:'Kore wa nani desu ka.',en:'What is this?'},
+  'n5_88':{s:'<ruby>駅<rt>えき</rt></ruby>はどこですか。',r:'Eki wa doko desu ka.',en:'Where is the station?'},
+  'n5_89':{s:'これは<ruby>いくら<rt>いくら</rt></ruby>ですか。',r:'Kore wa ikura desu ka.',en:'How much is this?'},
+  'n5_90':{s:'<ruby>試験<rt>しけん</rt></ruby>はいつですか。',r:'Shiken wa itsu desu ka.',en:'When is the exam?'},
+  'n5_91':{s:'<ruby>りんご<rt>りんご</rt></ruby>をひとつください。',r:'Ringo wo hitotsu kudasai.',en:'Please give me one apple.'},
+  'n5_92':{s:'<ruby>ケーキ<rt>けーき</rt></ruby>をふたつ<ruby>買<rt>か</rt></ruby>いました。',r:'Keeki wo futatsu kaimashita.',en:'I bought two cakes.'},
+  'n5_93':{s:'<ruby>みかん<rt>みかん</rt></ruby>をみっつ<ruby>食<rt>た</rt></ruby>べました。',r:'Mikan wo mittsu tabemashita.',en:'I ate three mandarins.'},
+  'n5_94':{s:'いまなんじですか。',r:'Ima nanji desu ka.',en:'What time is it now?'},
+  'n5_95':{s:'おこさんはなんさいですか。',r:'Okosan wa nansai desu ka.',en:'How old is your child?'},
+  'n5_96':{s:'<ruby>毎朝<rt>まいあさ</rt></ruby>おはようと<ruby>言<rt>い</rt></ruby>います。',r:'Maiasa ohayou to iimasu.',en:'I say good morning every morning.'},
+  'n5_97':{s:'こんにちは、<ruby>元気<rt>げんき</rt></ruby>ですか。',r:'Konnichiwa, genki desu ka.',en:'Hello, how are you?'},
+  'n5_98':{s:'こんばんは、<ruby>今日<rt>きょう</rt></ruby>はどうでしたか。',r:'Konbanwa, kyou wa dou deshita ka.',en:'Good evening, how was today?'},
+  'n5_99':{s:'さようなら、またね。',r:'Sayounara, mata ne.',en:'Goodbye, see you later.'},
+  'n5_100':{s:'おやすみ、よく<ruby>寝<rt>ね</rt></ruby>てね。',r:'Oyasumi, yoku nete ne.',en:'Good night, sleep well.'},
+  'n5_101':{s:'<ruby>友達<rt>ともだち</rt></ruby>に<ruby>会<rt>あ</rt></ruby>いました。',r:'Tomodachi ni aimashita.',en:'I met my friend.'},
+  'n5_102':{s:'<ruby>窓<rt>まど</rt></ruby>を<ruby>開<rt>あ</rt></ruby>けてください。',r:'Mado wo akete kudasai.',en:'Please open the window.'},
+  'n5_103':{s:'<ruby>プレゼント<rt>ぷれぜんと</rt></ruby>を<ruby>友達<rt>ともだち</rt></ruby>にあげました。',r:'Purezento wo tomodachi ni agemashita.',en:'I gave a present to my friend.'},
+  'n5_104':{s:'<ruby>子供<rt>こども</rt></ruby>たちが<ruby>公園<rt>こうえん</rt></ruby>で<ruby>遊<rt>あそ</rt></ruby>んでいます。',r:'Kodomotachi ga kouen de asonde imasu.',en:'The children are playing at the park.'},
+  'n5_105':{s:'<ruby>毎朝<rt>まいあさ</rt></ruby>シャワーを<ruby>浴<rt>あ</rt></ruby>びます。',r:'Maiasa shawaa wo abimasu.',en:'I take a shower every morning.'},
+  'n5_106':{s:'<ruby>手<rt>て</rt></ruby>を<ruby>洗<rt>あら</rt></ruby>ってから<ruby>食<rt>た</rt></ruby>べます。',r:'Te wo aratte kara tabemasu.',en:'I wash my hands before eating.'},
+  'n5_107':{s:'<ruby>机<rt>つくえ</rt></ruby>の<ruby>上<rt>うえ</rt></ruby>に<ruby>本<rt>ほん</rt></ruby>があります。',r:'Tsukue no ue ni hon ga arimasu.',en:'There is a book on the desk.'},
+  'n5_108':{s:'<ruby>公園<rt>こうえん</rt></ruby>を<ruby>歩<rt>ある</rt></ruby>きます。',r:'Kouen wo arukimasu.',en:'I walk in the park.'},
+  'n5_109':{s:'「<ruby>行<rt>い</rt></ruby>きます」と<ruby>言<rt>い</rt></ruby>いました。',r:'"Ikimasu" to iimashita.',en:'I said "I will go".'},
+  'n5_110':{s:'<ruby>教室<rt>きょうしつ</rt></ruby>に<ruby>学生<rt>がくせい</rt></ruby>がいます。',r:'Kyoushitsu ni gakusei ga imasu.',en:'There are students in the classroom.'},
+  'n5_111':{s:'<ruby>袋<rt>ふくろ</rt></ruby>に<ruby>本<rt>ほん</rt></ruby>を<ruby>入<rt>い</rt></ruby>れます。',r:'Fukuro ni hon wo iremasu.',en:'I put books in the bag.'},
+  'n5_112':{s:'<ruby>電車<rt>でんしゃ</rt></ruby>が<ruby>動<rt>うご</rt></ruby>いています。',r:'Densha ga ugoite imasu.',en:'The train is moving.'},
+  'n5_113':{s:'<ruby>春<rt>はる</rt></ruby>に<ruby>生<rt>う</rt></ruby>まれました。',r:'Haru ni umaremashita.',en:'I was born in spring.'},
+  'n5_114':{s:'<ruby>店<rt>みせ</rt></ruby>でパンを<ruby>売<rt>う</rt></ruby>っています。',r:'Mise de pan wo utte imasu.',en:'They sell bread at the shop.'},
+  'n5_116':{s:'<ruby>友達<rt>ともだち</rt></ruby>にメールを<ruby>送<rt>おく</rt></ruby>ります。',r:'Tomodachi ni meeru wo okurimasu.',en:'I send an email to my friend.'},
+  'n5_117':{s:'<ruby>先生<rt>せんせい</rt></ruby>が<ruby>漢字<rt>かんじ</rt></ruby>を<ruby>教<rt>おし</rt></ruby>えます。',r:'Sensei ga kanji wo oshiemasu.',en:'The teacher teaches kanji.'},
+  'n5_118':{s:'<ruby>ボタン<rt>ぼたん</rt></ruby>を<ruby>押<rt>お</rt></ruby>してください。',r:'Botan wo oshite kudasai.',en:'Please press the button.'},
+  'n5_119':{s:'<ruby>新<rt>あたら</rt></ruby>しい<ruby>単語<rt>たんご</rt></ruby>を<ruby>覚<rt>おぼ</rt></ruby>えます。',r:'Atarashii tango wo oboemasu.',en:'I memorize new vocabulary.'},
+  'n5_120':{s:'<ruby>電車<rt>でんしゃ</rt></ruby>を<ruby>降<rt>お</rt></ruby>ります。',r:'Densha wo orimasu.',en:'I get off the train.'},
+  'n5_121':{s:'<ruby>仕事<rt>しごと</rt></ruby>が<ruby>終<rt>お</rt></ruby>わりました。',r:'Shigoto ga owarimashita.',en:'The work is finished.'},
+  'n5_122':{s:'<ruby>スーパー<rt>すーぱー</rt></ruby>で<ruby>野菜<rt>やさい</rt></ruby>を<ruby>買<rt>か</rt></ruby>います。',r:'Suupaa de yasai wo kaimasu.',en:'I buy vegetables at the supermarket.'},
+  'n5_123':{s:'<ruby>借<rt>か</rt></ruby>りた<ruby>本<rt>ほん</rt></ruby>を<ruby>返<rt>かえ</rt></ruby>します。',r:'Karita hon wo kaeshimasu.',en:'I return the borrowed book.'},
+  'n5_124':{s:'<ruby>駅<rt>えき</rt></ruby>まで<ruby>十分<rt>じゅっぷん</rt></ruby><ruby>かかります。',r:'Eki made juppun kakarimasu.',en:'It takes ten minutes to the station.'},
+  'n5_125':{s:'<ruby>壁<rt>かべ</rt></ruby>に<ruby>絵<rt>え</rt></ruby>をかけます。',r:'Kabe ni e wo kakemasu.',en:'I hang a picture on the wall.'},
+  'n5_126':{s:'<ruby>友達<rt>ともだち</rt></ruby>に<ruby>傘<rt>かさ</rt></ruby>を<ruby>貸<rt>か</rt></ruby>します。',r:'Tomodachi ni kasa wo kashimasu.',en:'I lend an umbrella to my friend.'},
+  'n5_127':{s:'<ruby>試合<rt>しあい</rt></ruby>に<ruby>勝<rt>か</rt></ruby>ちました。',r:'Shiai ni kachimashita.',en:'I won the match.'},
+  'n5_128':{s:'<ruby>図書館<rt>としょかん</rt></ruby>で<ruby>本<rt>ほん</rt></ruby>を<ruby>借<rt>か</rt></ruby>ります。',r:'Toshokan de hon wo karimasu.',en:'I borrow books from the library.'},
+  'n5_129':{s:'<ruby>電気<rt>でんき</rt></ruby>が<ruby>消<rt>き</rt></ruby>えました。',r:'Denki ga kiemashita.',en:'The light went out.'},
+  'n5_130':{s:'<ruby>紙<rt>かみ</rt></ruby>を<ruby>切<rt>き</rt></ruby>ります。',r:'Kami wo kirimasu.',en:'I cut the paper.'},
+  'n5_132':{s:'<ruby>母<rt>はは</rt></ruby>が<ruby>お菓子<rt>おかし</rt></ruby>をくれました。',r:'Haha ga okashi wo kuremashita.',en:'My mother gave me sweets.'},
+  'n5_133':{s:'<ruby>黒板<rt>こくばん</rt></ruby>の<ruby>字<rt>じ</rt></ruby>を<ruby>消<rt>け</rt></ruby>します。',r:'Kokuban no ji wo keshimasu.',en:'I erase the writing on the blackboard.'},
+  'n5_134':{s:'<ruby>先生<rt>せんせい</rt></ruby>の<ruby>質問<rt>しつもん</rt></ruby>に<ruby>答<rt>こた</rt></ruby>えます。',r:'Sensei no shitsumon ni kotaemasu.',en:'I answer the teacher\'s question.'},
+  'n5_135':{s:'<ruby>道<rt>みち</rt></ruby>に<ruby>迷<rt>まよ</rt></ruby>って<ruby>困<rt>こま</rt></ruby>りました。',r:'Michi ni mayotte komarimashita.',en:'I got lost and was troubled.'},
+  'n5_136':{s:'<ruby>桜<rt>さくら</rt></ruby>が<ruby>咲<rt>さ</rt></ruby>きました。',r:'Sakura ga sakimashita.',en:'The cherry blossoms bloomed.'},
+  'n5_137':{s:'<ruby>ドア<rt>どあ</rt></ruby>が<ruby>閉<rt>し</rt></ruby>まりました。',r:'Doa ga shimarimashita.',en:'The door closed.'},
+  'n5_138':{s:'<ruby>窓<rt>まど</rt></ruby>を<ruby>閉<rt>し</rt></ruby>めます。',r:'Mado wo shimemasu.',en:'I close the window.'},
+  'n5_139':{s:'<ruby>花<rt>はな</rt></ruby>が<ruby>死<rt>し</rt></ruby>にました。',r:'Hana ga karemashita.',en:'The flower died.'},
+  'n5_140':{s:'その<ruby>話<rt>はなし</rt></ruby>を<ruby>知<rt>し</rt></ruby>っています。',r:'Sono hanashi wo shitte imasu.',en:'I know that story.'},
+  'n5_141':{s:'<ruby>タバコ<rt>たばこ</rt></ruby>を<ruby>吸<rt>す</rt></ruby>わないでください。',r:'Tabako wo suwanaide kudasai.',en:'Please don\'t smoke.'},
+  'n5_142':{s:'<ruby>東京<rt>とうきょう</rt></ruby>に<ruby>住<rt>す</rt></ruby>んでいます。',r:'Toukyou ni sunde imasu.',en:'I live in Tokyo.'},
+  'n5_143':{s:'<ruby>椅子<rt>いす</rt></ruby>に<ruby>座<rt>すわ</rt></ruby>ってください。',r:'Isu ni suwatte kudasai.',en:'Please sit on the chair.'},
+  'n5_144':{s:'<ruby>財布<rt>さいふ</rt></ruby>を<ruby>出<rt>だ</rt></ruby>します。',r:'Saifu wo dashimasu.',en:'I take out my wallet.'},
+  'n5_145':{s:'<ruby>立<rt>た</rt></ruby>って<ruby>待<rt>ま</rt></ruby>ってください。',r:'Tatte matte kudasai.',en:'Please stand and wait.'},
+  'n5_146':{s:'<ruby>店員<rt>てんいん</rt></ruby>に<ruby>道<rt>みち</rt></ruby>を<ruby>頼<rt>たの</rt></ruby>みました。',r:'Ten\'in ni michi wo tanomimashita.',en:'I asked the clerk for directions.'},
+  'n5_147':{s:'<ruby>毎日<rt>まいにち</rt></ruby><ruby>辞書<rt>じしょ</rt></ruby>を<ruby>使<rt>つか</rt></ruby>います。',r:'Mainichi jisho wo tsukaimasu.',en:'I use a dictionary every day.'},
+  'n5_148':{s:'<ruby>走<rt>はし</rt></ruby>って<ruby>疲<rt>つか</rt></ruby>れました。',r:'Hashitte tsukaremashita.',en:'I got tired from running.'},
+  'n5_149':{s:'<ruby>電車<rt>でんしゃ</rt></ruby>が<ruby>着<rt>つ</rt></ruby>きました。',r:'Densha ga tsukimashita.',en:'The train arrived.'},
+  'n5_150':{s:'<ruby>電気<rt>でんき</rt></ruby>をつけてください。',r:'Denki wo tsukete kudasai.',en:'Please turn on the light.'},
+  'n5_151':{s:'<ruby>子供<rt>こども</rt></ruby>を<ruby>公園<rt>こうえん</rt></ruby>に<ruby>連<rt>つ</rt></ruby>れていきます。',r:'Kodomo wo kouen ni tsurete ikimasu.',en:'I take the child to the park.'},
+  'n5_152':{s:'<ruby>友達<rt>ともだち</rt></ruby>と<ruby>買<rt>か</rt></ruby>い<ruby>物<rt>もの</rt></ruby>に<ruby>出<rt>で</rt></ruby>かけます。',r:'Tomodachi to kaimono ni dekakemasu.',en:'I go shopping with my friend.'},
+  'n5_153':{s:'<ruby>日本語<rt>にほんご</rt></ruby>が<ruby>少<rt>すこ</rt></ruby>し<ruby>話<rt>はな</rt></ruby>せます。',r:'Nihongo ga sukoshi hanasemasu.',en:'I can speak a little Japanese.'},
+  'n5_154':{s:'<ruby>電車<rt>でんしゃ</rt></ruby>から<ruby>出<rt>で</rt></ruby>ます。',r:'Densha kara demasu.',en:'I exit from the train.'},
+  'n5_155':{s:'<ruby>鳥<rt>とり</rt></ruby>が<ruby>空<rt>そら</rt></ruby>を<ruby>飛<rt>と</rt></ruby>んでいます。',r:'Tori ga sora wo tonde imasu.',en:'A bird is flying in the sky.'},
+  'n5_156':{s:'<ruby>バス<rt>ばす</rt></ruby>が<ruby>止<rt>と</rt></ruby>まりました。',r:'Basu ga tomarimashita.',en:'The bus stopped.'},
+  'n5_157':{s:'<ruby>写真<rt>しゃしん</rt></ruby>を<ruby>撮<rt>と</rt></ruby>ります。',r:'Shashin wo torimasu.',en:'I take a photo.'},
+  'n5_158':{s:'<ruby>悲<rt>かな</rt></ruby>しくて<ruby>泣<rt>な</rt></ruby>きました。',r:'Kanashikute nakimashita.',en:'I cried because I was sad.'},
+  'n5_159':{s:'<ruby>鍵<rt>かぎ</rt></ruby>を<ruby>なくしました。',r:'Kagi wo nakushimashita.',en:'I lost my key.'},
+  'n5_160':{s:'<ruby>先生<rt>せんせい</rt></ruby>に<ruby>日本語<rt>にほんご</rt></ruby>を<ruby>習<rt>なら</rt></ruby>います。',r:'Sensei ni nihongo wo naraimasu.',en:'I learn Japanese from my teacher.'},
+  'n5_161':{s:'<ruby>春<rt>はる</rt></ruby>になりました。',r:'Haru ni narimashita.',en:'It became spring.'},
+  'n5_162':{s:'<ruby>靴<rt>くつ</rt></ruby>を<ruby>脱<rt>ぬ</rt></ruby>いでください。',r:'Kutsu wo nuide kudasai.',en:'Please take off your shoes.'},
+  'n5_163':{s:'<ruby>電車<rt>でんしゃ</rt></ruby>に<ruby>乗<rt>の</rt></ruby>ります。',r:'Densha ni norimasu.',en:'I ride the train.'},
+  'n5_164':{s:'<ruby>教室<rt>きょうしつ</rt></ruby>に<ruby>入<rt>はい</rt></ruby>ります。',r:'Kyoushitsu ni hairimasu.',en:'I enter the classroom.'},
+  'n5_165':{s:'<ruby>毎日<rt>まいにち</rt></ruby><ruby>制服<rt>せいふく</rt></ruby>を<ruby>履<rt>は</rt></ruby>きます。',r:'Mainichi seifuku wo hakimasu.',en:'I wear my uniform every day.'},
+  'n5_166':{s:'<ruby>授業<rt>じゅぎょう</rt></ruby>が<ruby>始<rt>はじ</rt></ruby>まります。',r:'Jugyou ga hajimarimasu.',en:'The class begins.'},
+  'n5_167':{s:'<ruby>父<rt>ちち</rt></ruby>は<ruby>会社<rt>かいしゃ</rt></ruby>で<ruby>働<rt>はたら</rt></ruby>います。',r:'Chichi wa kaisha de hatarakimasu.',en:'My father works at a company.'},
+  'n5_168':{s:'<ruby>壁<rt>かべ</rt></ruby>にポスターを<ruby>貼<rt>は</rt></ruby>ります。',r:'Kabe ni posutaa wo harimasu.',en:'I paste a poster on the wall.'},
+  'n5_169':{s:'<ruby>ドア<rt>どあ</rt></ruby>を<ruby>引<rt>ひ</rt></ruby>いてください。',r:'Doa wo hiite kudasai.',en:'Please pull the door.'},
+  'n5_170':{s:'<ruby>風<rt>かぜ</rt></ruby>が<ruby>吹<rt>ふ</rt></ruby>いています。',r:'Kaze ga fuite imasu.',en:'The wind is blowing.'},
+  'n5_171':{s:'<ruby>角<rt>かど</rt></ruby>を<ruby>曲<rt>ま</rt></ruby>がってください。',r:'Kado wo magatte kudasai.',en:'Please turn at the corner.'},
+  'n5_172':{s:'<ruby>少<rt>すこ</rt></ruby>し<ruby>待<rt>ま</rt></ruby>ってください。',r:'Sukoshi matte kudasai.',en:'Please wait a moment.'},
+  'n5_173':{s:'<ruby>友達<rt>ともだち</rt></ruby>に<ruby>写真<rt>しゃしん</rt></ruby>を<ruby>見<rt>み</rt></ruby>せます。',r:'Tomodachi ni shashin wo misemasu.',en:'I show photos to my friend.'},
+  'n5_174':{s:'<ruby>荷物<rt>にもつ</rt></ruby>を<ruby>持<rt>も</rt></ruby>ってください。',r:'Nimotsu wo motte kudasai.',en:'Please carry the luggage.'},
+  'n5_175':{s:'<ruby>誕生日<rt>たんじょうび</rt></ruby>プレゼントをもらいました。',r:'Tanjoubi purezento wo moraimashita.',en:'I received a birthday present.'},
+  'n5_176':{s:'<ruby>日曜日<rt>にちようび</rt></ruby>は<ruby>家<rt>いえ</rt></ruby>で<ruby>休<rt>やす</rt></ruby>みます。',r:'Nichiyoubi wa ie de yasumimasu.',en:'I rest at home on Sundays.'},
+  'n5_177':{s:'<ruby>友達<rt>ともだち</rt></ruby>をパーティーに<ruby>呼<rt>よ</rt></ruby>びます。',r:'Tomodachi wo paatii ni yobimasu.',en:'I invite my friend to the party.'},
+  'n5_178':{s:'<ruby>先生<rt>せんせい</rt></ruby>の<ruby>説明<rt>せつめい</rt></ruby>が<ruby>分<rt>わ</rt></ruby>かります。',r:'Sensei no setsumei ga wakarimasu.',en:'I understand the teacher\'s explanation.'},
+  'n5_179':{s:'<ruby>名前<rt>なまえ</rt></ruby>を<ruby>忘<rt>わす</rt></ruby>れました。',r:'Namae wo wasuremashita.',en:'I forgot the name.'},
+  'n5_180':{s:'<ruby>書類<rt>しょるい</rt></ruby>を<ruby>渡<rt>わた</rt></ruby>します。',r:'Shorui wo watashimasu.',en:'I hand over the documents.'},
+  'n5_182':{s:'<ruby>時間<rt>じかん</rt></ruby>がないので<ruby>急<rt>いそ</rt></ruby>ぎます。',r:'Jikan ga nai node isogimasu.',en:'I hurry because I have no time.'},
+  'n5_183':{s:'<ruby>カラオケ<rt>からおけ</rt></ruby>で<ruby>歌<rt>うた</rt></ruby>います。',r:'Karaoke de utaimasu.',en:'I sing at karaoke.'},
+  'n5_184':{s:'<ruby>パーティー<rt>ぱーてぃー</rt></ruby>で<ruby>踊<rt>おど</rt></ruby>ります。',r:'Paatii de odorimasu.',en:'I dance at the party.'},
+  'n5_185':{s:'<ruby>答<rt>こた</rt></ruby>えについて<ruby>考<rt>かんが</rt></ruby>えます。',r:'Kotae ni tsuite kangaemasu.',en:'I think about the answer.'},
+  'n5_186':{s:'<ruby>財布<rt>さいふ</rt></ruby>を<ruby>探<rt>さが</rt></ruby>しています。',r:'Saifu wo sagashite imasu.',en:'I am searching for my wallet.'},
+  'n5_187':{s:'<ruby>友達<rt>ともだち</rt></ruby>の<ruby>言葉<rt>ことば</rt></ruby>を<ruby>信<rt>しん</rt></ruby>じます。',r:'Tomodachi no kotoba wo shinjimasu.',en:'I believe my friend\'s words.'},
+  'n5_188':{s:'<ruby>音楽<rt>おんがく</rt></ruby>を<ruby>聴<rt>き</rt></ruby>いて<ruby>楽<rt>たの</rt></ruby>しみます。',r:'Ongaku wo kiite tanoshimimasu.',en:'I enjoy listening to music.'},
+  'n5_189':{s:'この<ruby>答<rt>こた</rt></ruby>えは<ruby>違<rt>ちが</rt></ruby>います。',r:'Kono kotae wa chigaimasu.',en:'This answer is wrong.'},
+  'n5_190':{s:'<ruby>母<rt>はは</rt></ruby>の<ruby>料理<rt>りょうり</rt></ruby>を<ruby>手伝<rt>てつだ</rt></ruby>います。',r:'Haha no ryouri wo tetsudaimasu.',en:'I help my mother with cooking.'},
+  'n5_191':{s:'<ruby>手紙<rt>てがみ</rt></ruby>が<ruby>届<rt>とど</rt></ruby>きました。',r:'Tegami ga todokimashita.',en:'The letter arrived.'},
+  'n5_192':{s:'<ruby>間違<rt>まちが</rt></ruby>いを<ruby>直<rt>なお</rt></ruby>します。',r:'Machigai wo naoshimasu.',en:'I correct the mistake.'},
+  'n5_193':{s:'<ruby>友達<rt>ともだち</rt></ruby>と<ruby>離<rt>はな</rt></ruby>れました。',r:'Tomodachi to hanaremashita.',en:'I separated from my friend.'},
+  'n5_194':{s:'<ruby>来月<rt>らいげつ</rt></ruby><ruby>引越<rt>ひっこ</rt></ruby>します。',r:'Raigetsu hikkoshimasu.',en:'I move house next month.'},
+  'n5_195':{s:'<ruby>落<rt>お</rt></ruby>とした<ruby>鍵<rt>かぎ</rt></ruby>を<ruby>見<rt>み</rt></ruby>つけました。',r:'Otoshita kagi wo mitsukemashita.',en:'I found the key I dropped.'},
+  'n5_196':{s:'<ruby>家<rt>いえ</rt></ruby>に<ruby>戻<rt>もど</rt></ruby>ります。',r:'Ie ni modorimasu.',en:'I return home.'},
+  'n5_197':{s:'<ruby>仕事<rt>しごと</rt></ruby>を<ruby>辞<rt>や</rt></ruby>めました。',r:'Shigoto wo yamemashita.',en:'I quit my job.'},
+  'n5_198':{s:'<ruby>いい<ruby>知<rt>し</rt></ruby>らせで<ruby>喜<rt>よろこ</rt></ruby>びます。',r:'Ii shirase de yorokobimasu.',en:'I am glad to hear good news.'},
+  'n5_199':{s:'<ruby>友達<rt>ともだち</rt></ruby>に<ruby>連絡<rt>れんらく</rt></ruby>します。',r:'Tomodachi ni renraku shimasu.',en:'I contact my friend.'},
+  'n5_200':{s:'<ruby>説明<rt>せつめい</rt></ruby>を<ruby>理解<rt>りかい</rt></ruby>します。',r:'Setsumei wo rikai shimasu.',en:'I understand the explanation.'},
+  'n5_201':{s:'<ruby>赤<rt>あか</rt></ruby>いりんごを<ruby>食<rt>た</rt></ruby>べます。',r:'Akai ringo wo tabemasu.',en:'I eat a red apple.'},
+  'n5_202':{s:'<ruby>青<rt>あお</rt></ruby>い<ruby>空<rt>そら</rt></ruby>がきれいです。',r:'Aoi sora ga kirei desu.',en:'The blue sky is beautiful.'},
+  'n5_203':{s:'<ruby>白<rt>しろ</rt></ruby>いシャツを<ruby>着<rt>き</rt></ruby>ています。',r:'Shiroi shatsu wo kite imasu.',en:'I am wearing a white shirt.'},
+  'n5_204':{s:'<ruby>黒<rt>くろ</rt></ruby>い<ruby>犬<rt>いぬ</rt></ruby>が<ruby>走<rt>はし</rt></ruby>っています。',r:'Kuroi inu ga hashitte imasu.',en:'A black dog is running.'},
+  'n5_205':{s:'<ruby>黄色<rt>きいろ</rt></ruby>い<ruby>花<rt>はな</rt></ruby>が<ruby>咲<rt>さ</rt></ruby>いています。',r:'Kiiroi hana ga saite imasu.',en:'Yellow flowers are blooming.'},
+  'n5_206':{s:'<ruby>今日<rt>きょう</rt></ruby>は<ruby>暑<rt>あつ</rt></ruby>いですね。',r:'Kyou wa atsui desu ne.',en:'It\'s hot today, isn\'t it?'},
+  'n5_207':{s:'<ruby>冬<rt>ふゆ</rt></ruby>はとても<ruby>寒<rt>さむ</rt></ruby>いです。',r:'Fuyu wa totemo samui desu.',en:'Winter is very cold.'},
+  'n5_208':{s:'<ruby>冷<rt>つめ</rt></ruby>たい<ruby>水<rt>みず</rt></ruby>を<ruby>飲<rt>の</rt></ruby>みます。',r:'Tsumetai mizu wo nomimasu.',en:'I drink cold water.'},
+  'n5_209':{s:'この<ruby>道<rt>みち</rt></ruby>は<ruby>長<rt>なが</rt></ruby>いです。',r:'Kono michi wa nagai desu.',en:'This road is long.'},
+  'n5_210':{s:'<ruby>短<rt>みじか</rt></ruby>い<ruby>髪<rt>かみ</rt></ruby>が<ruby>好<rt>す</rt></ruby>きです。',r:'Mijikai kami ga suki desu.',en:'I like short hair.'},
+  'n5_211':{s:'この<ruby>部屋<rt>へや</rt></ruby>は<ruby>広<rt>ひろ</rt></ruby>いです。',r:'Kono heya wa hiroi desu.',en:'This room is spacious.'},
+  'n5_212':{s:'<ruby>狭<rt>せま</rt></ruby>い<ruby>道<rt>みち</rt></ruby>を<ruby>通<rt>とお</rt></ruby>ります。',r:'Semai michi wo toorimasu.',en:'I pass through a narrow road.'},
+  'n5_213':{s:'この<ruby>荷物<rt>にもつ</rt></ruby>は<ruby>軽<rt>かる</rt></ruby>いです。',r:'Kono nimotsu wa karui desu.',en:'This luggage is light.'},
+  'n5_214':{s:'この<ruby>荷物<rt>にもつ</rt></ruby>は<ruby>重<rt>おも</rt></ruby>いです。',r:'Kono nimotsu wa omoi desu.',en:'This luggage is heavy.'},
+  'n5_215':{s:'<ruby>速<rt>はや</rt></ruby>い<ruby>電車<rt>でんしゃ</rt></ruby>に<ruby>乗<rt>の</rt></ruby>ります。',r:'Hayai densha ni norimasu.',en:'I ride the fast train.'},
+  'n5_216':{s:'<ruby>遅<rt>おそ</rt></ruby>いバスを<ruby>待<rt>ま</rt></ruby>ちます。',r:'Osoi basu wo machimasu.',en:'I wait for the slow bus.'},
+  'n5_217':{s:'<ruby>漢字<rt>かんじ</rt></ruby>は<ruby>難<rt>むずか</rt></ruby>しいです。',r:'Kanji wa muzukashii desu.',en:'Kanji is difficult.'},
+  'n5_218':{s:'この<ruby>問題<rt>もんだい</rt></ruby>は<ruby>易<rt>やさ</rt></ruby>しいです。',r:'Kono mondai wa yasashii desu.',en:'This problem is easy.'},
+  'n5_219':{s:'<ruby>可愛<rt>かわい</rt></ruby>い<ruby>猫<rt>ねこ</rt></ruby>ですね。',r:'Kawaii neko desu ne.',en:'What a cute cat!'},
+  'n5_220':{s:'<ruby>美<rt>うつく</rt></ruby>しい<ruby>花<rt>はな</rt></ruby>が<ruby>咲<rt>さ</rt></ruby>いています。',r:'Utsukushii hana ga saite imasu.',en:'Beautiful flowers are blooming.'},
+  'n5_221':{s:'<ruby>汚<rt>きたな</rt></ruby>い<ruby>手<rt>て</rt></ruby>を<ruby>洗<rt>あら</rt></ruby>います。',r:'Kitanai te wo araimasu.',en:'I wash my dirty hands.'},
+  'n5_222':{s:'<ruby>渋谷<rt>しぶや</rt></ruby>は<ruby>賑<rt>にぎ</rt></ruby>やかです。',r:'Shibuya wa nigiyaka desu.',en:'Shibuya is lively.'},
+  'n5_223':{s:'<ruby>図書館<rt>としょかん</rt></ruby>は<ruby>静<rt>しず</rt></ruby>かです。',r:'Toshokan wa shizuka desu.',en:'The library is quiet.'},
+  'n5_224':{s:'<ruby>元気<rt>げんき</rt></ruby>ですか。はい、<ruby>元気<rt>げんき</rt></ruby>です。',r:'Genki desu ka. Hai, genki desu.',en:'Are you well? Yes, I am well.'},
+  'n5_225':{s:'<ruby>病気<rt>びょうき</rt></ruby>で<ruby>学校<rt>がっこう</rt></ruby>を<ruby>休<rt>やす</rt></ruby>みました。',r:'Byouki de gakkou wo yasumimashita.',en:'I was absent from school due to illness.'},
+  'n5_226':{s:'<ruby>猫<rt>ねこ</rt></ruby>が<ruby>好<rt>す</rt></ruby>きです。',r:'Neko ga suki desu.',en:'I like cats.'},
+  'n5_227':{s:'<ruby>辛<rt>から</rt></ruby>い<ruby>食<rt>た</rt></ruby>べ<ruby>物<rt>もの</rt></ruby>が<ruby>嫌<rt>きら</rt></ruby>いです。',r:'Karai tabemono ga kirai desu.',en:'I dislike spicy food.'},
+  'n5_228':{s:'<ruby>数学<rt>すうがく</rt></ruby>が<ruby>得意<rt>とくい</rt></ruby>です。',r:'Suugaku ga tokui desu.',en:'I am good at math.'},
+  'n5_229':{s:'<ruby>英語<rt>えいご</rt></ruby>が<ruby>苦手<rt>にがて</rt></ruby>です。',r:'Eigo ga nigate desu.',en:'English is my weak point.'},
+  'n5_230':{s:'<ruby>家族<rt>かぞく</rt></ruby>はとても<ruby>大切<rt>たいせつ</rt></ruby>です。',r:'Kazoku wa totemo taisetsu desu.',en:'Family is very important.'},
+  'n5_231':{s:'<ruby>試験<rt>しけん</rt></ruby>の<ruby>前<rt>まえ</rt></ruby>は<ruby>大変<rt>たいへん</rt></ruby>です。',r:'Shiken no mae wa taihen desu.',en:'It\'s tough before the exam.'},
+  'n5_232':{s:'<ruby>彼女<rt>かのじょ</rt></ruby>は<ruby>料理<rt>りょうり</rt></ruby>が<ruby>上手<rt>じょうず</rt></ruby>です。',r:'Kanojo wa ryouri ga jouzu desu.',en:'She is good at cooking.'},
+  'n5_233':{s:'<ruby>私<rt>わたし</rt></ruby>は<ruby>絵<rt>え</rt></ruby>が<ruby>下手<rt>へた</rt></ruby>です。',r:'Watashi wa e ga heta desu.',en:'I am bad at drawing.'},
+  'n5_234':{s:'あの<ruby>俳優<rt>はいゆう</rt></ruby>はとても<ruby>有名<rt>ゆうめい</rt></ruby>です。',r:'Ano haiyuu wa totemo yuumei desu.',en:'That actor is very famous.'},
+  'n5_235':{s:'<ruby>親切<rt>しんせつ</rt></ruby>な<ruby>人<rt>ひと</rt></ruby>に<ruby>助<rt>たす</rt></ruby>けてもらいました。',r:'Shinsetsu na hito ni tasukete moraimashita.',en:'A kind person helped me.'},
+  'n5_236':{s:'<ruby>愛<rt>あい</rt></ruby>は<ruby>大切<rt>たいせつ</rt></ruby>です。',r:'Ai wa taisetsu desu.',en:'Love is important.'},
+  'n5_237':{s:'<ruby>朝<rt>あさ</rt></ruby>は<ruby>早<rt>はや</rt></ruby>く<ruby>起<rt>お</rt></ruby>きます。',r:'Asa wa hayaku okimasu.',en:'I wake up early in the morning.'},
+  'n5_238':{s:'<ruby>朝<rt>あさ</rt></ruby>ご<ruby>飯<rt>はん</rt></ruby>を<ruby>食<rt>た</rt></ruby>べます。',r:'Asagohan wo tabemasu.',en:'I eat breakfast.'},
+  'n5_240':{s:'<ruby>兄<rt>あに</rt></ruby>は<ruby>医者<rt>いしゃ</rt></ruby>です。',r:'Ani wa isha desu.',en:'My older brother is a doctor.'},
+  'n5_241':{s:'<ruby>姉<rt>あね</rt></ruby>は<ruby>先生<rt>せんせい</rt></ruby>です。',r:'Ane wa sensei desu.',en:'My older sister is a teacher.'},
+  'n5_242':{s:'<ruby>妹<rt>いもうと</rt></ruby>は<ruby>中学生<rt>ちゅうがくせい</rt></ruby>です。',r:'Imouto wa chuugakusei desu.',en:'My younger sister is a middle school student.'},
+  'n5_243':{s:'<ruby>弟<rt>おとうと</rt></ruby>は<ruby>小学生<rt>しょうがくせい</rt></ruby>です。',r:'Otouto wa shougakusei desu.',en:'My younger brother is an elementary school student.'},
+  'n5_244':{s:'お<ruby>気<rt>き</rt></ruby>に<ruby>入<rt>い</rt></ruby>りの<ruby>歌<rt>うた</rt></ruby>を<ruby>聴<rt>き</rt></ruby>きます。',r:'Okiniiri no uta wo kikimasu.',en:'I listen to my favorite song.'},
+  'n5_245':{s:'<ruby>映画館<rt>えいがかん</rt></ruby>で<ruby>映画<rt>えいが</rt></ruby>を<ruby>見<rt>み</rt></ruby>ます。',r:'Eigakan de eiga wo mimasu.',en:'I watch a movie at the cinema.'},
+  'n5_246':{s:'<ruby>学校<rt>がっこう</rt></ruby>で<ruby>英語<rt>えいご</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>します。',r:'Gakkou de eigo wo benkyou shimasu.',en:'I study English at school.'},
+  'n5_247':{s:'<ruby>財布<rt>さいふ</rt></ruby>に<ruby>お金<rt>おかね</rt></ruby>があります。',r:'Saifu ni okane ga arimasu.',en:'There is money in my wallet.'},
+  'n5_248':{s:'<ruby>音楽<rt>おんがく</rt></ruby>を<ruby>聴<rt>き</rt></ruby>きながら<ruby>勉強<rt>べんきょう</rt></ruby>します。',r:'Ongaku wo kikinagara benkyou shimasu.',en:'I study while listening to music.'},
+  'n5_250':{s:'この<ruby>形<rt>かたち</rt></ruby>は<ruby>丸<rt>まる</rt></ruby>いです。',r:'Kono katachi wa marui desu.',en:'This shape is round.'},
+  'n5_251':{s:'<ruby>鞄<rt>かばん</rt></ruby>に<ruby>本<rt>ほん</rt></ruby>を<ruby>入<rt>い</rt></ruby>れます。',r:'Kaban ni hon wo iremasu.',en:'I put books in the bag.'},
+  'n5_252':{s:'<ruby>髪<rt>かみ</rt></ruby>を<ruby>切<rt>き</rt></ruby>りました。',r:'Kami wo kirimashita.',en:'I got my hair cut.'},
+  'n5_253':{s:'<ruby>体<rt>からだ</rt></ruby>の<ruby>調子<rt>ちょうし</rt></ruby>がよくないです。',r:'Karada no choushi ga yokunai desu.',en:'I don\'t feel well.'},
+  'n5_254':{s:'<ruby>気持<rt>きも</rt></ruby>ちがいいです。',r:'Kimochi ga ii desu.',en:'I feel good.'},
+  'n5_255':{s:'<ruby>兄弟<rt>きょうだい</rt></ruby>は<ruby>三人<rt>さんにん</rt></ruby>います。',r:'Kyoudai wa sannin imasu.',en:'I have three siblings.'},
+  'n5_256':{s:'<ruby>外<rt>そと</rt></ruby>の<ruby>空気<rt>くうき</rt></ruby>がきれいです。',r:'Soto no kuuki ga kirei desu.',en:'The outside air is clean.'},
+  'n5_257':{s:'<ruby>薬<rt>くすり</rt></ruby>を<ruby>飲<rt>の</rt></ruby>みます。',r:'Kusuri wo nomimasu.',en:'I take medicine.'},
+  'n5_258':{s:'あたらしい<ruby>靴<rt>くつ</rt></ruby>を<ruby>買<rt>か</rt></ruby>いました。',r:'Atarashii kutsu wo kaimashita.',en:'I bought new shoes.'},
+  'n5_259':{s:'どの<ruby>国<rt>くに</rt></ruby>から<ruby>来<rt>き</rt></ruby>ましたか。',r:'Dono kuni kara kimashita ka.',en:'Which country did you come from?'},
+  'n5_260':{s:'<ruby>雲<rt>くも</rt></ruby>が<ruby>多<rt>おお</rt></ruby>くて<ruby>暗<rt>くら</rt></ruby>いです。',r:'Kumo ga ookute kurai desu.',en:'It\'s dark because there are many clouds.'},
+  'n5_261':{s:'<ruby>今朝<rt>けさ</rt></ruby>は<ruby>早<rt>はや</rt></ruby>く<ruby>起<rt>お</rt></ruby>きました。',r:'Kesa wa hayaku okimashita.',en:'I woke up early this morning.'},
+  'n5_262':{s:'<ruby>玄関<rt>げんかん</rt></ruby>で<ruby>靴<rt>くつ</rt></ruby>を<ruby>脱<rt>ぬ</rt></ruby>ぎます。',r:'Genkan de kutsu wo nugimasu.',en:'I take off my shoes at the entrance.'},
+  'n5_263':{s:'<ruby>先生<rt>せんせい</rt></ruby>の<ruby>声<rt>こえ</rt></ruby>は<ruby>大<rt>おお</rt></ruby>きいです。',r:'Sensei no koe wa ookii desu.',en:'The teacher\'s voice is loud.'},
+  'n5_264':{s:'<ruby>日本語<rt>にほんご</rt></ruby>の<ruby>言葉<rt>ことば</rt></ruby>を<ruby>覚<rt>おぼ</rt></ruby>えます。',r:'Nihongo no kotoba wo oboemasu.',en:'I memorize Japanese words.'},
+  'n5_267':{s:'<ruby>仕事<rt>しごと</rt></ruby>が<ruby>終<rt>お</rt></ruby>わりました。',r:'Shigoto ga owarimashita.',en:'Work is finished.'},
+  'n5_268':{s:'<ruby>写真<rt>しゃしん</rt></ruby>を<ruby>撮<rt>と</rt></ruby>ってもいいですか。',r:'Shashin wo totte mo ii desu ka.',en:'May I take a photo?'},
+  'n5_269':{s:'<ruby>時間<rt>じかん</rt></ruby>がありません。',r:'Jikan ga arimasen.',en:'I don\'t have time.'},
+  'n5_270':{s:'<ruby>自転車<rt>じてんしゃ</rt></ruby>で<ruby>学校<rt>がっこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Jitensha de gakkou ni ikimasu.',en:'I go to school by bicycle.'},
+  'n5_271':{s:'<ruby>新聞<rt>しんぶん</rt></ruby>を<ruby>毎朝<rt>まいあさ</rt></ruby><ruby>読<rt>よ</rt></ruby>みます。',r:'Shinbun wo maiasa yomimasu.',en:'I read the newspaper every morning.'},
+  'n5_272':{s:'<ruby>学校<rt>がっこう</rt></ruby>の<ruby>プール<rt>ぷーる</rt></ruby>で<ruby>水泳<rt>すいえい</rt></ruby>をします。',r:'Gakkou no puuru de suiei wo shimasu.',en:'I swim at the school pool.'},
+  'n5_273':{s:'<ruby>世界<rt>せかい</rt></ruby>には<ruby>多<rt>おお</rt></ruby>くの<ruby>国<rt>くに</rt></ruby>があります。',r:'Sekai ni wa ooku no kuni ga arimasu.',en:'There are many countries in the world.'},
+  'n5_274':{s:'<ruby>洗濯<rt>せんたく</rt></ruby>をします。',r:'Sentaku wo shimasu.',en:'I do the laundry.'},
+  'n5_275':{s:'<ruby>外<rt>そと</rt></ruby>で<ruby>遊<rt>あそ</rt></ruby>びます。',r:'Soto de asobimasu.',en:'I play outside.'},
+  'n5_276':{s:'あの<ruby>建物<rt>たてもの</rt></ruby>は<ruby>新<rt>あたら</rt></ruby>しいです。',r:'Ano tatemono wa atarashii desu.',en:'That building is new.'},
+  'n5_278':{s:'<ruby>地下鉄<rt>ちかてつ</rt></ruby>で<ruby>渋谷<rt>しぶや</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Chikatetsu de Shibuya ni ikimasu.',en:'I go to Shibuya by subway.'},
+  'n5_279':{s:'<ruby>机<rt>つくえ</rt></ruby>の<ruby>上<rt>うえ</rt></ruby>に<ruby>本<rt>ほん</rt></ruby>があります。',r:'Tsukue no ue ni hon ga arimasu.',en:'There is a book on the desk.'},
+  'n5_280':{s:'<ruby>電気<rt>でんき</rt></ruby>を<ruby>消<rt>け</rt></ruby>してください。',r:'Denki wo keshite kudasai.',en:'Please turn off the light.'},
+  'n5_281':{s:'<ruby>電車<rt>でんしゃ</rt></ruby>で<ruby>会社<rt>かいしゃ</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Densha de kaisha ni ikimasu.',en:'I go to work by train.'},
+  'n5_282':{s:'<ruby>電話<rt>でんわ</rt></ruby>をかけます。',r:'Denwa wo kakemasu.',en:'I make a phone call.'},
+  'n5_283':{s:'いい<ruby>場所<rt>ばしょ</rt></ruby>を<ruby>見<rt>み</rt></ruby>つけました。',r:'Ii basho wo mitsukemashita.',en:'I found a good place.'},
+  'n5_284':{s:'<ruby>時計<rt>とけい</rt></ruby>を<ruby>見<rt>み</rt></ruby>ます。',r:'Tokei wo mimasu.',en:'I look at the clock.'},
+  'n5_286':{s:'お<ruby>名前<rt>なまえ</rt></ruby>は<ruby>何<rt>なん</rt></ruby>ですか。',r:'Onamae wa nan desu ka.',en:'What is your name?'},
+  'n5_287':{s:'<ruby>日本語<rt>にほんご</rt></ruby>を<ruby>毎日<rt>まいにち</rt></ruby><ruby>勉強<rt>べんきょう</rt></ruby>します。',r:'Nihongo wo mainichi benkyou shimasu.',en:'I study Japanese every day.'},
+  'n5_288':{s:'<ruby>猫<rt>ねこ</rt></ruby>が<ruby>家<rt>いえ</rt></ruby>にいます。',r:'Neko ga ie ni imasu.',en:'There is a cat at home.'},
+  'n5_289':{s:'<ruby>飲<rt>の</rt></ruby>み<ruby>物<rt>もの</rt></ruby>は<ruby>何<rt>なに</rt></ruby>がいいですか。',r:'Nomimono wa nani ga ii desu ka.',en:'What would you like to drink?'},
+  'n5_290':{s:'<ruby>面白<rt>おもしろ</rt></ruby>い<ruby>話<rt>はなし</rt></ruby>を<ruby>聞<rt>き</rt></ruby>きました。',r:'Omoshiroi hanashi wo kikimashita.',en:'I heard an interesting story.'},
+  'n5_291':{s:'<ruby>左<rt>ひだり</rt></ruby>に<ruby>曲<rt>ま</rt></ruby>がってください。',r:'Hidari ni magatte kudasai.',en:'Please turn left.'},
+  'n5_292':{s:'<ruby>右<rt>みぎ</rt></ruby>に<ruby>曲<rt>ま</rt></ruby>がってください。',r:'Migi ni magatte kudasai.',en:'Please turn right.'},
+  'n5_293':{s:'<ruby>学校<rt>がっこう</rt></ruby>の<ruby>前<rt>まえ</rt></ruby>で<ruby>待<rt>ま</rt></ruby>ちます。',r:'Gakkou no mae de machimasu.',en:'I wait in front of the school.'},
+  'n5_294':{s:'<ruby>後<rt>うし</rt></ruby>ろを<ruby>見<rt>み</rt></ruby>てください。',r:'Ushiro wo mite kudasai.',en:'Please look behind.'},
+  'n5_295':{s:'<ruby>棚<rt>たな</rt></ruby>の<ruby>上<rt>うえ</rt></ruby>に<ruby>本<rt>ほん</rt></ruby>があります。',r:'Tana no ue ni hon ga arimasu.',en:'There is a book on top of the shelf.'},
+  'n5_296':{s:'<ruby>机<rt>つくえ</rt></ruby>の<ruby>下<rt>した</rt></ruby>に<ruby>猫<rt>ねこ</rt></ruby>がいます。',r:'Tsukue no shita ni neko ga imasu.',en:'There is a cat under the desk.'},
+  'n5_297':{s:'<ruby>箱<rt>はこ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>に<ruby>何<rt>なに</rt></ruby>がありますか。',r:'Hako no naka ni nani ga arimasu ka.',en:'What is inside the box?'},
+  'n5_298':{s:'<ruby>部屋<rt>へや</rt></ruby>を<ruby>掃除<rt>そうじ</rt></ruby>します。',r:'Heya wo souji shimasu.',en:'I clean the room.'},
+  'n5_299':{s:'<ruby>本<rt>ほん</rt></ruby>を<ruby>図書館<rt>としょかん</rt></ruby>で<ruby>借<rt>か</rt></ruby>ります。',r:'Hon wo toshokan de karimasu.',en:'I borrow books from the library.'},
+  'n5_300':{s:'<ruby>町<rt>まち</rt></ruby>を<ruby>散歩<rt>さんぽ</rt></ruby>します。',r:'Machi wo sanpo shimasu.',en:'I take a walk around town.'},
+  'n5_301':{s:'<ruby>宿題<rt>しゅくだい</rt></ruby>はもうしました。',r:'Shukudai wa mou shimashita.',en:'I have already done my homework.'},
+  'n5_302':{s:'<ruby>電車<rt>でんしゃ</rt></ruby>はまだ<ruby>来<rt>き</rt></ruby>ていません。',r:'Densha wa mada kite imasen.',en:'The train has not come yet.'},
+  'n5_303':{s:'もっとゆっくり<ruby>話<rt>はな</rt></ruby>してください。',r:'Motto yukkuri hanashite kudasai.',en:'Please speak more slowly.'},
+  'n5_304':{s:'<ruby>ずっと<ruby>友達<rt>ともだち</rt></ruby>でいましょう。',r:'Zutto tomodachi de imashou.',en:'Let\'s be friends forever.'},
+  'n5_305':{s:'<ruby>公園<rt>こうえん</rt></ruby>にたくさん<ruby>人<rt>ひと</rt></ruby>がいます。',r:'Kouen ni takusan hito ga imasu.',en:'There are many people in the park.'},
+  'n5_306':{s:'<ruby>少<rt>すこ</rt></ruby>しだけ<ruby>食<rt>た</rt></ruby>べます。',r:'Sukoshi dake tabemasu.',en:'I eat just a little.'},
+  'n5_307':{s:'<ruby>ちょっと<ruby>待<rt>ま</rt></ruby>ってください。',r:'Chotto matte kudasai.',en:'Please wait a moment.'},
+  'n5_308':{s:'<ruby>今日<rt>きょう</rt></ruby>はとても<ruby>暑<rt>あつ</rt></ruby>いです。',r:'Kyou wa totemo atsui desu.',en:'It is very hot today.'},
+  'n5_309':{s:'<ruby>辛<rt>から</rt></ruby>い<ruby>食<rt>た</rt></ruby>べ<ruby>物<rt>もの</rt></ruby>はあまり<ruby>好<rt>す</rt></ruby>きじゃないです。',r:'Karai tabemono wa amari suki ja nai desu.',en:'I don\'t really like spicy food.'},
+  'n5_310':{s:'<ruby>英語<rt>えいご</rt></ruby>はぜんぜん<ruby>話<rt>はな</rt></ruby>せません。',r:'Eigo wa zenzen hanasemasen.',en:'I can\'t speak English at all.'},
+  'n5_311':{s:'いつも<ruby>朝<rt>あさ</rt></ruby>ごはんを<ruby>食<rt>た</rt></ruby>べます。',r:'Itsumo asagohan wo tabemasu.',en:'I always eat breakfast.'},
+  'n5_312':{s:'<ruby>週末<rt>しゅうまつ</rt></ruby>はときどき<ruby>映画<rt>えいが</rt></ruby>を<ruby>見<rt>み</rt></ruby>ます。',r:'Shuumatsu wa tokidoki eiga wo mimasu.',en:'I sometimes watch movies on weekends.'},
+  'n5_313':{s:'<ruby>学校<rt>がっこう</rt></ruby>の<ruby>後<rt>あと</rt></ruby>はたいてい<ruby>図書館<rt>としょかん</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Gakkou no ato wa taitei toshokan ni ikimasu.',en:'I usually go to the library after school.'},
+  'n5_314':{s:'<ruby>日本<rt>にほん</rt></ruby>に<ruby>来<rt>き</rt></ruby>たのははじめてです。',r:'Nihon ni kita no wa hajimete desu.',en:'This is my first time coming to Japan.'},
+  'n5_315':{s:'<ruby>友達<rt>ともだち</rt></ruby>といっしょに<ruby>勉強<rt>べんきょう</rt></ruby>します。',r:'Tomodachi to issho ni benkyou shimasu.',en:'I study together with my friend.'},
+  'n5_316':{s:'この<ruby>荷物<rt>にもつ</rt></ruby>はだれのですか。',r:'Kono nimotsu wa dare no desu ka.',en:'Whose luggage is this?'},
+  'n5_317':{s:'<ruby>三<rt>みっ</rt></ruby>つの<ruby>中<rt>なか</rt></ruby>でどれが<ruby>好<rt>す</rt></ruby>きですか。',r:'Mittsu no naka de dore ga suki desu ka.',en:'Which one do you like among the three?'},
+  'n5_318':{s:'どの<ruby>電車<rt>でんしゃ</rt></ruby>に<ruby>乗<rt>の</rt></ruby>りますか。',r:'Dono densha ni norimasu ka.',en:'Which train do you take?'},
+  'n5_319':{s:'この<ruby>漢字<rt>かんじ</rt></ruby>はどう<ruby>読<rt>よ</rt></ruby>みますか。',r:'Kono kanji wa dou yomimasu ka.',en:'How do you read this kanji?'},
+  'n5_320':{s:'どうして<ruby>学校<rt>がっこう</rt></ruby>を<ruby>休<rt>やす</rt></ruby>みましたか。',r:'Doushite gakkou wo yasumimashita ka.',en:'Why were you absent from school?'},
+  'n5_321':{s:'なぜ<ruby>泣<rt>な</rt></ruby>いているのですか。',r:'Naze naite iru no desu ka.',en:'Why are you crying?'},
+  'n5_322':{s:'<ruby>りんご<rt>りんご</rt></ruby>はいくつありますか。',r:'Ringo wa ikutsu arimasu ka.',en:'How many apples are there?'},
+  'n5_323':{s:'<ruby>駅<rt>えき</rt></ruby>はどちらですか。',r:'Eki wa dochira desu ka.',en:'Which way is the station?'},
+  'n5_324':{s:'ここが<ruby>図書館<rt>としょかん</rt></ruby>です。',r:'Koko ga toshokan desu.',en:'Here is the library.'},
+  'n5_325':{s:'そこに<ruby>座<rt>すわ</rt></ruby>ってください。',r:'Soko ni suwatte kudasai.',en:'Please sit there.'},
+  'n5_326':{s:'あそこに<ruby>郵便局<rt>ゆうびんきょく</rt></ruby>があります。',r:'Asoko ni yuubinkyoku ga arimasu.',en:'There is a post office over there.'},
+  'n5_327':{s:'こちらへどうぞ。',r:'Kochira e douzo.',en:'Please come this way.'},
+  'n5_328':{s:'これは<ruby>私<rt>わたし</rt></ruby>の<ruby>本<rt>ほん</rt></ruby>です。',r:'Kore wa watashi no hon desu.',en:'This is my book.'},
+  'n5_329':{s:'それは<ruby>何<rt>なん</rt></ruby>ですか。',r:'Sore wa nan desu ka.',en:'What is that?'},
+  'n5_330':{s:'あれは<ruby>富士山<rt>ふじさん</rt></ruby>です。',r:'Are wa Fujisan desu.',en:'That over there is Mt. Fuji.'},
+  'n5_331':{s:'この<ruby>本<rt>ほん</rt></ruby>は<ruby>面白<rt>おもしろ</rt></ruby>いです。',r:'Kono hon wa omoshiroi desu.',en:'This book is interesting.'},
+  'n5_332':{s:'その<ruby>映画<rt>えいが</rt></ruby>はもう<ruby>見<rt>み</rt></ruby>ました。',r:'Sono eiga wa mou mimashita.',en:'I already watched that movie.'},
+  'n5_333':{s:'あの<ruby>建物<rt>たてもの</rt></ruby>は<ruby>何<rt>なん</rt></ruby>ですか。',r:'Ano tatemono wa nan desu ka.',en:'What is that building over there?'},
+  'n5_334':{s:'<ruby>私<rt>わたし</rt></ruby>は<ruby>学生<rt>がくせい</rt></ruby>です。',r:'Watashi wa gakusei desu.',en:'I am a student.'},
+  'n5_335':{s:'あなたのお<ruby>名前<rt>なまえ</rt></ruby>は<ruby>何<rt>なん</rt></ruby>ですか。',r:'Anata no onamae wa nan desu ka.',en:'What is your name?'},
+  'n5_336':{s:'<ruby>彼<rt>かれ</rt></ruby>は<ruby>背<rt>せ</rt></ruby>が<ruby>高<rt>たか</rt></ruby>いです。',r:'Kare wa se ga takai desu.',en:'He is tall.'},
+  'n5_337':{s:'<ruby>彼女<rt>かのじょ</rt></ruby>はとても<ruby>優<rt>やさ</rt></ruby>しいです。',r:'Kanojo wa totemo yasashii desu.',en:'She is very kind.'},
+  'n5_338':{s:'みんなで<ruby>一緒<rt>いっしょ</rt></ruby>に<ruby>食<rt>た</rt></ruby>べましょう。',r:'Minna de issho ni tabemashou.',en:'Let\'s all eat together.'},
+  'n5_339':{s:'<ruby>映画館<rt>えいがかん</rt></ruby>に<ruby>一人<rt>ひとり</rt></ruby>で<ruby>行<rt>い</rt></ruby>きました。',r:'Eigakan ni hitori de ikimashita.',en:'I went to the cinema alone.'},
+  'n5_340':{s:'<ruby>二人<rt>ふたり</rt></ruby>で<ruby>公園<rt>こうえん</rt></ruby>を<ruby>歩<rt>ある</rt></ruby>きます。',r:'Futari de kouen wo arukimasu.',en:'Two people walk in the park.'},
+  'n5_341':{s:'おめでとうございます！<ruby>合格<rt>ごうかく</rt></ruby>しましたね。',r:'Omedetou gozaimasu! Goukaku shimashita ne.',en:'Congratulations! You passed!'},
+  'n5_342':{s:'<ruby>試験<rt>しけん</rt></ruby>、がんばってね。',r:'Shiken, ganbatte ne.',en:'Do your best on the exam.'},
+  'n5_343':{s:'だいじょうぶ、<ruby>心配<rt>しんぱい</rt></ruby>しないで。',r:'Daijoubu, shinpai shinaide.',en:'It\'s okay, don\'t worry.'},
+  'n5_344':{s:'<ruby>初<rt>はじ</rt></ruby>めまして、よろしくお<ruby>願<rt>ねが</rt></ruby>いします。',r:'Hajimemashite, yoroshiku onegaishimasu.',en:'Nice to meet you.'},
+  'n5_345':{s:'どうぞ、<ruby>座<rt>すわ</rt></ruby>ってください。',r:'Douzo, suwatte kudasai.',en:'Please, have a seat.'},
+  'n5_346':{s:'どうもありがとう。',r:'Doumo arigatou.',en:'Thank you very much.'},
+  'n5_347':{s:'<ruby>食<rt>た</rt></ruby>べる<ruby>前<rt>まえ</rt></ruby>にいただきますと<ruby>言<rt>い</rt></ruby>います。',r:'Taberu mae ni itadakimasu to iimasu.',en:'We say \'itadakimasu\' before eating.'},
+  'n5_348':{s:'<ruby>食事<rt>しょくじ</rt></ruby>の<ruby>後<rt>あと</rt></ruby>、ごちそうさまと<ruby>言<rt>い</rt></ruby>います。',r:'Shokuji no ato, gochisousama to iimasu.',en:'After a meal, I say "thank you for the food".'},
+  'n5_349':{s:'<ruby>気<rt>き</rt></ruby>をつけて<ruby>帰<rt>かえ</rt></ruby>ってください。',r:'Ki wo tsukete kaette kudasai.',en:'Please take care on your way home.'},
+  'n5_350':{s:'もう<ruby>一度<rt>いちど</rt></ruby>お<ruby>願<rt>ねが</rt></ruby>いします。',r:'Mou ichido onegaishimasu.',en:'Please do it one more time.'},
+  'n5_351':{s:'<ruby>六<rt>ろく</rt></ruby><ruby>時<rt>じ</rt></ruby>に<ruby>起<rt>お</rt></ruby>きます。',r:'Rokuji ni okimasu.',en:'I wake up at six o\'clock.'},
+  'n5_352':{s:'<ruby>七<rt>しち</rt></ruby><ruby>月<rt>がつ</rt></ruby>に<ruby>旅行<rt>りょこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Shichigatsu ni ryokou ni ikimasu.',en:'I travel in July.'},
+  'n5_353':{s:'<ruby>八<rt>はち</rt></ruby><ruby>時<rt>じ</rt></ruby>に<ruby>学校<rt>がっこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Hachiji ni gakkou ni ikimasu.',en:'I go to school at eight o\'clock.'},
+  'n5_354':{s:'<ruby>九<rt>きゅう</rt></ruby><ruby>月<rt>がつ</rt></ruby>から<ruby>秋<rt>あき</rt></ruby>が<ruby>始<rt>はじ</rt></ruby>まります。',r:'Kugatsu kara aki ga hajimarimasu.',en:'Autumn begins in September.'},
+  'n5_355':{s:'<ruby>十<rt>じゅう</rt></ruby><ruby>時<rt>じ</rt></ruby>まで<ruby>勉強<rt>べんきょう</rt></ruby>します。',r:'Juuji made benkyou shimasu.',en:'I study until ten o\'clock.'},
+  'n5_356':{s:'<ruby>百円<rt>ひゃくえん</rt></ruby>ショップで<ruby>買<rt>か</rt></ruby>いました。',r:'Hyakuen shoppu de kaimashita.',en:'I bought it at the 100-yen shop.'},
+  'n5_357':{s:'<ruby>千円<rt>せんえん</rt></ruby><ruby>札<rt>さつ</rt></ruby>を<ruby>出<rt>だ</rt></ruby>します。',r:'Sen\'en satsu wo dashimasu.',en:'I take out a 1000-yen bill.'},
+  'n5_358':{s:'<ruby>一万円<rt>いちまんえん</rt></ruby>を<ruby>払<rt>はら</rt></ruby>いました。',r:'Ichiman\'en wo haraimashita.',en:'I paid 10,000 yen.'},
+  'n5_360':{s:'<ruby>みかん<rt>みかん</rt></ruby>をよっつ<ruby>食<rt>た</rt></ruby>べました。',r:'Mikan wo yottsu tabemashita.',en:'I ate four mandarins.'},
+  'n5_361':{s:'<ruby>お菓子<rt>おかし</rt></ruby>をいつつ<ruby>買<rt>か</rt></ruby>いました。',r:'Okashi wo itsutsu kaimashita.',en:'I bought five sweets.'},
+  'n5_362':{s:'<ruby>りんご<rt>りんご</rt></ruby>をむっつください。',r:'Ringo wo muttsu kudasai.',en:'Please give me six apples.'},
+  'n5_363':{s:'<ruby>卵<rt>たまご</rt></ruby>をななつ<ruby>使<rt>つか</rt></ruby>いました。',r:'Tamago wo nanatsu tsukaimashita.',en:'I used seven eggs.'},
+  'n5_364':{s:'<ruby>本<rt>ほん</rt></ruby>をやっつ<ruby>借<rt>か</rt></ruby>りました。',r:'Hon wo yattsu karimashita.',en:'I borrowed eight books.'},
+  'n5_365':{s:'<ruby>チョコ<rt>ちょこ</rt></ruby>をここのつ<ruby>食<rt>た</rt></ruby>べました。',r:'Choko wo kokonotsu tabemashita.',en:'I ate nine chocolates.'},
+  'n5_366':{s:'<ruby>飴<rt>あめ</rt></ruby>をとお<ruby>買<rt>か</rt></ruby>いました。',r:'Ame wo too kaimashita.',en:'I bought ten candies.'},
+  'n5_367':{s:'おとといは<ruby>雨<rt>あめ</rt></ruby>でした。',r:'Ototoi wa ame deshita.',en:'The day before yesterday it rained.'},
+  'n5_368':{s:'あさっては<ruby>友達<rt>ともだち</rt></ruby>に<ruby>会<rt>あ</rt></ruby>います。',r:'Asatte wa tomodachi ni aimasu.',en:'I will meet my friend the day after tomorrow.'},
+  'n5_369':{s:'<ruby>今週<rt>こんしゅう</rt></ruby>は<ruby>忙<rt>いそが</rt></ruby>しいです。',r:'Konshuu wa isogashii desu.',en:'This week is busy.'},
+  'n5_370':{s:'<ruby>来週<rt>らいしゅう</rt></ruby>はテストがあります。',r:'Raishuu wa tesuto ga arimasu.',en:'There is a test next week.'},
+  'n5_371':{s:'<ruby>先週<rt>せんしゅう</rt></ruby>は<ruby>旅行<rt>りょこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きました。',r:'Senshuu wa ryokou ni ikimashita.',en:'I went on a trip last week.'},
+  'n5_372':{s:'<ruby>今月<rt>こんげつ</rt></ruby>は<ruby>忙<rt>いそが</rt></ruby>しいです。',r:'Kongetsu wa isogashii desu.',en:'This month is busy.'},
+  'n5_373':{s:'<ruby>来月<rt>らいげつ</rt></ruby>に<ruby>引越<rt>ひっこ</rt></ruby>します。',r:'Raigetsu ni hikkoshimasu.',en:'I move next month.'},
+  'n5_374':{s:'<ruby>先月<rt>せんげつ</rt></ruby>、<ruby>日本<rt>にほん</rt></ruby>に<ruby>来<rt>き</rt></ruby>ました。',r:'Sengetsu, Nihon ni kimashita.',en:'I came to Japan last month.'},
+  'n5_375':{s:'<ruby>今年<rt>ことし</rt></ruby>は<ruby>大学<rt>だいがく</rt></ruby>に<ruby>入<rt>はい</rt></ruby>ります。',r:'Kotoshi wa daigaku ni hairimasu.',en:'I enter university this year.'},
+  'n5_376':{s:'<ruby>来年<rt>らいねん</rt></ruby>は<ruby>日本<rt>にほん</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Rainen wa Nihon ni ikimasu.',en:'I will go to Japan next year.'},
+  'n5_377':{s:'<ruby>去年<rt>きょねん</rt></ruby>は<ruby>忙<rt>いそが</rt></ruby>しかったです。',r:'Kyonen wa isogashikatta desu.',en:'Last year was busy.'},
+  'n5_378':{s:'<ruby>昼<rt>ひる</rt></ruby>に<ruby>友達<rt>ともだち</rt></ruby>と<ruby>食<rt>た</rt></ruby>べます。',r:'Hiru ni tomodachi to tabemasu.',en:'I eat with friends at noon.'},
+  'n5_379':{s:'<ruby>昼<rt>ひる</rt></ruby>ごはんは<ruby>うどん<rt>うどん</rt></ruby>です。',r:'Hirugohan wa udon desu.',en:'Lunch is udon noodles.'},
+  'n5_380':{s:'<ruby>夜<rt>よる</rt></ruby>は<ruby>静<rt>しず</rt></ruby>かです。',r:'Yoru wa shizuka desu.',en:'The night is quiet.'},
+  'n5_381':{s:'<ruby>晩<rt>ばん</rt></ruby>ごはんを<ruby>作<rt>つく</rt></ruby>ります。',r:'Bangohan wo tsukurimasu.',en:'I make dinner.'},
+  'n5_382':{s:'<ruby>晩<rt>ばん</rt></ruby>ごはんはカレーです。',r:'Bangohan wa karee desu.',en:'Dinner is curry.'},
+  'n5_383':{s:'<ruby>毎朝<rt>まいあさ</rt></ruby><ruby>六時<rt>ろくじ</rt></ruby>に<ruby>起<rt>お</rt></ruby>きます。',r:'Maiasa rokuji ni okimasu.',en:'I wake up at six every morning.'},
+  'n5_384':{s:'<ruby>毎晩<rt>まいばん</rt></ruby><ruby>日本語<rt>にほんご</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>します。',r:'Maiban nihongo wo benkyou shimasu.',en:'I study Japanese every evening.'},
+  'n5_385':{s:'<ruby>毎月<rt>まいつき</rt></ruby>、<ruby>本<rt>ほん</rt></ruby>を<ruby>一冊<rt>いっさつ</rt></ruby><ruby>読<rt>よ</rt></ruby>みます。',r:'Maitsuki, hon wo issatsu yomimasu.',en:'I read one book every month.'},
+  'n5_386':{s:'<ruby>毎年<rt>まいとし</rt></ruby><ruby>夏<rt>なつ</rt></ruby>に<ruby>海<rt>うみ</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Maitoshi natsu ni umi ni ikimasu.',en:'I go to the sea every summer.'},
+  'n5_388':{s:'<ruby>夏<rt>なつ</rt></ruby>は<ruby>暑<rt>あつ</rt></ruby>いです。',r:'Natsu wa atsui desu.',en:'Summer is hot.'},
+  'n5_389':{s:'<ruby>秋<rt>あき</rt></ruby>は<ruby>葉<rt>は</rt></ruby>が<ruby>赤<rt>あか</rt></ruby>くなります。',r:'Aki wa ha ga akaku narimasu.',en:'In autumn the leaves turn red.'},
+  'n5_390':{s:'<ruby>冬<rt>ふゆ</rt></ruby>は<ruby>雪<rt>ゆき</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>ります。',r:'Fuyu wa yuki ga furimasu.',en:'In winter it snows.'},
+  'n5_391':{s:'<ruby>喉<rt>のど</rt></ruby>が<ruby>痛<rt>いた</rt></ruby>いです。',r:'Nodo ga itai desu.',en:'My throat hurts.'},
+  'n5_392':{s:'<ruby>胸<rt>むね</rt></ruby>が<ruby>痛<rt>いた</rt></ruby>いです。',r:'Mune ga itai desu.',en:'My chest hurts.'},
+  'n5_393':{s:'<ruby>背中<rt>せなか</rt></ruby>が<ruby>痛<rt>いた</rt></ruby>いです。',r:'Senaka ga itai desu.',en:'My back hurts.'},
+  'n5_394':{s:'<ruby>お腹<rt>おなか</rt></ruby>が<ruby>空<rt>す</rt></ruby>きました。',r:'Onaka ga sukimashita.',en:'I am hungry.'},
+  'n5_395':{s:'<ruby>指<rt>ゆび</rt></ruby>を<ruby>切<rt>き</rt></ruby>りました。',r:'Yubi wo kirimashita.',en:'I cut my finger.'},
+  'n5_396':{s:'<ruby>髪<rt>かみ</rt></ruby>の<ruby>毛<rt>け</rt></ruby>を<ruby>切<rt>き</rt></ruby>りました。',r:'Kaminoke wo kirimashita.',en:'I got a haircut.'},
+  'n5_397':{s:'<ruby>歯<rt>は</rt></ruby>を<ruby>磨<rt>みが</rt></ruby>きます。',r:'Ha wo migakimasu.',en:'I brush my teeth.'},
+  'n5_398':{s:'<ruby>頭<rt>あたま</rt></ruby>が<ruby>痛<rt>いた</rt></ruby>いです。',r:'Atama ga itai desu.',en:'My head is painful.'},
+  'n5_399':{s:'<ruby>熱<rt>ねつ</rt></ruby>が<ruby>あります。',r:'Netsu ga arimasu.',en:'I have a fever.'},
+  'n5_400':{s:'<ruby>医者<rt>いしゃ</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Isha ni ikimasu.',en:'I go to the doctor.'},
+  'n5_401':{s:'<ruby>椅子<rt>いす</rt></ruby>に<ruby>座<rt>すわ</rt></ruby>ってください。',r:'Isu ni suwatte kudasai.',en:'Please sit on the chair.'},
+  'n5_402':{s:'<ruby>入口<rt>いりぐち</rt></ruby>で<ruby>待<rt>ま</rt></ruby>っています。',r:'Iriguchi de matte imasu.',en:'I am waiting at the entrance.'},
+  'n5_403':{s:'<ruby>出口<rt>でぐち</rt></ruby>はどこですか。',r:'Deguchi wa doko desu ka.',en:'Where is the exit?'},
+  'n5_404':{s:'<ruby>階段<rt>かいだん</rt></ruby>を<ruby>上<rt>のぼ</rt></ruby>ります。',r:'Kaidan wo noborimasu.',en:'I go up the stairs.'},
+  'n5_405':{s:'<ruby>壁<rt>かべ</rt></ruby>に<ruby>絵<rt>え</rt></ruby>がかかっています。',r:'Kabe ni e ga kakatte imasu.',en:'There is a picture hanging on the wall.'},
+  'n5_406':{s:'<ruby>床<rt>ゆか</rt></ruby>を<ruby>拭<rt>ふ</rt></ruby>きます。',r:'Yuka wo fukimasu.',en:'I wipe the floor.'},
+  'n5_407':{s:'<ruby>窓<rt>まど</rt></ruby>を<ruby>開<rt>あ</rt></ruby>けてください。',r:'Mado wo akete kudasai.',en:'Please open the window.'},
+  'n5_408':{s:'<ruby>ドア<rt>どあ</rt></ruby>を<ruby>閉<rt>し</rt></ruby>めてください。',r:'Doa wo shimete kudasai.',en:'Please close the door.'},
+  'n5_409':{s:'<ruby>風呂<rt>ふろ</rt></ruby>に<ruby>入<rt>はい</rt></ruby>ります。',r:'Ofuro ni hairimasu.',en:'I take a bath.'},
+  'n5_411':{s:'<ruby>庭<rt>にわ</rt></ruby>で<ruby>花<rt>はな</rt></ruby>を<ruby>育<rt>そだ</rt></ruby>てています。',r:'Niwa de hana wo sodatete imasu.',en:'I grow flowers in the garden.'},
+  'n5_415':{s:'<ruby>ゴミ<rt>ごみ</rt></ruby>を<ruby>捨<rt>す</rt></ruby>ててください。',r:'Gomi wo sutete kudasai.',en:'Please throw away the trash.'},
+  'n5_416':{s:'<ruby>教室<rt>きょうしつ</rt></ruby>で<ruby>授業<rt>じゅぎょう</rt></ruby>があります。',r:'Kyoushitsu de jugyou ga arimasu.',en:'There is a class in the classroom.'},
+  'n5_417':{s:'<ruby>黒板<rt>こくばん</rt></ruby>に<ruby>字<rt>じ</rt></ruby>を<ruby>書<rt>か</rt></ruby>きます。',r:'Kokuban ni ji wo kakimasu.',en:'I write on the blackboard.'},
+  'n5_418':{s:'<ruby>鉛筆<rt>えんぴつ</rt></ruby>で<ruby>書<rt>か</rt></ruby>いてください。',r:'Enpitsu de kaite kudasai.',en:'Please write with a pencil.'},
+  'n5_420':{s:'<ruby>辞書<rt>じしょ</rt></ruby>で<ruby>言葉<rt>ことば</rt></ruby>を<ruby>調<rt>しら</rt></ruby>べます。',r:'Jisho de kotoba wo shirabemasu.',en:'I look up words in the dictionary.'},
+  'n5_421':{s:'<ruby>宿題<rt>しゅくだい</rt></ruby>を<ruby>出<rt>だ</rt></ruby>してください。',r:'Shukudai wo dashite kudasai.',en:'Please hand in your homework.'},
+  'n5_422':{s:'<ruby>試験<rt>しけん</rt></ruby>は<ruby>来週<rt>らいしゅう</rt></ruby>です。',r:'Shiken wa raishuu desu.',en:'The exam is next week.'},
+  'n5_423':{s:'<ruby>毎日<rt>まいにち</rt></ruby><ruby>勉強<rt>べんきょう</rt></ruby>しています。',r:'Mainichi benkyou shite imasu.',en:'I study every day.'},
+  'n5_424':{s:'<ruby>夏休<rt>なつやす</rt></ruby>みに<ruby>旅行<rt>りょこう</rt></ruby>します。',r:'Natsuyasumi ni ryokou shimasu.',en:'I travel during summer vacation.'},
+  'n5_425':{s:'<ruby>会社<rt>かいしゃ</rt></ruby>に<ruby>遅刻<rt>ちこく</rt></ruby>しました。',r:'Kaisha ni chikoku shimashita.',en:'I was late for work.'},
+  'n5_426':{s:'<ruby>この<ruby>道<rt>みち</rt></ruby>を<ruby>まっすぐ<ruby>行<rt>い</rt></ruby>ってください。',r:'Kono michi wo massugu itte kudasai.',en:'Please go straight down this road.'},
+  'n5_427':{s:'<ruby>信号<rt>しんごう</rt></ruby>が<ruby>赤<rt>あか</rt></ruby>です。',r:'Shingou ga aka desu.',en:'The traffic light is red.'},
+  'n5_428':{s:'<ruby>角<rt>かど</rt></ruby>を<ruby>右<rt>みぎ</rt></ruby>に<ruby>曲<rt>ま</rt></ruby>がってください。',r:'Kado wo migi ni magatte kudasai.',en:'Please turn right at the corner.'},
+  'n5_429':{s:'<ruby>切符<rt>きっぷ</rt></ruby>を<ruby>買<rt>か</rt></ruby>います。',r:'Kippu wo kaimasu.',en:'I buy a ticket.'},
+  'n5_430':{s:'<ruby>乗<rt>の</rt></ruby>り<ruby>場<rt>ば</rt></ruby>はどこですか。',r:'Noriba wa doko desu ka.',en:'Where is the boarding platform?'},
+  'n5_431':{s:'<ruby>飛行機<rt>ひこうき</rt></ruby>で<ruby>東京<rt>とうきょう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Hikouki de Toukyou ni ikimasu.',en:'I go to Tokyo by airplane.'},
+  'n5_432':{s:'<ruby>船<rt>ふね</rt></ruby>で<ruby>島<rt>しま</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Fune de shima ni ikimasu.',en:'I go to the island by ship.'},
+  'n5_433':{s:'<ruby>車<rt>くるま</rt></ruby>で<ruby>買<rt>か</rt></ruby>い<ruby>物<rt>もの</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Kuruma de kaimono ni ikimasu.',en:'I go shopping by car.'},
+  'n5_434':{s:'<ruby>タクシー<rt>たくしー</rt></ruby>で<ruby>駅<rt>えき</rt></ruby>まで<ruby>行<rt>い</rt></ruby>きます。',r:'Takushii de eki made ikimasu.',en:'I go to the station by taxi.'},
+  'n5_435':{s:'<ruby>今日<rt>きょう</rt></ruby>の<ruby>天気<rt>てんき</rt></ruby>はどうですか。',r:'Kyou no tenki wa dou desu ka.',en:'What is the weather like today?'},
+  'n5_436':{s:'<ruby>曇<rt>くも</rt></ruby>りの<ruby>日<rt>ひ</rt></ruby>が<ruby>多<rt>おお</rt></ruby>いです。',r:'Kumori no hi ga ooi desu.',en:'There are many cloudy days.'},
+  'n5_437':{s:'<ruby>晴<rt>は</rt></ruby>れているので<ruby>外<rt>そと</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Harete iru node soto ni ikimasu.',en:'It is sunny so I go outside.'},
+  'n5_439':{s:'<ruby>池<rt>いけ</rt></ruby>に<ruby>魚<rt>さかな</rt></ruby>がいます。',r:'Ike ni sakana ga imasu.',en:'There are fish in the pond.'},
+  'n5_440':{s:'<ruby>森<rt>もり</rt></ruby>を<ruby>散歩<rt>さんぽ</rt></ruby>します。',r:'Mori wo sanpo shimasu.',en:'I take a walk in the forest.'},
+  'n5_441':{s:'<ruby>畑<rt>はたけ</rt></ruby>で<ruby>野菜<rt>やさい</rt></ruby>を<ruby>育<rt>そだ</rt></ruby>てています。',r:'Hatake de yasai wo sodatete imasu.',en:'I grow vegetables in the field.'},
+  'n5_443':{s:'<ruby>月<rt>つき</rt></ruby>がきれいですね。',r:'Tsuki ga kirei desu ne.',en:'The moon is beautiful, isn\'t it?'},
+  'n5_444':{s:'<ruby>星<rt>ほし</rt></ruby>が<ruby>夜空<rt>よぞら</rt></ruby>に<ruby>光<rt>かがや</rt></ruby>いています。',r:'Hoshi ga yozora ni kagayaite imasu.',en:'Stars shine in the night sky.'},
+  'n5_445':{s:'<ruby>太陽<rt>たいよう</rt></ruby>が<ruby>昇<rt>のぼ</rt></ruby>ってきました。',r:'Taiyou ga nobotte kimashita.',en:'The sun has risen.'},
+  'n5_446':{s:'お<ruby>気<rt>き</rt></ruby>に<ruby>入<rt>い</rt></ruby>りの<ruby>色<rt>いろ</rt></ruby>は<ruby>青<rt>あお</rt></ruby>です。',r:'Okiniiri no iro wa ao desu.',en:'My favorite color is blue.'},
+  'n5_448':{s:'この<ruby>荷物<rt>にもつ</rt></ruby>の<ruby>重<rt>おも</rt></ruby>さは<ruby>何<rt>なん</rt></ruby>キロですか。',r:'Kono nimotsu no omosa wa nan kiro desu ka.',en:'What is the weight of this luggage in kilograms?'},
+  'n5_449':{s:'この<ruby>山<rt>やま</rt></ruby>の<ruby>高<rt>たか</rt></ruby>さは<ruby>何<rt>なん</rt></ruby>メートルですか。',r:'Kono yama no takasa wa nan meetoru desu ka.',en:'What is the height of this mountain in meters?'},
+  'n5_450':{s:'この<ruby>ケーキ<rt>けーき</rt></ruby>の<ruby>値段<rt>ねだん</rt></ruby>はいくらですか。',r:'Kono keeki no nedan wa ikura desu ka.',en:'What is the price of this cake?'},
+  'n5_451':{s:'アイスクリームを<ruby>食<rt>た</rt></ruby>べます。',r:'Aisukuriimu wo tabemasu.',en:'I eat ice cream.'},
+  'n5_452':{s:'オレンジジュースを<ruby>飲<rt>の</rt></ruby>みます。',r:'Orenji juusu wo nomimasu.',en:'I drink orange juice.'},
+  'n5_453':{s:'<ruby>友達<rt>ともだち</rt></ruby>とビールを<ruby>飲<rt>の</rt></ruby>みます。',r:'Tomodachi to biiru wo nomimasu.',en:'I drink beer with my friend.'},
+  'n5_454':{s:'<ruby>食事<rt>しょくじ</rt></ruby>にワインを<ruby>飲<rt>の</rt></ruby>みます。',r:'Shokuji ni wain wo nomimasu.',en:'I drink wine with my meal.'},
+  'n5_455':{s:'<ruby>朝<rt>あさ</rt></ruby>にミルクを<ruby>飲<rt>の</rt></ruby>みます。',r:'Asa ni miruku wo nomimasu.',en:'I drink milk in the morning.'},
+  'n5_457':{s:'<ruby>誕生日<rt>たんじょうび</rt></ruby>にケーキを<ruby>食<rt>た</rt></ruby>べます。',r:'Tanjoubi ni keeki wo tabemasu.',en:'I eat cake on my birthday.'},
+  'n5_458':{s:'チョコレートがとても<ruby>好<rt>す</rt></ruby>きです。',r:'Chokoreeto ga totemo suki desu.',en:'I really like chocolate.'},
+  'n5_459':{s:'サンドイッチを<ruby>作<rt>つく</rt></ruby>ります。',r:'Sandoicchi wo tsukurimasu.',en:'I make a sandwich.'},
+  'n5_460':{s:'ハンバーガーを<ruby>食<rt>た</rt></ruby>べます。',r:'Hanbaagaa wo tabemasu.',en:'I eat a hamburger.'},
+  'n5_461':{s:'ピザを<ruby>注文<rt>ちゅうもん</rt></ruby>します。',r:'Piza wo chuumon shimasu.',en:'I order pizza.'},
+  'n5_462':{s:'<ruby>昼<rt>ひる</rt></ruby>ごはんはカレーです。',r:'Hirugohan wa karee desu.',en:'Lunch is curry.'},
+  'n5_463':{s:'スープを<ruby>飲<rt>の</rt></ruby>みます。',r:'Suupu wo nomimasu.',en:'I drink soup.'},
+  'n5_464':{s:'<ruby>野菜<rt>やさい</rt></ruby>サラダを<ruby>食<rt>た</rt></ruby>べます。',r:'Yasai sarada wo tabemasu.',en:'I eat a vegetable salad.'},
+  'n5_465':{s:'フルーツを<ruby>毎日<rt>まいにち</rt></ruby><ruby>食<rt>た</rt></ruby>べます。',r:'Furuutsu wo mainichi tabemasu.',en:'I eat fruit every day.'},
+  'n5_466':{s:'アメリカに<ruby>行<rt>い</rt></ruby>きたいです。',r:'Amerika ni ikitai desu.',en:'I want to go to America.'},
+  'n5_467':{s:'イギリスから<ruby>来<rt>き</rt></ruby>ました。',r:'Igirisu kara kimashita.',en:'I came from England.'},
+  'n5_468':{s:'フランスの<ruby>料理<rt>りょうり</rt></ruby>が<ruby>好<rt>す</rt></ruby>きです。',r:'Furansu no ryouri ga suki desu.',en:'I like French cuisine.'},
+  'n5_469':{s:'ドイツの<ruby>車<rt>くるま</rt></ruby>は<ruby>有名<rt>ゆうめい</rt></ruby>です。',r:'Doitsu no kuruma wa yuumei desu.',en:'German cars are famous.'},
+  'n5_470':{s:'イタリアに<ruby>旅行<rt>りょこう</rt></ruby>したいです。',r:'Itaria ni ryokou shitai desu.',en:'I want to travel to Italy.'},
+  'n5_471':{s:'<ruby>中国<rt>ちゅうごく</rt></ruby>は<ruby>大<rt>おお</rt></ruby>きい<ruby>国<rt>くに</rt></ruby>です。',r:'Chuugoku wa ookii kuni desu.',en:'China is a large country.'},
+  'n5_472':{s:'<ruby>韓国<rt>かんこく</rt></ruby>の<ruby>食<rt>た</rt></ruby>べ<ruby>物<rt>もの</rt></ruby>が<ruby>好<rt>す</rt></ruby>きです。',r:'Kankoku no tabemono ga suki desu.',en:'I like Korean food.'},
+  'n5_473':{s:'アジアには<ruby>多<rt>おお</rt></ruby>くの<ruby>国<rt>くに</rt></ruby>があります。',r:'Ajia ni wa ooku no kuni ga arimasu.',en:'There are many countries in Asia.'},
+  'n5_474':{s:'テレビでニュースを<ruby>見<rt>み</rt></ruby>ます。',r:'Terebi de nyuusu wo mimasu.',en:'I watch the news on TV.'},
+  'n5_475':{s:'ラジオで<ruby>音楽<rt>おんがく</rt></ruby>を<ruby>聴<rt>き</rt></ruby>きます。',r:'Rajio de ongaku wo kikimasu.',en:'I listen to music on the radio.'},
+  'n5_476':{s:'カメラで<ruby>写真<rt>しゃしん</rt></ruby>を<ruby>撮<rt>と</rt></ruby>ります。',r:'Kamera de shashin wo torimasu.',en:'I take photos with a camera.'},
+  'n5_477':{s:'パソコンで<ruby>仕事<rt>しごと</rt></ruby>をします。',r:'Pasokon de shigoto wo shimasu.',en:'I work on a computer.'},
+  'n5_478':{s:'スマホで<ruby>写真<rt>しゃしん</rt></ruby>を<ruby>撮<rt>と</rt></ruby>ります。',r:'Sumaho de shashin wo torimasu.',en:'I take photos with my smartphone.'},
+  'n5_479':{s:'インターネットで<ruby>調<rt>しら</rt></ruby>べます。',r:'Intaanetto de shirabemasu.',en:'I search on the internet.'},
+  'n5_480':{s:'<ruby>友達<rt>ともだち</rt></ruby>にメールを<ruby>送<rt>おく</rt></ruby>ります。',r:'Tomodachi ni meeru wo okurimasu.',en:'I send an email to my friend.'},
+  'n5_481':{s:'ゲームをするのが<ruby>好<rt>す</rt></ruby>きです。',r:'Geemu wo suru no ga suki desu.',en:'I like playing games.'},
+  'n5_482':{s:'バスで<ruby>学校<rt>がっこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Basu de gakkou ni ikimasu.',en:'I go to school by bus.'},
+  'n5_484':{s:'バイクで<ruby>通勤<rt>つうきん</rt></ruby>します。',r:'Baiku de tsuukin shimasu.',en:'I commute by motorcycle.'},
+  'n5_485':{s:'エレベーターで<ruby>三階<rt>さんかい</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Erebeetaa de sankai ni ikimasu.',en:'I go to the third floor by elevator.'},
+  'n5_486':{s:'エスカレーターで<ruby>上<rt>うえ</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Esukareetaa de ue ni ikimasu.',en:'I go up by escalator.'},
+  'n5_487':{s:'シャツをきてください。',r:'Shatsu wo kite kudasai.',en:'Please put on a shirt.'},
+  'n5_488':{s:'ズボンをはいています。',r:'Zubon wo haite imasu.',en:'I am wearing trousers.'},
+  'n5_489':{s:'スカートをはいています。',r:'Sukaato wo haite imasu.',en:'I am wearing a skirt.'},
+  'n5_490':{s:'<ruby>寒<rt>さむ</rt></ruby>いのでコートをきます。',r:'Samui node kooto wo kimasu.',en:'I wear a coat because it is cold.'},
+  'n5_491':{s:'セーターをきています。',r:'Seetaa wo kite imasu.',en:'I am wearing a sweater.'},
+  'n5_492':{s:'ジャケットをきます。',r:'Jaketto wo kimasu.',en:'I put on a jacket.'},
+  'n5_493':{s:'<ruby>冬<rt>ふゆ</rt></ruby>にブーツをはきます。',r:'Fuyu ni buutsu wo hakimasu.',en:'I wear boots in winter.'},
+  'n5_494':{s:'バッグを<ruby>持<rt>も</rt></ruby>っています。',r:'Baggu wo motte imasu.',en:'I am carrying a bag.'},
+  'n5_495':{s:'スーパーで<ruby>買<rt>か</rt></ruby>い<ruby>物<rt>もの</rt></ruby>をします。',r:'Suupaa de kaimono wo shimasu.',en:'I shop at the supermarket.'},
+  'n5_496':{s:'デパートで<ruby>服<rt>ふく</rt></ruby>を<ruby>買<rt>か</rt></ruby>います。',r:'Depaato de fuku wo kaimasu.',en:'I buy clothes at the department store.'},
+  'n5_497':{s:'スポーツをするのが<ruby>好<rt>す</rt></ruby>きです。',r:'Supootsu wo suru no ga suki desu.',en:'I like playing sports.'},
+  'n5_498':{s:'<ruby>友達<rt>ともだち</rt></ruby>とテニスをします。',r:'Tomodachi to tenisu wo shimasu.',en:'I play tennis with my friend.'},
+  'n5_499':{s:'サッカーをするのが<ruby>好<rt>す</rt></ruby>きです。',r:'Sakkaa wo suru no ga suki desu.',en:'I like playing soccer.'},
+  'n5_500':{s:'バスケットをします。',r:'Basuketto wo shimasu.',en:'I play basketball.'},
+  'n5_501':{s:'ダンスを<ruby>習<rt>なら</rt></ruby>っています。',r:'Dansu wo naratte imasu.',en:'I am learning dance.'},
+  'n5_502':{s:'ピアノを<ruby>弾<rt>ひ</rt></ruby>きます。',r:'Piano wo hikimasu.',en:'I play the piano.'},
+  'n5_503':{s:'ギターを<ruby>弾<rt>ひ</rt></ruby>きます。',r:'Gitaa wo hikimasu.',en:'I play the guitar.'},
+  'n5_504':{s:'ホテルに<ruby>泊<rt>と</rt></ruby>まります。',r:'Hoteru ni tomarimasu.',en:'I stay at a hotel.'},
+  'n5_506':{s:'カフェでコーヒーを<ruby>飲<rt>の</rt></ruby>みます。',r:'Kafe de koohii wo nomimasu.',en:'I drink coffee at a cafe.'},
+  'n5_507':{s:'コンビニで<ruby>弁当<rt>べんとう</rt></ruby>を<ruby>買<rt>か</rt></ruby>います。',r:'Konbini de bentou wo kaimasu.',en:'I buy a lunch box at the convenience store.'},
+  'n5_508':{s:'プールで<ruby>泳<rt>およ</rt></ruby>ぎます。',r:'Puuru de oyogimasu.',en:'I swim in the pool.'},
+  'n5_509':{s:'アパートに<ruby>住<rt>す</rt></ruby>んでいます。',r:'Apaato ni sunde imasu.',en:'I live in an apartment.'},
+  'n5_510':{s:'マンションを<ruby>買<rt>か</rt></ruby>いました。',r:'Manshon wo kaimashita.',en:'I bought a condominium.'},
+  'n5_511':{s:'オフィスで<ruby>仕事<rt>しごと</rt></ruby>をします。',r:'Ofisu de shigoto wo shimasu.',en:'I work at the office.'},
+  'n5_512':{s:'ノートに<ruby>書<rt>か</rt></ruby>きます。',r:'Nooto ni kakimasu.',en:'I write in a notebook.'},
+  'n5_513':{s:'ボールペンで<ruby>名前<rt>なまえ</rt></ruby>を<ruby>書<rt>か</rt></ruby>きます。',r:'Boorupen de namae wo kakimasu.',en:'I write my name with a ballpoint pen.'},
+  'n5_514':{s:'テーブルの<ruby>上<rt>うえ</rt></ruby>に<ruby>置<rt>お</rt></ruby>いてください。',r:'Teeburu no ue ni oite kudasai.',en:'Please put it on the table.'},
+  'n5_515':{s:'ベッドで<ruby>寝<rt>ね</rt></ruby>ます。',r:'Beddo de nemasu.',en:'I sleep in bed.'},
+  'n5_516':{s:'ソファで<ruby>休<rt>やす</rt></ruby>みます。',r:'Sofa de yasumimasu.',en:'I rest on the sofa.'},
+  'n5_517':{s:'カーテンを<ruby>開<rt>あ</rt></ruby>けます。',r:'Kaaten wo akemasu.',en:'I open the curtain.'},
+  'n5_518':{s:'<ruby>風呂<rt>ふろ</rt></ruby>からでたらタオルで<ruby>拭<rt>ふ</rt></ruby>きます。',r:'Ofuro kara detara taoru de fukimasu.',en:'After getting out of the bath I dry off with a towel.'},
+  'n5_519':{s:'<ruby>毎朝<rt>まいあさ</rt></ruby>シャワーを<ruby>浴<rt>あ</rt></ruby>びます。',r:'Maiasa shawaa wo abimasu.',en:'I take a shower every morning.'},
+  'n5_520':{s:'アルバムに<ruby>写真<rt>しゃしん</rt></ruby>を<ruby>入<rt>い</rt></ruby>れます。',r:'Arubamu ni shashin wo iremasu.',en:'I put photos in the album.'},
+  'n5_521':{s:'サラリーマンは<ruby>毎日<rt>まいにち</rt></ruby><ruby>電車<rt>でんしゃ</rt></ruby>で<ruby>通勤<rt>つうきん</rt></ruby>します。',r:'Sarariiman wa mainichi densha de tsuukin shimasu.',en:'An office worker commutes by train every day.'},
+  'n5_522':{s:'アルバイトで<ruby>お金<rt>おかね</rt></ruby>を<ruby>稼<rt>かせ</rt></ruby>ぎます。',r:'Arubaito de okane wo kasegimasu.',en:'I earn money from my part-time job.'},
+  'n5_523':{s:'ドクターに<ruby>診<rt>み</rt></ruby>てもらいます。',r:'Dokutaa ni mite moraimasu.',en:'I get examined by a doctor.'},
+  'n5_524':{s:'ナースが<ruby>優<rt>やさ</rt></ruby>しく<ruby>手当<rt>てあて</rt></ruby>てくれました。',r:'Naasu ga yasashiku teate shite kuremashita.',en:'The nurse treated me kindly.'},
+  'n5_525':{s:'エンジニアとして<ruby>働<rt>はたら</rt></ruby>いています。',r:'Enjinia toshite hataraite imasu.',en:'I work as an engineer.'},
+  'n5_527':{s:'オーケー、<ruby>分<rt>わ</rt></ruby>かりました。',r:'Ookee, wakarimashita.',en:'Okay, I understand.'},
+  'n5_528':{s:'バイバイ、またね。',r:'Baibai, mata ne.',en:'Bye bye, see you later.'},
+  'n5_529':{s:'ナイスショット！',r:'Naisu shotto!',en:'Nice shot!'},
+  'n5_530':{s:'このチャンスを<ruby>逃<rt>のが</rt></ruby>さないでください。',r:'Kono chansu wo nogasanaide kudasai.',en:'Please don\'t miss this chance.'},
+  'n5_531':{s:'<ruby>日<rt>にち</rt></ruby>よう<ruby>日<rt>び</rt></ruby>は<ruby>休<rt>やす</rt></ruby>みです。',r:'Nichiyoubi wa yasumi desu.',en:'Sunday is a day off.'},
+  'n5_532':{s:'<ruby>月<rt>つき</rt></ruby>がきれいです。',r:'Tsuki ga kirei desu.',en:'The moon is beautiful.'},
+  'n5_533':{s:'<ruby>火<rt>ひ</rt></ruby>よう<ruby>日<rt>び</rt></ruby>に<ruby>試験<rt>しけん</rt></ruby>があります。',r:'Kayoubi ni shiken ga arimasu.',en:'There is an exam on Tuesday.'},
+  'n5_534':{s:'<ruby>水<rt>みず</rt></ruby>を<ruby>飲<rt>の</rt></ruby>みます。',r:'Mizu wo nomimasu.',en:'I drink water.'},
+  'n5_535':{s:'<ruby>木<rt>き</rt></ruby>の<ruby>下<rt>した</rt></ruby>で<ruby>休<rt>やす</rt></ruby>みます。',r:'Ki no shita de yasumimasu.',en:'I rest under the tree.'},
+  'n5_536':{s:'<ruby>金<rt>きん</rt></ruby>よう<ruby>日<rt>び</rt></ruby>は<ruby>楽<rt>たの</rt></ruby>しいです。',r:'Kin\'youbi wa tanoshii desu.',en:'Friday is fun.'},
+  'n5_537':{s:'<ruby>土<rt>ど</rt></ruby>よう<ruby>日<rt>び</rt></ruby>に<ruby>買<rt>か</rt></ruby>い<ruby>物<rt>もの</rt></ruby>をします。',r:'Doyoubi ni kaimono wo shimasu.',en:'I go shopping on Saturday.'},
+  'n5_538':{s:'<ruby>山<rt>やま</rt></ruby>に<ruby>登<rt>のぼ</rt></ruby>りました。',r:'Yama ni noborimashita.',en:'I climbed the mountain.'},
+  'n5_539':{s:'<ruby>川<rt>かわ</rt></ruby>で<ruby>魚<rt>さかな</rt></ruby>を<ruby>釣<rt>つ</rt></ruby>ります。',r:'Kawa de sakana wo tsurimasu.',en:'I fish in the river.'},
+  'n5_540':{s:'<ruby>田<rt>た</rt></ruby>んぼに<ruby>水<rt>みず</rt></ruby>があります。',r:'Tanbo ni mizu ga arimasu.',en:'There is water in the rice field.'},
+  'n5_541':{s:'あの<ruby>人<rt>ひと</rt></ruby>はだれですか。',r:'Ano hito wa dare desu ka.',en:'Who is that person?'},
+  'n5_542':{s:'<ruby>口<rt>くち</rt></ruby>を<ruby>開<rt>あ</rt></ruby>けてください。',r:'Kuchi wo akete kudasai.',en:'Please open your mouth.'},
+  'n5_543':{s:'<ruby>目<rt>め</rt></ruby>を<ruby>閉<rt>と</rt></ruby>じてください。',r:'Me wo tojite kudasai.',en:'Please close your eyes.'},
+  'n5_544':{s:'<ruby>手<rt>て</rt></ruby>を<ruby>洗<rt>あら</rt></ruby>います。',r:'Te wo araimasu.',en:'I wash my hands.'},
+  'n5_545':{s:'<ruby>足<rt>あし</rt></ruby>が<ruby>痛<rt>いた</rt></ruby>いです。',r:'Ashi ga itai desu.',en:'My leg hurts.'},
+  'n5_546':{s:'<ruby>耳<rt>みみ</rt></ruby>で<ruby>音楽<rt>おんがく</rt></ruby>を<ruby>聴<rt>き</rt></ruby>きます。',r:'Mimi de ongaku wo kikimasu.',en:'I listen to music with my ears.'},
+  'n5_547':{s:'<ruby>一<rt>いち</rt></ruby>つの<ruby>りんご<rt>りんご</rt></ruby>があります。',r:'Ringo ga hitotsu arimasu.',en:'There is one apple.'},
+  'n5_548':{s:'<ruby>二<rt>に</rt></ruby>つの<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>みます。',r:'Futatsu no hon wo yomimasu.',en:'I read two books.'},
+  'n5_549':{s:'<ruby>三<rt>さん</rt></ruby><ruby>時<rt>じ</rt></ruby>に<ruby>来<rt>き</rt></ruby>てください。',r:'Sanji ni kite kudasai.',en:'Please come at three o\'clock.'},
+  'n5_550':{s:'<ruby>四<rt>し</rt></ruby><ruby>月<rt>がつ</rt></ruby>に<ruby>学校<rt>がっこう</rt></ruby>が<ruby>始<rt>はじ</rt></ruby>まります。',r:'Shigatsu ni gakkou ga hajimarimasu.',en:'School begins in April.'},
+  'n5_551':{s:'<ruby>五<rt>ご</rt></ruby><ruby>時<rt>じ</rt></ruby>に<ruby>帰<rt>かえ</rt></ruby>ります。',r:'Goji ni kaerimasu.',en:'I go home at five o\'clock.'},
+  'n5_552':{s:'<ruby>六<rt>ろく</rt></ruby><ruby>月<rt>がつ</rt></ruby>は<ruby>梅雨<rt>つゆ</rt></ruby>です。',r:'Rokugatsu wa tsuyu desu.',en:'June is the rainy season.'},
+  'n5_553':{s:'<ruby>七<rt>しち</rt></ruby><ruby>時<rt>じ</rt></ruby>に<ruby>起<rt>お</rt></ruby>きます。',r:'Shichiji ni okimasu.',en:'I wake up at seven o\'clock.'},
+  'n5_554':{s:'<ruby>八<rt>はち</rt></ruby><ruby>月<rt>がつ</rt></ruby>は<ruby>夏<rt>なつ</rt></ruby>です。',r:'Hachigatsu wa natsu desu.',en:'August is summer.'},
+  'n5_555':{s:'<ruby>九<rt>く</rt></ruby><ruby>時<rt>じ</rt></ruby>まで<ruby>勉強<rt>べんきょう</rt></ruby>します。',r:'Kuji made benkyou shimasu.',en:'I study until nine o\'clock.'},
+  'n5_556':{s:'<ruby>十<rt>じゅう</rt></ruby><ruby>分<rt>ぷん</rt></ruby><ruby>待<rt>ま</rt></ruby>ってください。',r:'Juppun matte kudasai.',en:'Please wait ten minutes.'},
+  'n5_557':{s:'<ruby>百円<rt>ひゃくえん</rt></ruby>ショップに<ruby>行<rt>い</rt></ruby>きます。',r:'Hyakuen shoppu ni ikimasu.',en:'I go to the 100-yen shop.'},
+  'n5_558':{s:'<ruby>千円<rt>せんえん</rt></ruby>で<ruby>足<rt>た</rt></ruby>りますか。',r:'Sen\'en de tarimasu ka.',en:'Is 1000 yen enough?'},
+  'n5_559':{s:'<ruby>一万円<rt>いちまんえん</rt></ruby>を<ruby>両替<rt>りょうがえ</rt></ruby>します。',r:'Ichiman\'en wo ryougae shimasu.',en:'I exchange 10,000 yen.'},
+  'n5_560':{s:'これは<ruby>三百円<rt>さんびゃくえん</rt></ruby>です。',r:'Kore wa sanbyakuen desu.',en:'This is 300 yen.'},
+  'n5_561':{s:'<ruby>大<rt>おお</rt></ruby>きい<ruby>犬<rt>いぬ</rt></ruby>がいます。',r:'Ookii inu ga imasu.',en:'There is a big dog.'},
+  'n5_562':{s:'<ruby>小<rt>ちい</rt></ruby>さい<ruby>猫<rt>ねこ</rt></ruby>がかわいいです。',r:'Chiisai neko ga kawaii desu.',en:'The small cat is cute.'},
+  'n5_563':{s:'<ruby>箱<rt>はこ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>に<ruby>何<rt>なに</rt></ruby>がありますか。',r:'Hako no naka ni nani ga arimasu ka.',en:'What is inside the box?'},
+  'n5_564':{s:'<ruby>棚<rt>たな</rt></ruby>の<ruby>上<rt>うえ</rt></ruby>に<ruby>本<rt>ほん</rt></ruby>があります。',r:'Tana no ue ni hon ga arimasu.',en:'There is a book on top of the shelf.'},
+  'n5_565':{s:'<ruby>机<rt>つくえ</rt></ruby>の<ruby>下<rt>した</rt></ruby>に<ruby>荷物<rt>にもつ</rt></ruby>があります。',r:'Tsukue no shita ni nimotsu ga arimasu.',en:'There is luggage under the desk.'},
+  'n5_566':{s:'<ruby>左<rt>ひだり</rt></ruby>に<ruby>曲<rt>ま</rt></ruby>がってください。',r:'Hidari ni magatte kudasai.',en:'Please turn left.'},
+  'n5_567':{s:'<ruby>右<rt>みぎ</rt></ruby>に<ruby>曲<rt>ま</rt></ruby>がってください。',r:'Migi ni magatte kudasai.',en:'Please turn right.'},
+  'n5_568':{s:'<ruby>学校<rt>がっこう</rt></ruby>の<ruby>前<rt>まえ</rt></ruby>で<ruby>待<rt>ま</rt></ruby>ちます。',r:'Gakkou no mae de machimasu.',en:'I wait in front of the school.'},
+  'n5_569':{s:'<ruby>後<rt>うし</rt></ruby>ろを<ruby>確認<rt>かくにん</rt></ruby>してください。',r:'Ushiro wo kakunin shite kudasai.',en:'Please check behind you.'},
+  'n5_570':{s:'<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>みます。',r:'Hon wo yomimasu.',en:'I read a book.'},
+  'n5_571':{s:'<ruby>今年<rt>ことし</rt></ruby>は<ruby>何<rt>なん</rt></ruby><ruby>年<rt>ねん</rt></ruby>ですか。',r:'Kotoshi wa nan\'nen desu ka.',en:'What year is this year?'},
+  'n5_572':{s:'<ruby>今<rt>いま</rt></ruby>は<ruby>何<rt>なん</rt></ruby><ruby>時<rt>じ</rt></ruby>ですか。',r:'Ima wa nanji desu ka.',en:'What time is it now?'},
+  'n5_573':{s:'<ruby>駅<rt>えき</rt></ruby>まで<ruby>五分<rt>ごふん</rt></ruby><ruby>間<rt>かん</rt></ruby>です。',r:'Eki made gofun desu.',en:'It is five minutes to the station.'},
+  'n5_574':{s:'<ruby>三十<rt>さんじゅう</rt></ruby><ruby>分<rt>ぷん</rt></ruby>で<ruby>終<rt>お</rt></ruby>わります。',r:'Sanjuppun de owarimasu.',en:'It will finish in thirty minutes.'},
+  'n5_575':{s:'<ruby>半分<rt>はんぶん</rt></ruby>に<ruby>切<rt>き</rt></ruby>ってください。',r:'Hanbun ni kitte kudasai.',en:'Please cut it in half.'},
+  'n5_576':{s:'<ruby>今<rt>いま</rt></ruby>どこにいますか。',r:'Ima doko ni imasu ka.',en:'Where are you now?'},
+  'n5_577':{s:'これは<ruby>何<rt>なん</rt></ruby>ですか。',r:'Kore wa nan desu ka.',en:'What is this?'},
+  'n5_578':{s:'<ruby>先<rt>さき</rt></ruby>に<ruby>行<rt>い</rt></ruby>ってください。',r:'Saki ni itte kudasai.',en:'Please go ahead.'},
+  'n5_579':{s:'<ruby>生<rt>い</rt></ruby>き<ruby>物<rt>もの</rt></ruby>を<ruby>大切<rt>たいせつ</rt></ruby>にしましょう。',r:'Ikimono wo taisetsu ni shimashou.',en:'Let\'s take care of living things.'},
+  'n5_580':{s:'<ruby>学<rt>まな</rt></ruby>ぶことが<ruby>大切<rt>たいせつ</rt></ruby>です。',r:'Manabu koto ga taisetsu desu.',en:'Learning is important.'},
+  'n5_581':{s:'<ruby>学校<rt>がっこう</rt></ruby>が<ruby>好<rt>す</rt></ruby>きです。',r:'Gakkou ga suki desu.',en:'I like school.'},
+  'n5_582':{s:'<ruby>日本語<rt>にほんご</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>しています。',r:'Nihongo wo benkyou shite imasu.',en:'I am studying Japanese.'},
+  'n5_583':{s:'この<ruby>国<rt>くに</rt></ruby>はどこですか。',r:'Kono kuni wa doko desu ka.',en:'What country is this?'},
+  'n5_584':{s:'<ruby>外<rt>そと</rt></ruby>は<ruby>寒<rt>さむ</rt></ruby>いです。',r:'Soto wa samui desu.',en:'It is cold outside.'},
+  'n5_585':{s:'<ruby>元気<rt>げんき</rt></ruby>ですか。',r:'Genki desu ka.',en:'Are you doing well?'},
+  'n5_586':{s:'<ruby>天気<rt>てんき</rt></ruby>がいいです。',r:'Tenki ga ii desu.',en:'The weather is nice.'},
+  'n5_587':{s:'<ruby>電気<rt>でんき</rt></ruby>をつけてください。',r:'Denki wo tsukete kudasai.',en:'Please turn on the light.'},
+  'n5_588':{s:'<ruby>車<rt>くるま</rt></ruby>で<ruby>行<rt>い</rt></ruby>きます。',r:'Kuruma de ikimasu.',en:'I go by car.'},
+  'n5_589':{s:'<ruby>駅<rt>えき</rt></ruby>はどこですか。',r:'Eki wa doko desu ka.',en:'Where is the station?'},
+  'n5_590':{s:'この<ruby>道<rt>みち</rt></ruby>をまっすぐ<ruby>行<rt>い</rt></ruby>きます。',r:'Kono michi wo massugu ikimasu.',en:'I go straight down this road.'},
+  'n5_591':{s:'<ruby>教室<rt>きょうしつ</rt></ruby>に<ruby>入<rt>はい</rt></ruby>ります。',r:'Kyoushitsu ni hairimasu.',en:'I enter the classroom.'},
+  'n5_592':{s:'<ruby>電車<rt>でんしゃ</rt></ruby>から<ruby>出<rt>で</rt></ruby>ます。',r:'Densha kara demasu.',en:'I exit the train.'},
+  'n5_593':{s:'<ruby>映画<rt>えいが</rt></ruby>を<ruby>見<rt>み</rt></ruby>ます。',r:'Eiga wo mimasu.',en:'I watch a movie.'},
+  'n5_594':{s:'<ruby>音楽<rt>おんがく</rt></ruby>を<ruby>聴<rt>き</rt></ruby>きます。',r:'Ongaku wo kikimasu.',en:'I listen to music.'},
+  'n5_595':{s:'<ruby>手紙<rt>てがみ</rt></ruby>を<ruby>書<rt>か</rt></ruby>きます。',r:'Tegami wo kakimasu.',en:'I write a letter.'},
+  'n5_596':{s:'<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>みます。',r:'Hon wo yomimasu.',en:'I read a book.'},
+  'n5_597':{s:'<ruby>日本語<rt>にほんご</rt></ruby>で<ruby>話<rt>はな</rt></ruby>します。',r:'Nihongo de hanashimasu.',en:'I speak in Japanese.'},
+  'n5_598':{s:'<ruby>朝<rt>あさ</rt></ruby>ごはんを<ruby>食<rt>た</rt></ruby>べます。',r:'Asagohan wo tabemasu.',en:'I eat breakfast.'},
+  'n5_599':{s:'<ruby>お茶<rt>おちゃ</rt></ruby>を<ruby>飲<rt>の</rt></ruby>みます。',r:'Ocha wo nomimasu.',en:'I drink green tea.'},
+  'n5_600':{s:'スーパーで<ruby>野菜<rt>やさい</rt></ruby>を<ruby>買<rt>か</rt></ruby>います。',r:'Suupaa de yasai wo kaimasu.',en:'I buy vegetables at the supermarket.'},
+  'n5_601':{s:'<ruby>友達<rt>ともだち</rt></ruby>が<ruby>来<rt>き</rt></ruby>ます。',r:'Tomodachi ga kimasu.',en:'My friend is coming.'},
+  'n5_602':{s:'<ruby>学校<rt>がっこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。',r:'Gakkou ni ikimasu.',en:'I go to school.'},
+  'n5_603':{s:'<ruby>六時<rt>ろくじ</rt></ruby>に<ruby>家<rt>いえ</rt></ruby>に<ruby>帰<rt>かえ</rt></ruby>ります。',r:'Rokuji ni ie ni kaerimasu.',en:'I return home at six.'},
+  'n5_604':{s:'<ruby>七時<rt>しちじ</rt></ruby>に<ruby>起<rt>お</rt></ruby>きます。',r:'Shichiji ni okimasu.',en:'I wake up at seven.'},
+  'n5_605':{s:'<ruby>十一時<rt>じゅういちじ</rt></ruby>に<ruby>寝<rt>ね</rt></ruby>ます。',r:'Juuichiji ni nemasu.',en:'I sleep at eleven.'},
+  'n5_606':{s:'<ruby>立<rt>た</rt></ruby>ってください。',r:'Tatte kudasai.',en:'Please stand up.'},
+  'n5_607':{s:'<ruby>椅子<rt>いす</rt></ruby>に<ruby>座<rt>すわ</rt></ruby>ってください。',r:'Isu ni suwatte kudasai.',en:'Please sit on the chair.'},
+  'n5_608':{s:'<ruby>日曜日<rt>にちようび</rt></ruby>は<ruby>家<rt>いえ</rt></ruby>で<ruby>休<rt>やす</rt></ruby>みます。',r:'Nichiyoubi wa ie de yasumimasu.',en:'I rest at home on Sundays.'},
+  'n5_609':{s:'<ruby>仕事<rt>しごと</rt></ruby>をします。',r:'Shigoto wo shimasu.',en:'I do work.'},
+  'n5_610':{s:'この<ruby>事<rt>こと</rt></ruby>について<ruby>話<rt>はな</rt></ruby>しましょう。',r:'Kono koto ni tsuite hanashimashou.',en:'Let\'s talk about this matter.'},
+  'n5_611':{s:'<ruby>友<rt>とも</rt></ruby>だちと<ruby>遊<rt>あそ</rt></ruby>びます。',r:'Tomodachi to asobimasu.',en:'I play with friends.'},
+  'n5_612':{s:'<ruby>父<rt>ちち</rt></ruby>は<ruby>会社員<rt>かいしゃいん</rt></ruby>です。',r:'Chichi wa kaishain desu.',en:'My father is a company employee.'},
+  'n5_613':{s:'<ruby>母<rt>はは</rt></ruby>は<ruby>料理<rt>りょうり</rt></ruby>が<ruby>上手<rt>じょうず</rt></ruby>です。',r:'Haha wa ryouri ga jouzu desu.',en:'My mother is good at cooking.'},
+  'n5_614':{s:'<ruby>子<rt>こ</rt></ruby>どもが<ruby>公園<rt>こうえん</rt></ruby>で<ruby>遊<rt>あそ</rt></ruby>んでいます。',r:'Kodomo ga kouen de asonde imasu.',en:'Children are playing at the park.'},
+  'n5_615':{s:'あの<ruby>女<rt>おんな</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>は<ruby>先生<rt>せんせい</rt></ruby>です。',r:'Ano onna no hito wa sensei desu.',en:'That woman is a teacher.'},
+  'n5_616':{s:'あの<ruby>男<rt>おとこ</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>は<ruby>医者<rt>いしゃ</rt></ruby>です。',r:'Ano otoko no hito wa isha desu.',en:'That man is a doctor.'},
+  'n5_617':{s:'<ruby>白<rt>しろ</rt></ruby>いシャツを<ruby>着<rt>き</rt></ruby>ています。',r:'Shiroi shatsu wo kite imasu.',en:'I am wearing a white shirt.'},
+  'n5_618':{s:'<ruby>黒<rt>くろ</rt></ruby>いバッグを<ruby>持<rt>も</rt></ruby>っています。',r:'Kuroi baggu wo motte imasu.',en:'I am carrying a black bag.'},
+  'n5_619':{s:'<ruby>赤<rt>あか</rt></ruby>いりんごを<ruby>食<rt>た</rt></ruby>べます。',r:'Akai ringo wo tabemasu.',en:'I eat a red apple.'},
+  'n5_620':{s:'<ruby>青<rt>あお</rt></ruby>い<ruby>空<rt>そら</rt></ruby>がきれいです。',r:'Aoi sora ga kirei desu.',en:'The blue sky is beautiful.'},
+  'n5_621':{s:'あの<ruby>山<rt>やま</rt></ruby>は<ruby>高<rt>たか</rt></ruby>いです。',r:'Ano yama wa takai desu.',en:'That mountain is high.'},
+  'n5_622':{s:'この<ruby>店<rt>みせ</rt></ruby>は<ruby>安<rt>やす</rt></ruby>いです。',r:'Kono mise wa yasui desu.',en:'This shop is cheap.'},
+  'n5_623':{s:'この<ruby>本<rt>ほん</rt></ruby>は<ruby>新<rt>あたら</rt></ruby>しいです。',r:'Kono hon wa atarashii desu.',en:'This book is new.'},
+  'n5_624':{s:'この<ruby>建物<rt>たてもの</rt></ruby>は<ruby>古<rt>ふる</rt></ruby>いです。',r:'Kono tatemono wa furui desu.',en:'This building is old.'},
+  'n5_625':{s:'この<ruby>道<rt>みち</rt></ruby>は<ruby>長<rt>なが</rt></ruby>いです。',r:'Kono michi wa nagai desu.',en:'This road is long.'},
+  'n5_626':{s:'<ruby>公園<rt>こうえん</rt></ruby>に<ruby>人<rt>ひと</rt></ruby>が<ruby>多<rt>おお</rt></ruby>いです。',r:'Kouen ni hito ga ooi desu.',en:'There are many people in the park.'},
+  'n5_627':{s:'<ruby>少<rt>すく</rt></ruby>ない<ruby>時間<rt>じかん</rt></ruby>で<ruby>終<rt>お</rt></ruby>わります。',r:'Sukunai jikan de owarimasu.',en:'It will finish in little time.'},
+  'n5_628':{s:'<ruby>毎日<rt>まいにち</rt></ruby><ruby>練習<rt>れんしゅう</rt></ruby>します。',r:'Mainichi renshuu shimasu.',en:'I practice every day.'},
+  'n5_629':{s:'<ruby>今週<rt>こんしゅう</rt></ruby>は<ruby>忙<rt>いそが</rt></ruby>しいです。',r:'Konshuu wa isogashii desu.',en:'This week is busy.'},
+  'n5_630':{s:'<ruby>花<rt>はな</rt></ruby>が<ruby>咲<rt>さ</rt></ruby>いています。',r:'Hana ga saite imasu.',en:'The flowers are blooming.'},
+};
 
 const IT_DECK = [
   {id:'it_001',front:'ciao',back:'hello / bye',backVi:'xin chào / tạm biệt',note:'Greeting'},
@@ -2935,10 +3585,26 @@ function fcShowCard(){
   document.getElementById('fc-back-reading').textContent = card.read||'';
   const noteEl = document.getElementById('fc-back-note');
   if(noteEl){
-    if(card.note){ noteEl.textContent='📝 '+card.note; noteEl.style.display='block'; }
+    if(card.note){ noteEl.textContent='📝 '+card.note; noteEl.style.display='inline-block'; }
     else noteEl.style.display='none';
   }
   document.getElementById('fc-ratings').style.display = 'none';
+  // Reset example sentence box for new card
+  const exWrap = document.getElementById('fc-example-wrap');
+  if(exWrap){
+    exWrap.style.display = 'none';
+    document.getElementById('fc-example-sentence').innerHTML = '';
+    document.getElementById('fc-example-translation').textContent = '';
+    const romajiEl = document.getElementById('fc-example-romaji');
+    const romajiBtn = document.getElementById('fc-show-romaji-btn');
+    if(romajiEl){ romajiEl.style.display='none'; romajiEl.textContent=''; }
+    if(romajiBtn){ romajiBtn.style.display='none'; romajiBtn.textContent='あ romaji'; romajiBtn.style.background='transparent'; }
+    fcRomajiVisible = false;
+    document.getElementById('fc-example-loading').style.display = 'none';
+  }
+  // Reset card height
+  const cardInner = document.getElementById('fc-card-inner');
+  if(cardInner) cardInner.style.minHeight = '340px';
 
   // Step 3: Restore transition after browser has painted front face
   requestAnimationFrame(()=>{
@@ -2989,6 +3655,139 @@ function fcFlipBack(){
   },100);
 }
 
+function saveApiKey(){
+  const key = document.getElementById('api-key-input').value.trim();
+  if(!key){ document.getElementById('api-key-status').textContent = 'Please enter a key.'; return; }
+  if(!key.startsWith('sk-ant-')){ document.getElementById('api-key-status').textContent = '⚠️ Key should start with sk-ant-'; return; }
+  localStorage.setItem('nj_api_key', key);
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('api-key-status').textContent = '✅ Saved!';
+  document.getElementById('api-key-status').style.color = 'var(--matcha)';
+}
+
+function getApiKey(){ return localStorage.getItem('nj_api_key')||''; }
+
+let fcRomajiVisible = false;
+function fcToggleRomaji(){
+  fcRomajiVisible = !fcRomajiVisible;
+  const romajiEl = document.getElementById('fc-example-romaji');
+  const btn = document.getElementById('fc-show-romaji-btn');
+  if(romajiEl) romajiEl.style.display = fcRomajiVisible ? 'block' : 'none';
+  if(btn){
+    btn.textContent = fcRomajiVisible ? 'あ hide' : 'あ romaji';
+    btn.style.background = fcRomajiVisible ? 'var(--fuji-light)' : 'transparent';
+  }
+  // Re-expand card height
+  const backEl = document.getElementById('fc-back');
+  const cardInner = document.getElementById('fc-card-inner');
+  if(backEl && cardInner) setTimeout(()=>{ cardInner.style.minHeight = backEl.scrollHeight+'px'; }, 30);
+}
+
+async function fcGenerateExample(card){
+  const wrap = document.getElementById('fc-example-wrap');
+  const sentEl = document.getElementById('fc-example-sentence');
+  const transEl = document.getElementById('fc-example-translation');
+  const loadEl = document.getElementById('fc-example-loading');
+  if(!wrap) return;
+
+  const isIt = activeStudyLang === 'it';
+
+  // Reset romaji state for new card
+  fcRomajiVisible = false;
+  const romajiEl = document.getElementById('fc-example-romaji');
+  const romajiBtn = document.getElementById('fc-show-romaji-btn');
+  if(romajiEl){ romajiEl.style.display='none'; romajiEl.textContent=''; }
+  if(romajiBtn) romajiBtn.textContent = 'あ show romaji';
+
+  // JP: use static N5_EXAMPLES lookup
+  if(!isIt){
+    // Try by card.id first, then fallback to matching by card.front text
+    let ex = N5_EXAMPLES[card.id];
+    if(!ex){
+      // Fallback: find matching N5_DECK entry by front text, then look up its example
+      const matchedDeckCard = N5_DECK.find(c => c.front === card.front);
+      if(matchedDeckCard) ex = N5_EXAMPLES[matchedDeckCard.id];
+    }
+    if(ex){
+      wrap.style.display = 'block';
+      loadEl.style.display = 'none';
+
+      // Build sentence HTML — underline instances of the target word (front)
+      let sentHtml = ex.s;
+      const target = card.front;
+      // Wrap target word occurrences in underline span (match in ruby base text)
+      // We need to find the target in the rendered text, so wrap after setting innerHTML
+      sentEl.innerHTML = sentHtml;
+      // After setting innerHTML, find text nodes containing target and highlight bold pink
+      if(target){
+        underlineTargetInRuby(sentEl, target, card.read||'');
+      }
+
+      // Show romaji from stored r field
+      if(romajiEl) romajiEl.textContent = ex.r || '';
+      if(romajiBtn) romajiBtn.style.display = ex.r ? 'inline-block' : 'none';
+      // Translation
+      transEl.textContent = currentLang==='vi' ? (ex.vi||ex.en) : ex.en;
+
+      // Expand card height
+      const backEl = document.getElementById('fc-back');
+      const cardInner = document.getElementById('fc-card-inner');
+      if(backEl && cardInner){
+        setTimeout(()=>{ cardInner.style.minHeight = backEl.scrollHeight + 'px'; }, 50);
+      }
+    } else {
+      wrap.style.display = 'none';
+    }
+    return;
+  }
+
+  // IT: no static examples yet
+  wrap.style.display = 'none';
+}
+
+function underlineTargetInRuby(container, target, altTarget){
+  // Highlight ruby elements whose base text matches target OR altTarget
+  container.querySelectorAll('ruby').forEach(r=>{
+    const rt = r.querySelector('rt');
+    const baseText = rt ? r.textContent.replace(rt.textContent,'').trim() : r.textContent.trim();
+    const rtText = rt ? rt.textContent.trim() : '';
+    const match = [target, altTarget].filter(Boolean).some(t =>
+      baseText === t || baseText.includes(t) || rtText === t || rtText.includes(t)
+    );
+    if(match){
+      r.style.color = 'var(--sakura-deep)';
+      if(rt) rt.style.color = 'var(--sakura-deep)';
+    }
+  });
+  // Also check plain text nodes
+  const targets = [target, altTarget].filter(Boolean);
+  targets.forEach(tgt => {
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    const toWrap = [];
+    let node;
+    while((node = walker.nextNode())){
+      if(node.parentElement.tagName === 'RT') continue;
+      if(node.parentElement.tagName === 'STRONG') continue;
+      if(node.parentElement.style.color === 'var(--sakura-deep)') continue;
+      if(node.textContent.includes(tgt)) toWrap.push(node);
+    }
+    toWrap.forEach(node=>{
+      const parts = node.textContent.split(tgt);
+      const frag = document.createDocumentFragment();
+      parts.forEach((part, i)=>{
+        frag.appendChild(document.createTextNode(part));
+        if(i < parts.length - 1){
+          const s = document.createElement('span');
+          s.style.cssText = 'color:var(--sakura-deep);';
+          s.textContent = tgt;
+          frag.appendChild(s);
+        }
+      });
+      node.parentNode.replaceChild(frag, node);
+    });
+  });
+}
+
 function fcFlip(){
   if(fcFlipped) return;
   fcFlipped = true;
@@ -2997,6 +3796,9 @@ function fcFlip(){
   if(fcSession.length > 0 && fcIdx < fcSession.length){
     document.getElementById('fc-ratings').style.display = 'flex';
   }
+  // Generate example sentence
+  const card = fcSession[fcIdx];
+  if(card) fcGenerateExample(card);
   // Auto-play audio on flip
   if(fcCurrentWord){
     setTimeout(()=>{
@@ -3789,6 +4591,27 @@ function fcLaunchSession(){
   document.getElementById('fc-review-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
 // ===== AUDIO =====
+function fcSpeakExample(e){
+  e.stopPropagation();
+  const sentEl = document.getElementById('fc-example-sentence');
+  if(!sentEl || !window.speechSynthesis) return;
+  // Clone and remove all <rt> elements to get only kanji/kana text
+  const clone = sentEl.cloneNode(true);
+  clone.querySelectorAll('rt').forEach(rt => rt.remove());
+  const text = clone.innerText || clone.textContent;
+  if(!text.trim()) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text.trim());
+  if(activeStudyLang==='it'){
+    utter.lang='it-IT'; utter.rate=0.85;
+    const v=getBestItVoice(); if(v) utter.voice=v;
+  } else {
+    utter.lang='ja-JP'; utter.rate=0.8;
+    const v=getBestJpVoice(); if(v) utter.voice=v;
+  }
+  window.speechSynthesis.speak(utter);
+}
+
 function fcSpeak(e){
   e.stopPropagation();
   if(!fcCurrentWord){ showToast('No word to play'); return; }
@@ -3823,7 +4646,7 @@ const I18N = {
     fc_col_jp:'Japanese', fc_col_meaning:'Meaning', fc_col_next:'Next review', fc_col_played:'Played',
     fc_play_sel:'▶ Play selected', fc_add_mycards:'✍️ Add to My Cards', fc_clear:'Clear',
     fc_due_tooltip:'Shows My Cards due today.',
-    fc_meaning_lbl:'MEANING', fc_hint:'Choose Easy or Hard to continue',
+    fc_meaning_lbl:'MEANING', fc_hint:'rate me to continue →',
     fc_easy:'Easy', fc_hard:'Hard', fc_hard_sub:'daily until Easy',
     fc_replay:'🔁 See again later', fc_skip:'⏭ Skip',
     fc_done_title:'Session complete!', fc_done_sub:'Great work today!', fc_done_again:'▶ Play again',
@@ -3875,7 +4698,7 @@ const I18N = {
     fc_col_jp:'Tiếng Nhật', fc_col_meaning:'Nghĩa', fc_col_next:'Ôn tiếp', fc_col_played:'Đã học',
     fc_play_sel:'▶ Luyện thẻ đã chọn', fc_add_mycards:'✍️ Thêm vào thẻ của tôi', fc_clear:'Xoá',
     fc_due_tooltip:'Hiển thị thẻ đến hạn hôm nay.',
-    fc_meaning_lbl:'NGHĨA', fc_hint:'Chọn Dễ hoặc Khó để tiếp tục',
+    fc_meaning_lbl:'NGHĨA', fc_hint:'đánh giá để tiếp tục',
     fc_easy:'Dễ', fc_hard:'Khó', fc_hard_sub:'lặp mỗi ngày đến khi Dễ',
     fc_replay:'🔁 Xem lại sau', fc_skip:'⏭ Bỏ qua',
     fc_done_title:'Hoàn thành buổi học!', fc_done_sub:'Bạn học giỏi lắm!', fc_done_again:'▶ Học lại',
@@ -4221,7 +5044,18 @@ document.addEventListener('click',function(e){
 })();
 
 
-function toggleSettings(){ document.getElementById('settings-dd').classList.toggle('open'); }
+function toggleSettings(){
+  document.getElementById('settings-dd').classList.toggle('open');
+  // Show API key status
+  const existing = getApiKey();
+  const status = document.getElementById('api-key-status');
+  const input = document.getElementById('api-key-input');
+  if(existing && status){
+    status.textContent = '✅ Key saved (sk-ant-...'+existing.slice(-4)+')';
+    status.style.color = 'var(--matcha)';
+  }
+  if(input) input.placeholder = existing ? 'Enter new key to replace...' : 'sk-ant-...';
+}
 
 function updateSettingsUser(user){
   const panel=document.getElementById('settings-user');
