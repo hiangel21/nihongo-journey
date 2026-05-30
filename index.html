@@ -2775,6 +2775,113 @@ const TOPICS_IT = [
   {val:'movie',      label:'🎬 Movie/Series'},
 ];
 
+var I18N = {
+  en:{
+    app_title:'My <span>Nihongo</span> Journey',
+    app_sub:'頑張れ！Keep going! You\'ve got this ～',
+    lang_label:'🌐 Language', theme_label:'🎨 Theme',
+    nav_log:'📝 Today\'s Log', nav_board:'🔤 Character Board', nav_flash:'🃏 Flashcards',
+    nav_history:'📖 History', nav_report:'📊 Report', nav_goals:'🎯 Goals', nav_ranking:'🏆 Ranking',
+    fc_review:'Review', fc_start:'▶ Start 🌸', fc_add_title:'➕ Add new card',
+    fc_front_lbl:'Japanese (front)', fc_back_lbl:'Meaning (back)', fc_read_lbl:'Reading — shown on back',
+    fc_note_lbl:'Note (optional)', fc_add_btn:'+ Add Card',
+    fc_all_title:'📋 All cards', fc_search:'🔍 Search...',
+    fc_flt_all:'All', fc_flt_mine:'✍️ My Cards', fc_flt_n5:'📚 N5',
+    fc_flt_due:'Due', fc_flt_easy:'🙂 Easy', fc_flt_hard:'😓 Hard',
+    fc_col_jp:'Japanese', fc_col_meaning:'Meaning', fc_col_next:'Next review', fc_col_played:'Played',
+    fc_play_sel:'▶ Play selected', fc_add_mycards:'✍️ Add to My Cards', fc_clear:'Clear',
+    fc_due_tooltip:'Shows My Cards due today.',
+    fc_meaning_lbl:'MEANING', fc_hint:'rate me to continue →',
+    fc_easy:'Easy', fc_hard:'Hard', fc_hard_sub:'daily until Easy',
+    fc_replay:'🔁 See again later', fc_skip:'⏭ Skip',
+    fc_done_title:'Session complete!', fc_done_sub:'Great work today!', fc_done_again:'▶ Play again',
+    fc_no_match:'No cards match this filter. Try a different play mode!',
+    fc_cards_selected:'cards selected', fc_no_cards:'No cards match',
+    fc_mode_labels:{due:'Due Today',all:'All Cards',mine:'My Cards',hira:'Hiragana',kata:'Katakana',date:'Date Filter',hard:'Hard Words'},
+    log_title:'✏️ Log Today\'s Study', log_date:'Date', log_mins:'Minutes',
+    log_topics:'Topics studied', log_notes:'✍️ Notes', log_notes_ph:'What did you learn? Any thoughts...',
+    log_save:'🌸 Save Log 🌸', log_added_today:'Added today (per goal)',
+    goal_title:'🎯 Goals', goal_add:'➕ Add goal',
+    goal_name:'Goal name', goal_type:'Type', goal_target:'Target', goal_unit:'Unit label', goal_deadline:'Deadline',
+    goal_save:'Save Goal', goal_pin:'📌 Pinned Goals',
+    hist_title:'📖 Study History', hist_streak:'🔥 Streak',
+    hist_days:'Total Days', hist_topics:'Topics', hist_notes_lbl:'Notes',
+    hist_journal:'📝 Journal', hist_all_time:'All time', hist_today:'Today',
+    hist_7days:'Last 7 days', hist_30days:'Last 30 days', hist_custom:'Custom period', hist_apply:'Apply',
+    hist_quick:'Quick select',
+    rep_title:'📊 Report', rep_days:'📅 Total Days', rep_hours:'⏱ Total Hours',
+    rep_avg:'📊 Avg min/day', rep_words:'📝 Words learned',
+    rep_chart_title:'📈 Minutes studied', rep_content_title:'📊 Content breakdown',
+    rank_title:'🏆 Leaderboard', rank_desc:'Compare with other learners — updates every time you open.',
+    rank_hours:'⏱ Hours', rank_words:'📝 Words', rank_days:'📅 Days', rank_no_data:'No data yet — be the first! 🌸',
+    set_lang:'🌐 Language', set_theme:'🎨 Theme',
+    set_nickname:'🏷️ Nickname (shown in ranking)', set_nickname_ph:'Enter nickname...',
+    set_save_nick:'Save', set_logout:'🚪 Sign out',
+    toast_saved:'🌸 Saved!', toast_deleted:'🗑 Deleted', toast_added:'Card added!',
+    toast_no_date:'❗ Please select a study date!',
+    toast_no_cards:'❗ No cards in this selection!',
+    toast_select_first:'Select cards first',
+    toast_no_words:'No words selected',
+    sc_days:'Total Days', sc_hours:'Total Hours', sc_avg:'Avg min/day', sc_words:'Words learned',
+    pin_goals:'📌 Pinned Goals', pin_drag:'Drag to reorder priority ↕',
+    pin_empty:'No pinned goals yet.',
+    fc_done_title2:'Session complete!', fc_done_msg:'Come back tomorrow! Keep it up!',
+    rank_you:'(you)',
+  },
+  vi:{
+    app_title:'Hành Trình <span>Tiếng Nhật</span>',
+    app_sub:'頑張れ！Cố lên! Bạn làm được ～',
+    lang_label:'🌐 Ngôn ngữ', theme_label:'🎨 Giao diện',
+    nav_log:'📝 Ghi hôm nay', nav_board:'🔤 Bảng chữ cái', nav_flash:'🃏 Flashcard',
+    nav_history:'📖 Lịch sử', nav_report:'📊 Báo cáo', nav_goals:'🎯 Mục tiêu', nav_ranking:'🏆 Xếp hạng',
+    fc_review:'Ôn luyện', fc_start:'▶ Bắt đầu 🌸', fc_add_title:'➕ Thêm thẻ mới',
+    fc_front_lbl:'Tiếng Nhật (mặt trước)', fc_back_lbl:'Nghĩa (mặt sau)', fc_read_lbl:'Cách đọc — hiển thị mặt sau',
+    fc_note_lbl:'Ghi chú (tuỳ chọn)', fc_add_btn:'+ Thêm thẻ',
+    fc_all_title:'📋 Tất cả thẻ', fc_search:'🔍 Tìm kiếm...',
+    fc_flt_all:'Tất cả', fc_flt_mine:'✍️ Thẻ của tôi', fc_flt_n5:'📚 N5',
+    fc_flt_due:'Đến hạn', fc_flt_easy:'🙂 Dễ', fc_flt_hard:'😓 Khó',
+    fc_col_jp:'Tiếng Nhật', fc_col_meaning:'Nghĩa', fc_col_next:'Ôn tiếp', fc_col_played:'Đã học',
+    fc_play_sel:'▶ Luyện thẻ đã chọn', fc_add_mycards:'✍️ Thêm vào thẻ của tôi', fc_clear:'Xoá',
+    fc_due_tooltip:'Hiển thị thẻ đến hạn hôm nay.',
+    fc_meaning_lbl:'NGHĨA', fc_hint:'đánh giá để tiếp tục',
+    fc_easy:'Dễ', fc_hard:'Khó', fc_hard_sub:'lặp mỗi ngày đến khi Dễ',
+    fc_replay:'🔁 Xem lại sau', fc_skip:'⏭ Bỏ qua',
+    fc_done_title:'Hoàn thành buổi học!', fc_done_sub:'Bạn học giỏi lắm!', fc_done_again:'▶ Học lại',
+    fc_no_match:'Không có thẻ nào phù hợp. Thử chế độ khác!',
+    fc_cards_selected:'thẻ đã chọn', fc_no_cards:'Không có thẻ nào',
+    fc_mode_labels:{due:'Đến hạn hôm nay',all:'Tất cả thẻ',mine:'Thẻ của tôi',hira:'Hiragana',kata:'Katakana',date:'Lọc theo ngày',hard:'Từ khó'},
+    log_title:'✏️ Ghi chép hôm nay', log_date:'Ngày', log_mins:'Phút',
+    log_topics:'Chủ đề đã học', log_notes:'✍️ Ghi chú', log_notes_ph:'Bạn đã học gì? Cảm nghĩ...',
+    log_save:'🌸 Lưu nhật ký 🌸', log_added_today:'Đã thêm hôm nay (theo mục tiêu)',
+    goal_title:'🎯 Mục tiêu', goal_add:'➕ Thêm mục tiêu',
+    goal_name:'Tên mục tiêu', goal_type:'Loại', goal_target:'Chỉ tiêu', goal_unit:'Đơn vị', goal_deadline:'Hạn chót',
+    goal_save:'Lưu mục tiêu', goal_pin:'📌 Mục tiêu đã ghim',
+    hist_title:'📖 Lịch sử học tập', hist_streak:'🔥 Chuỗi ngày',
+    hist_days:'Tổng ngày', hist_topics:'Chủ đề', hist_notes_lbl:'Ghi chú',
+    hist_journal:'📝 Nhật ký', hist_all_time:'Tất cả', hist_today:'Hôm nay',
+    hist_7days:'7 ngày qua', hist_30days:'30 ngày qua', hist_custom:'Khoảng thời gian', hist_apply:'Áp dụng',
+    hist_quick:'Chọn nhanh',
+    rep_title:'📊 Báo cáo', rep_days:'📅 Tổng ngày', rep_hours:'⏱ Tổng giờ',
+    rep_avg:'📊 Trung bình phút/ngày', rep_words:'📝 Từ đã học',
+    rep_chart_title:'📈 Số phút học', rep_content_title:'📊 Phân tích nội dung',
+    rank_title:'🏆 Bảng xếp hạng', rank_desc:'So sánh với những người học cùng — cập nhật mỗi khi bạn mở trang.',
+    rank_hours:'⏱ Giờ học', rank_words:'📝 Từ đã học', rank_days:'📅 Ngày học', rank_no_data:'Chưa có dữ liệu — hãy là người đầu tiên! 🌸',
+    set_lang:'🌐 Ngôn ngữ', set_theme:'🎨 Giao diện',
+    set_nickname:'🏷️ Nickname (hiển thị trong xếp hạng)', set_nickname_ph:'Nhập nickname...',
+    set_save_nick:'Lưu', set_logout:'🚪 Đăng xuất',
+    toast_saved:'🌸 Đã lưu!', toast_deleted:'🗑 Đã xóa', toast_added:'Đã thêm thẻ!',
+    toast_no_date:'❗ Vui lòng chọn ngày học!',
+    toast_no_cards:'❗ Không có thẻ nào trong lựa chọn này!',
+    toast_select_first:'Chọn thẻ trước',
+    toast_no_words:'Chưa chọn từ nào',
+    sc_days:'Tổng ngày', sc_hours:'Tổng giờ', sc_avg:'TB phút/ngày', sc_words:'Từ đã học',
+    pin_goals:'📌 Mục tiêu ghim', pin_drag:'Kéo để sắp xếp ↕',
+    pin_empty:'Chưa có mục tiêu ghim.',
+    fc_done_title2:'Hoàn thành buổi học!', fc_done_msg:'Quay lại ngày mai ôn tập nhé! Cố lên!',
+    rank_you:'(bạn)',
+  }
+};
+
 buildPickers();buildMaster();renderAll();
 
 function renderAll(){updStats();updProg();renderLog();renderGoals();renderMasterBoard();renderPinnedGoals();renderGoalLogInputs();renderTopicPicker();}
@@ -3401,15 +3508,14 @@ function renderReport(){
 // ===== MIGRATE: Remove duplicate My Cards that exist in N5 =====
 // Runs every load — idempotent, fast (just array filter)
 function migrateDeduplicateMyCards(){
-  if(activeStudyLang==='it') return;
+  if(activeStudyLang==='it') return; // JP-only
   const n5Fronts = new Map(N5_DECK.map(c=>[c.front, c.id]));
-  const n5State = JSON.parse(localStorage.getItem('njn5')||'{}');
+  const n5State = JSON.parse(localStorage.getItem(lsKey('njn5'))||'{}');
   let changed = false;
   const keep = [];
   flashcards.forEach(c=>{
     const n5Id = n5Fronts.get(c.front);
     if(n5Id){
-      // Merge SRS state into n5State, drop from flashcards
       const ex = n5State[n5Id]||{interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null,isHard:false,lastReviewDate:null,note:''};
       n5State[n5Id] = {
         ...ex,
@@ -3430,8 +3536,8 @@ function migrateDeduplicateMyCards(){
   });
   if(changed){
     flashcards.length=0; keep.forEach(c=>flashcards.push(c));
-    localStorage.setItem('njfc', JSON.stringify(flashcards));
-    localStorage.setItem('njn5', JSON.stringify(n5State));
+    localStorage.setItem(lsKey('njfc'), JSON.stringify(flashcards));
+    localStorage.setItem(lsKey('njn5'), JSON.stringify(n5State));
   }
 }
 migrateDeduplicateMyCards();
@@ -4640,112 +4746,6 @@ function fcSpeak(e){
 
 // ===== SETTINGS =====
 
-var I18N = {
-  en:{
-    app_title:'My <span>Nihongo</span> Journey',
-    app_sub:'頑張れ！Keep going! You\'ve got this ～',
-    lang_label:'🌐 Language', theme_label:'🎨 Theme',
-    nav_log:'📝 Today\'s Log', nav_board:'🔤 Character Board', nav_flash:'🃏 Flashcards',
-    nav_history:'📖 History', nav_report:'📊 Report', nav_goals:'🎯 Goals', nav_ranking:'🏆 Ranking',
-    fc_review:'Review', fc_start:'▶ Start 🌸', fc_add_title:'➕ Add new card',
-    fc_front_lbl:'Japanese (front)', fc_back_lbl:'Meaning (back)', fc_read_lbl:'Reading — shown on back',
-    fc_note_lbl:'Note (optional)', fc_add_btn:'+ Add Card',
-    fc_all_title:'📋 All cards', fc_search:'🔍 Search...',
-    fc_flt_all:'All', fc_flt_mine:'✍️ My Cards', fc_flt_n5:'📚 N5',
-    fc_flt_due:'Due', fc_flt_easy:'🙂 Easy', fc_flt_hard:'😓 Hard',
-    fc_col_jp:'Japanese', fc_col_meaning:'Meaning', fc_col_next:'Next review', fc_col_played:'Played',
-    fc_play_sel:'▶ Play selected', fc_add_mycards:'✍️ Add to My Cards', fc_clear:'Clear',
-    fc_due_tooltip:'Shows My Cards due today.',
-    fc_meaning_lbl:'MEANING', fc_hint:'rate me to continue →',
-    fc_easy:'Easy', fc_hard:'Hard', fc_hard_sub:'daily until Easy',
-    fc_replay:'🔁 See again later', fc_skip:'⏭ Skip',
-    fc_done_title:'Session complete!', fc_done_sub:'Great work today!', fc_done_again:'▶ Play again',
-    fc_no_match:'No cards match this filter. Try a different play mode!',
-    fc_cards_selected:'cards selected', fc_no_cards:'No cards match',
-    fc_mode_labels:{due:'Due Today',all:'All Cards',mine:'My Cards',hira:'Hiragana',kata:'Katakana',date:'Date Filter',hard:'Hard Words'},
-    log_title:'✏️ Log Today\'s Study', log_date:'Date', log_mins:'Minutes',
-    log_topics:'Topics studied', log_notes:'✍️ Notes', log_notes_ph:'What did you learn? Any thoughts...',
-    log_save:'🌸 Save Log 🌸', log_added_today:'Added today (per goal)',
-    goal_title:'🎯 Goals', goal_add:'➕ Add goal',
-    goal_name:'Goal name', goal_type:'Type', goal_target:'Target', goal_unit:'Unit label', goal_deadline:'Deadline',
-    goal_save:'Save Goal', goal_pin:'📌 Pinned Goals',
-    hist_title:'📖 Study History', hist_streak:'🔥 Streak',
-    hist_days:'Total Days', hist_topics:'Topics', hist_notes_lbl:'Notes',
-    hist_journal:'📝 Journal', hist_all_time:'All time', hist_today:'Today',
-    hist_7days:'Last 7 days', hist_30days:'Last 30 days', hist_custom:'Custom period', hist_apply:'Apply',
-    hist_quick:'Quick select',
-    rep_title:'📊 Report', rep_days:'📅 Total Days', rep_hours:'⏱ Total Hours',
-    rep_avg:'📊 Avg min/day', rep_words:'📝 Words learned',
-    rep_chart_title:'📈 Minutes studied', rep_content_title:'📊 Content breakdown',
-    rank_title:'🏆 Leaderboard', rank_desc:'Compare with other learners — updates every time you open.',
-    rank_hours:'⏱ Hours', rank_words:'📝 Words', rank_days:'📅 Days', rank_no_data:'No data yet — be the first! 🌸',
-    set_lang:'🌐 Language', set_theme:'🎨 Theme',
-    set_nickname:'🏷️ Nickname (shown in ranking)', set_nickname_ph:'Enter nickname...',
-    set_save_nick:'Save', set_logout:'🚪 Sign out',
-    toast_saved:'🌸 Saved!', toast_deleted:'🗑 Deleted', toast_added:'Card added!',
-    toast_no_date:'❗ Please select a study date!',
-    toast_no_cards:'❗ No cards in this selection!',
-    toast_select_first:'Select cards first',
-    toast_no_words:'No words selected',
-    sc_days:'Total Days', sc_hours:'Total Hours', sc_avg:'Avg min/day', sc_words:'Words learned',
-    pin_goals:'📌 Pinned Goals', pin_drag:'Drag to reorder priority ↕',
-    pin_empty:'No pinned goals yet.',
-    fc_done_title2:'Session complete!', fc_done_msg:'Come back tomorrow! Keep it up!',
-    rank_you:'(you)',
-  },
-  vi:{
-    app_title:'Hành Trình <span>Tiếng Nhật</span>',
-    app_sub:'頑張れ！Cố lên! Bạn làm được ～',
-    lang_label:'🌐 Ngôn ngữ', theme_label:'🎨 Giao diện',
-    nav_log:'📝 Ghi hôm nay', nav_board:'🔤 Bảng chữ cái', nav_flash:'🃏 Flashcard',
-    nav_history:'📖 Lịch sử', nav_report:'📊 Báo cáo', nav_goals:'🎯 Mục tiêu', nav_ranking:'🏆 Xếp hạng',
-    fc_review:'Ôn luyện', fc_start:'▶ Bắt đầu 🌸', fc_add_title:'➕ Thêm thẻ mới',
-    fc_front_lbl:'Tiếng Nhật (mặt trước)', fc_back_lbl:'Nghĩa (mặt sau)', fc_read_lbl:'Cách đọc — hiển thị mặt sau',
-    fc_note_lbl:'Ghi chú (tuỳ chọn)', fc_add_btn:'+ Thêm thẻ',
-    fc_all_title:'📋 Tất cả thẻ', fc_search:'🔍 Tìm kiếm...',
-    fc_flt_all:'Tất cả', fc_flt_mine:'✍️ Thẻ của tôi', fc_flt_n5:'📚 N5',
-    fc_flt_due:'Đến hạn', fc_flt_easy:'🙂 Dễ', fc_flt_hard:'😓 Khó',
-    fc_col_jp:'Tiếng Nhật', fc_col_meaning:'Nghĩa', fc_col_next:'Ôn tiếp', fc_col_played:'Đã học',
-    fc_play_sel:'▶ Luyện thẻ đã chọn', fc_add_mycards:'✍️ Thêm vào thẻ của tôi', fc_clear:'Xoá',
-    fc_due_tooltip:'Hiển thị thẻ đến hạn hôm nay.',
-    fc_meaning_lbl:'NGHĨA', fc_hint:'đánh giá để tiếp tục',
-    fc_easy:'Dễ', fc_hard:'Khó', fc_hard_sub:'lặp mỗi ngày đến khi Dễ',
-    fc_replay:'🔁 Xem lại sau', fc_skip:'⏭ Bỏ qua',
-    fc_done_title:'Hoàn thành buổi học!', fc_done_sub:'Bạn học giỏi lắm!', fc_done_again:'▶ Học lại',
-    fc_no_match:'Không có thẻ nào phù hợp. Thử chế độ khác!',
-    fc_cards_selected:'thẻ đã chọn', fc_no_cards:'Không có thẻ nào',
-    fc_mode_labels:{due:'Đến hạn hôm nay',all:'Tất cả thẻ',mine:'Thẻ của tôi',hira:'Hiragana',kata:'Katakana',date:'Lọc theo ngày',hard:'Từ khó'},
-    log_title:'✏️ Ghi chép hôm nay', log_date:'Ngày', log_mins:'Phút',
-    log_topics:'Chủ đề đã học', log_notes:'✍️ Ghi chú', log_notes_ph:'Bạn đã học gì? Cảm nghĩ...',
-    log_save:'🌸 Lưu nhật ký 🌸', log_added_today:'Đã thêm hôm nay (theo mục tiêu)',
-    goal_title:'🎯 Mục tiêu', goal_add:'➕ Thêm mục tiêu',
-    goal_name:'Tên mục tiêu', goal_type:'Loại', goal_target:'Chỉ tiêu', goal_unit:'Đơn vị', goal_deadline:'Hạn chót',
-    goal_save:'Lưu mục tiêu', goal_pin:'📌 Mục tiêu đã ghim',
-    hist_title:'📖 Lịch sử học tập', hist_streak:'🔥 Chuỗi ngày',
-    hist_days:'Tổng ngày', hist_topics:'Chủ đề', hist_notes_lbl:'Ghi chú',
-    hist_journal:'📝 Nhật ký', hist_all_time:'Tất cả', hist_today:'Hôm nay',
-    hist_7days:'7 ngày qua', hist_30days:'30 ngày qua', hist_custom:'Khoảng thời gian', hist_apply:'Áp dụng',
-    hist_quick:'Chọn nhanh',
-    rep_title:'📊 Báo cáo', rep_days:'📅 Tổng ngày', rep_hours:'⏱ Tổng giờ',
-    rep_avg:'📊 Trung bình phút/ngày', rep_words:'📝 Từ đã học',
-    rep_chart_title:'📈 Số phút học', rep_content_title:'📊 Phân tích nội dung',
-    rank_title:'🏆 Bảng xếp hạng', rank_desc:'So sánh với những người học cùng — cập nhật mỗi khi bạn mở trang.',
-    rank_hours:'⏱ Giờ học', rank_words:'📝 Từ đã học', rank_days:'📅 Ngày học', rank_no_data:'Chưa có dữ liệu — hãy là người đầu tiên! 🌸',
-    set_lang:'🌐 Ngôn ngữ', set_theme:'🎨 Giao diện',
-    set_nickname:'🏷️ Nickname (hiển thị trong xếp hạng)', set_nickname_ph:'Nhập nickname...',
-    set_save_nick:'Lưu', set_logout:'🚪 Đăng xuất',
-    toast_saved:'🌸 Đã lưu!', toast_deleted:'🗑 Đã xóa', toast_added:'Đã thêm thẻ!',
-    toast_no_date:'❗ Vui lòng chọn ngày học!',
-    toast_no_cards:'❗ Không có thẻ nào trong lựa chọn này!',
-    toast_select_first:'Chọn thẻ trước',
-    toast_no_words:'Chưa chọn từ nào',
-    sc_days:'Tổng ngày', sc_hours:'Tổng giờ', sc_avg:'TB phút/ngày', sc_words:'Từ đã học',
-    pin_goals:'📌 Mục tiêu ghim', pin_drag:'Kéo để sắp xếp ↕',
-    pin_empty:'Chưa có mục tiêu ghim.',
-    fc_done_title2:'Hoàn thành buổi học!', fc_done_msg:'Quay lại ngày mai ôn tập nhé! Cố lên!',
-    rank_you:'(bạn)',
-  }
-};
 
 function setLang(lang){
   currentLang=lang;
