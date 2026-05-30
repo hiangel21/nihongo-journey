@@ -2043,14 +2043,14 @@ const IT_DECK = [
   {id:'it_565',front:'usare',back:'to use',backVi:'sử dụng',note:'Verb'},
   {id:'it_566',front:'migliorare',back:'to improve',backVi:'cải thiện',note:'Verb'},
   {id:'it_567',front:'dipendere',back:'to depend',backVi:'phụ thuộc',note:'Verb'},
-  {id:'it_568',front:'dimenticare v2',back:'to forget (reminder)',backVi:'quên (nhắc lại)',note:'Verb'},
+  {id:'it_568',front:'abbandonare',back:'to abandon',backVi:'từ bỏ',note:'Verb'},
   {id:'it_569',front:'assicurazione',back:'insurance',backVi:'bảo hiểm',note:'Noun'},
-  {id:'it_570',front:'stipendio v2',back:'salary (reminder)',backVi:'lương (nhắc lại)',note:'Noun'},
+  {id:'it_570',front:'guadagnare',back:'to earn',backVi:'kiếm tiền',note:'Verb'},
   {id:'it_571',front:'mezzo',back:'half',backVi:'một nửa',note:'Adjective'},
   {id:'it_572',front:'intero',back:'whole / entire',backVi:'toàn bộ',note:'Adjective'},
   {id:'it_573',front:'paio',back:'pair / couple',backVi:'đôi / cặp',note:'Noun'},
   {id:'it_574',front:'pezzo',back:'piece',backVi:'mảnh / miếng',note:'Noun'},
-  {id:'it_575',front:'fiume',back:'river',backVi:'sông',note:'Nature'},
+  {id:'it_575',front:'bosco',back:'forest / wood',backVi:'rừng',note:'Nature'},
   {id:'it_576',front:'isola',back:'island',backVi:'đảo',note:'Nature'},
   {id:'it_577',front:'calcolo',back:'calculation',backVi:'tính toán',note:'Noun'},
   {id:'it_578',front:'spiegazione',back:'explanation',backVi:'giải thích',note:'Noun'},
@@ -3309,12 +3309,16 @@ function fcGetAllCards(){
     ...(n5State[c.id]||{interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null}),
     note: n5State[c.id]?.note||c.note||''
   }));
-  // My Cards = user-added cards + deck cards marked addedToMyCards
+  // My Cards = user-added flashcards + deck cards marked addedToMyCards
   const mine = [
     ...flashcards.map(c=>({...c, isN5:false})),
     ...n5.filter(c=>c.addedToMyCards===true)
   ];
-  return {n5, mine, all:[...n5,...flashcards.map(c=>({...c,isN5:false}))]};
+  // all = n5 deck + user flashcards that are NOT duplicates of deck cards
+  // (deck cards with addedToMyCards:true are already in n5, don't add from flashcards again)
+  const n5Ids = new Set(n5.map(c=>String(c.id)));
+  const uniqueFlashcards = flashcards.filter(c=>!n5Ids.has(String(c.id)));
+  return {n5, mine, all:[...n5,...uniqueFlashcards.map(c=>({...c,isN5:false}))]};
 }
 
 function saveN5State(card){
