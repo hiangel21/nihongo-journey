@@ -3515,7 +3515,16 @@ function fcAddCard(){
   const note  = document.getElementById('fc-in-note').value.trim();
   const tag   = '';
   if(!front||!back){ showToast('❗ Japanese and Meaning are required'); return; }
-  // Duplicate check
+
+  // Check if already in N5/IT deck — redirect to "Add to My Cards" instead
+  const activeDeck = activeStudyLang==='it' ? IT_DECK : N5_DECK;
+  const inDeck = activeDeck.find(c=>c.front===front);
+  if(inDeck){
+    showToast(`ℹ️ "${front}" is already in the N5 deck. Use "Add to My Cards" on that card instead.`);
+    return;
+  }
+
+  // Check duplicate in existing flashcards
   const dup = flashcards.find(c=>c.front.trim()===front||c.back.trim().toLowerCase()===back.toLowerCase());
   if(dup){
     const ok = confirm(`⚠️ "${front}" already exists in your deck (${dup.front} = ${dup.back}).\n\nAdd anyway?`);
@@ -4631,7 +4640,7 @@ function fcSpeak(e){
 
 // ===== SETTINGS =====
 
-const I18N = {
+var I18N = {
   en:{
     app_title:'My <span>Nihongo</span> Journey',
     app_sub:'頑張れ！Keep going! You\'ve got this ～',
