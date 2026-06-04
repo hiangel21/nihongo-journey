@@ -5545,20 +5545,20 @@ window.saveLog = function(){ _origSaveLog(); if(!IS_LOCAL && currentUser) saveLo
 if(!IS_LOCAL){
   // Production — full auth flow
   let authResolved = false;
+  console.log('[Auth] IS_LOCAL=false, starting auth flow');
 
   supa.auth.onAuthStateChange(async (event, session)=>{
     authResolved = true;
+    console.log('[Auth] event:', event, 'session:', !!session?.user);
 
     if(session?.user){
       currentUser = session.user;
       hideLogin();
       addLogoutBtn();
       updateSettingsUser(currentUser);
-      // Clean URL hash to prevent re-triggering
       if(window.location.hash.includes('access_token')){
         window.history.replaceState(null,'',window.location.pathname);
       }
-      // Only load data on initial sign in, not on every token refresh
       if(event === 'SIGNED_IN' || event === 'INITIAL_SESSION'){
         const {data:existing} = await supa.from('n5_state').select('user_id').eq('user_id',currentUser.id).single();
         if(!existing){
@@ -5570,16 +5570,17 @@ if(!IS_LOCAL){
       }
 
     } else if(event === 'SIGNED_OUT' || (event === 'INITIAL_SESSION' && !session)){
-      // Show login on explicit sign out OR when app loads with no session
+      console.log('[Auth] No session → showLogin()');
       currentUser = null;
       showLogin();
     }
-    // TOKEN_REFRESHED and other events: do nothing if already logged in
   });
 
   // Fallback: show login only if no auth after 5s and not in OAuth flow
   setTimeout(()=>{
+    console.log('[Auth] 5s timeout — authResolved:', authResolved);
     if(!authResolved && !window.location.hash.includes('access_token')){
+      console.log('[Auth] Timeout fallback → showLogin()');
       showLogin();
     }
   }, 5000);
