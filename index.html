@@ -5325,9 +5325,28 @@ const supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 
 let currentUser = null;
 
-// Show/hide login overlay
-function showLogin(){ const o=document.getElementById('login-overlay'); if(o){o.style.display='flex';} }
-function hideLogin(){ const o=document.getElementById('login-overlay'); if(o){o.style.display='none';} }
+// Show/hide login overlay — guard against DOM-not-ready race
+// (this script runs before the overlay div is parsed; INITIAL_SESSION fires as a
+// microtask before parser reaches the overlay, so element can be null on first call)
+function _whenDOMReady(fn){
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', fn, {once:true});
+  } else {
+    fn();
+  }
+}
+function showLogin(){
+  _whenDOMReady(()=>{
+    const o=document.getElementById('login-overlay');
+    if(o){o.style.display='flex';} else {console.warn('[Auth] login-overlay still missing');}
+  });
+}
+function hideLogin(){
+  _whenDOMReady(()=>{
+    const o=document.getElementById('login-overlay');
+    if(o){o.style.display='none';}
+  });
+}
 
 // Google sign in
 async function signInGoogle(){
