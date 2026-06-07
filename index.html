@@ -4367,9 +4367,11 @@ function fcGetAllCards(){
   // flashcards that are NOT already in the deck (by front text)
   const uniqueFlashcards = flashcards.filter(c => !n5Fronts.has(c.front));
 
-  // My Cards = unique user flashcards + deck cards marked addedToMyCards
+  // My Cards = unique user flashcards (excluding LT pending) + deck cards marked addedToMyCards
   const mine = [
-    ...uniqueFlashcards.map(c=>({...c, isN5:false})),
+    ...uniqueFlashcards
+      .filter(c => !(typeof c.tag === 'string' && c.tag.indexOf('lt-pending-') === 0))
+      .map(c=>({...c, isN5:false})),
     ...n5.filter(c=>c.addedToMyCards===true)
   ];
 
@@ -5326,14 +5328,10 @@ const supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 let currentUser = null;
 
 // Show/hide login overlay — guard against DOM-not-ready race
-// (this script runs before the overlay div is parsed; INITIAL_SESSION fires as a
-// microtask before parser reaches the overlay, so element can be null on first call)
 function _whenDOMReady(fn){
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', fn, {once:true});
-  } else {
-    fn();
-  }
+  } else { fn(); }
 }
 function showLogin(){
   _whenDOMReady(()=>{
@@ -5623,6 +5621,30 @@ const LT_MODULES = [
     id:'m3', name:'Module 3', tracks:'Tracks 5–6',
     pattern:'-ation → -are · voglio + verb · lo, ti', lsKey:'lt_m3',
     cards:[{"en": "to invite", "it": "invitare", "type": "word", "pron": "in-vi-TA-re"}, {"en": "to donate", "it": "donare", "type": "word", "pron": "do-NA-re"}, {"en": "to celebrate", "it": "celebrare", "type": "word", "pron": "che-le-BRA-re"}, {"en": "to coordinate", "it": "coordinare", "type": "word", "pron": "ko-or-di-NA-re"}, {"en": "to terminate", "it": "terminare", "type": "word", "pron": "ter-mi-NA-re"}, {"en": "to finish", "it": "finire", "type": "word", "pron": "fi-NI-re"}, {"en": "to separate", "it": "separare", "type": "word", "pron": "se-pa-RA-re"}, {"en": "to use", "it": "usare", "type": "word", "pron": "u-ZA-re"}, {"en": "to imagine", "it": "immaginare", "type": "word", "pron": "im-ma-dʒi-NA-re"}, {"en": "to visit", "it": "visitare", "type": "word", "pron": "vi-zi-TA-re"}, {"en": "to cancel", "it": "cancellare", "type": "word", "pron": "kan-chel-LA-re"}, {"en": "well", "it": "bene", "type": "word", "pron": "BE-ne"}, {"en": "to educate", "it": "educare", "type": "ext", "note": "education → educare", "pron": "e-du-KA-re"}, {"en": "to create", "it": "creare", "type": "ext", "note": "creation → creare", "pron": "kre-A-re"}, {"en": "to prepare", "it": "preparare", "type": "ext", "note": "preparation → preparare", "pron": "pre-pa-RA-re"}, {"en": "to motivate", "it": "motivare", "type": "ext", "note": "motivation → motivare", "pron": "mo-ti-VA-re"}, {"en": "to liberate", "it": "liberare", "type": "ext", "note": "liberation → liberare", "pron": "li-be-RA-re"}, {"en": "to decorate", "it": "decorare", "type": "ext", "note": "decoration → decorare", "pron": "de-ko-RA-re"}, {"en": "to explore", "it": "esplorare", "type": "ext", "note": "exploration → esplorare", "pron": "es-plo-RA-re"}, {"en": "to admire", "it": "ammirare", "type": "ext", "note": "admiration → ammirare", "pron": "am-mi-RA-re"}, {"en": "I want to donate", "it": "voglio donare", "type": "sentence", "pron": "VOL-yo do-NA-re"}, {"en": "I want to use it", "it": "lo voglio usare", "type": "sentence", "pron": "lo VOL-yo u-ZA-re"}, {"en": "I want to finish", "it": "voglio finire", "type": "sentence", "pron": "VOL-yo fi-NI-re"}, {"en": "I want to finish it", "it": "lo voglio terminare", "type": "sentence", "pron": "lo VOL-yo ter-mi-NA-re"}, {"en": "I do not want to finish it", "it": "non lo voglio terminare", "type": "sentence", "pron": "non lo VOL-yo ter-mi-NA-re"}, {"en": "I do not want to imagine", "it": "non voglio immaginare", "type": "sentence", "pron": "non VOL-yo im-ma-dʒi-NA-re"}, {"en": "I love you", "it": "ti voglio bene", "type": "sentence", "pron": "ti VOL-yo BE-ne"}, {"en": "I want to visit you", "it": "ti voglio visitare", "type": "sentence", "pron": "ti VOL-yo vi-zi-TA-re"}, {"en": "I want to invite you", "it": "ti voglio invitare", "type": "sentence", "pron": "ti VOL-yo in-vi-TA-re"}, {"en": "I want to cancel it", "it": "lo voglio cancellare", "type": "sentence", "pron": "lo VOL-yo kan-chel-LA-re"}, {"en": "I do not want to cancel it", "it": "non lo voglio cancellare", "type": "sentence", "pron": "non lo VOL-yo kan-chel-LA-re"}, {"en": "I want to celebrate", "it": "voglio celebrare", "type": "sentence", "pron": "VOL-yo che-le-BRA-re"}, {"en": "I want to create it", "it": "lo voglio creare", "type": "sentence", "pron": "lo VOL-yo kre-A-re"}, {"en": "I want to educate you", "it": "ti voglio educare", "type": "sentence", "pron": "ti VOL-yo e-du-KA-re"}, {"en": "I do not want to separate", "it": "non voglio separare", "type": "sentence", "pron": "non VOL-yo se-pa-RA-re"}, {"en": "I want to prepare it", "it": "lo voglio preparare", "type": "sentence", "pron": "lo VOL-yo pre-pa-RA-re"}, {"en": "I do not want to use it", "it": "non lo voglio usare", "type": "sentence", "pron": "non lo VOL-yo u-ZA-re"}, {"en": "I want to motivate you", "it": "ti voglio motivare", "type": "sentence", "pron": "ti VOL-yo mo-ti-VA-re"}, {"en": "I want to explore", "it": "voglio esplorare", "type": "sentence", "pron": "VOL-yo es-plo-RA-re"}, {"en": "I do not want to imagine it", "it": "non lo voglio immaginare", "type": "sentence", "pron": "non lo VOL-yo im-ma-dʒi-NA-re"}]
+  },
+  {
+    id:'m4', name:'Module 4', tracks:'Tracks 7–8',
+    pattern:'2-verb · clitic placement (lo, mi, ti)', lsKey:'lt_m4',
+    cards:[
+      {"en":"to confirm","it":"confermare","type":"word","pron":"con-fer-MA-re"},
+      {"en":"to cancel","it":"cancellare","type":"word","pron":"can-cel-LA-re"},
+      {"en":"to prepare","it":"preparare","type":"word","pron":"pre-pa-RA-re"},
+      {"en":"to invite","it":"invitare","type":"word","pron":"in-vi-TA-re"},
+      {"en":"to create","it":"creare","type":"word","pron":"cre-A-re"},
+      {"en":"to complicate","it":"complicare","type":"word","pron":"com-pli-CA-re"},
+      {"en":"to contact","it":"contattare","type":"word","pron":"con-tat-TA-re"},
+      {"en":"to organize","it":"organizzare","type":"word","pron":"or-ga-niz-ZA-re"},
+      {"en":"to present","it":"presentare","type":"word","pron":"pre-zen-TA-re"},
+      {"en":"I want to confirm myself","it":"mi voglio confermare","it2":"voglio confermarmi","type":"sentence","pron":"mi VOL-yo con-fer-MA-re","pron2":"VOL-yo con-fer-MAR-mi"},
+      {"en":"I want to cancel it","it":"lo voglio cancellare","it2":"voglio cancellarlo","type":"sentence","pron":"lo VOL-yo kan-chel-LA-re","pron2":"VOL-yo kan-chel-LAR-lo"},
+      {"en":"I want to get ready","it":"mi voglio preparare","it2":"voglio prepararmi","type":"sentence","pron":"mi VOL-yo pre-pa-RA-re","pron2":"VOL-yo pre-pa-RAR-mi"},
+      {"en":"I want to invite you","it":"ti voglio invitare","it2":"voglio invitarti","type":"sentence","pron":"ti VOL-yo in-vi-TA-re","pron2":"VOL-yo in-vi-TAR-ti"},
+      {"en":"I want to create it","it":"lo voglio creare","it2":"voglio crearlo","type":"sentence","pron":"lo VOL-yo cre-A-re","pron2":"VOL-yo cre-AR-lo"},
+      {"en":"it's not possible to cancel it","it":"non è possibile cancellarlo","type":"sentence","pron":"non è pos-SI-bi-le kan-chel-LAR-lo"},
+      {"en":"it's not possible to confirm it","it":"non è possibile confermarlo","type":"sentence","pron":"non è pos-SI-bi-le con-fer-MAR-lo"},
+      {"en":"it's not possible to organize it","it":"non è possibile organizzarlo","type":"sentence","pron":"non è pos-SI-bi-le or-ga-niz-ZAR-lo"},
+      {"en":"it's not possible to present it","it":"non è possibile presentarlo","type":"sentence","pron":"non è pos-SI-bi-le pre-zen-TAR-lo"}
+    ]
   }
 ];
 
@@ -5670,7 +5692,7 @@ function ltIsNew(mod){
 function ltReviewAll(){
   // Study first module that has been started
   const first = LT_MODULES.find(m => !ltIsNew(m));
-  if(first) ltStartSession(first.id, 'review');
+  if(first) ltShowDirectionPicker(first.id, 'review');
 }
 
 function ltFilterRef(query){
@@ -5706,7 +5728,7 @@ function ltRenderMain(){
   dueMods.forEach(m => {
     if(doneTodayMods.find(d=>d.id===m.id)) return;
     const s = ltGetModuleStatus(m);
-    todayHTML += `<div class="lt-today-item lt-review" onclick="ltStartSession('${m.id}','review')">
+    todayHTML += `<div class="lt-today-item lt-review" onclick="ltShowDirectionPicker('${m.id}','review')">
       <div class="lt-ti-left">
         <div class="lt-ti-icon lt-review-ic">🔁</div>
         <div>
@@ -5716,7 +5738,7 @@ function ltRenderMain(){
       </div>
       <div class="lt-ti-right">
         <span class="lt-badge lt-badge-review">due today</span>
-        <button class="lt-btn lt-btn-primary" onclick="event.stopPropagation();ltStartSession('${m.id}','review')">Start</button>
+        <button class="lt-btn lt-btn-primary" onclick="event.stopPropagation();ltShowDirectionPicker('${m.id}','review')">Start</button>
       </div>
     </div>`;
   });
@@ -5724,7 +5746,7 @@ function ltRenderMain(){
   // Show first unstarted module as "new"
   const firstNew = newMods[0];
   if(firstNew){
-    todayHTML += `<div class="lt-today-item lt-new" onclick="ltStartSession('${firstNew.id}','new')">
+    todayHTML += `<div class="lt-today-item lt-new" onclick="ltShowDirectionPicker('${firstNew.id}','new')">
       <div class="lt-ti-left">
         <div class="lt-ti-icon lt-new-ic">📖</div>
         <div>
@@ -5734,7 +5756,7 @@ function ltRenderMain(){
       </div>
       <div class="lt-ti-right">
         <span class="lt-badge lt-badge-new">new</span>
-        <button class="lt-btn lt-btn-primary" onclick="event.stopPropagation();ltStartSession('${firstNew.id}','new')">Start</button>
+        <button class="lt-btn lt-btn-primary" onclick="event.stopPropagation();ltShowDirectionPicker('${firstNew.id}','new')">Start</button>
       </div>
     </div>`;
   }
@@ -5761,7 +5783,7 @@ function ltRenderMain(){
   );
   availMods.forEach(m => {
     const s = ltGetModuleStatus(m);
-    todayHTML += `<div class="lt-today-item" style="border-left:3px solid var(--border);opacity:.75;" onclick="ltStartSession('${m.id}','review')">
+    todayHTML += `<div class="lt-today-item" style="border-left:3px solid var(--border);opacity:.75;" onclick="ltShowDirectionPicker('${m.id}','review')">
       <div class="lt-ti-left">
         <div class="lt-ti-icon" style="background:var(--border);font-size:16px;">📖</div>
         <div>
@@ -5770,7 +5792,7 @@ function ltRenderMain(){
         </div>
       </div>
       <div class="lt-ti-right">
-        <button class="lt-btn" onclick="event.stopPropagation();ltStartSession('${m.id}','review')" style="font-size:11px;">▶ Review</button>
+        <button class="lt-btn" onclick="event.stopPropagation();ltShowDirectionPicker('${m.id}','review')" style="font-size:11px;">▶ Review</button>
       </div>
     </div>`;
   });
@@ -5823,7 +5845,7 @@ function ltRenderMain(){
             </div>
           </div>
           <span style="font-size:10px;color:var(--ink-soft);white-space:nowrap;">${reviewLabel}</span>
-          <button class="lt-btn ${s.firstSeen ? 'lt-btn-primary' : ''}" onclick="event.stopPropagation();ltStartSession('${m.id}','${!s.firstSeen?'new':'review'}')" style="font-size:11px;padding:4px 12px;">
+          <button class="lt-btn ${s.firstSeen ? 'lt-btn-primary' : ''}" onclick="event.stopPropagation();ltShowDirectionPicker('${m.id}','${!s.firstSeen?'new':'review'}')" style="font-size:11px;padding:4px 12px;">
             ${!s.firstSeen ? '📖 Start' : ltIsDueToday(m) ? '🔁 Review' : '▶ Study'}
           </button>
           <span class="lt-chevron" id="lt-chev-${m.id}">▾</span>
@@ -5846,8 +5868,8 @@ function ltRenderMain(){
             <span style="font-size:11px;color:${flip==='en'?'var(--ink)':'var(--ink-soft)'};">EN front</span>
           </div>
           <div style="display:flex;gap:8px;">
-            ${s.firstSeen ? `<button class="lt-btn" onclick="event.stopPropagation();ltStartSession('${m.id}','review')" style="font-size:11px;">🔁 Review again</button>` : ''}
-            <button class="lt-btn lt-btn-primary" onclick="event.stopPropagation();ltStartSession('${m.id}','${!s.firstSeen?'new':'review'}')">
+            ${s.firstSeen ? `<button class="lt-btn" onclick="event.stopPropagation();ltShowDirectionPicker('${m.id}','review')" style="font-size:11px;">🔁 Review again</button>` : ''}
+            <button class="lt-btn lt-btn-primary" onclick="event.stopPropagation();ltShowDirectionPicker('${m.id}','${!s.firstSeen?'new':'review'}')">
               ${!s.firstSeen ? '📖 Start' : ltIsDueToday(m) ? '🔁 Review due' : '▶ Study'}
             </button>
           </div>
@@ -5874,6 +5896,14 @@ function ltRenderMain(){
   }).join('');
 
   el.innerHTML = `
+    <!-- Words learned counter — auto-saved from LT sessions -->
+    <div style="background:white;border:0.5px solid var(--border);border-radius:14px;padding:12px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:10px;color:var(--ink-soft);letter-spacing:.6px;text-transform:uppercase;font-weight:700;">Words learned</div>
+        <div style="font-size:26px;font-weight:800;color:var(--fuji);line-height:1.1;margin-top:2px;">${ltCountLearnedWords()}</div>
+      </div>
+      <div style="font-size:10px;color:var(--ink-soft);text-align:right;line-height:1.4;">Auto-saved to<br><span style="color:var(--fuji);font-weight:600;">My Cards</span></div>
+    </div>
     <!-- Today's plan — pink bg -->
     <div style="background:var(--sakura-light);border-radius:14px;padding:16px;margin-bottom:18px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -5936,6 +5966,60 @@ let ltSessionIdx = 0;
 let ltSessionFlipped = false;
 let ltSessionModId = null;
 let ltSessionStartTime = null;
+
+// ===== LT DIRECTION PICKER =====
+let ltPickerModId = null;
+let ltPickerType = null;
+let ltPickerDir = 'en';
+
+function ltShowDirectionPicker(modId, type){
+  const mod = LT_MODULES.find(m=>m.id===modId);
+  if(!mod) return;
+  ltPickerModId = modId;
+  ltPickerType = type;
+  ltPickerDir = localStorage.getItem('lt_flip_'+modId) || 'en';
+  const nameEl = document.getElementById('lt-dir-mod-name');
+  if(nameEl) nameEl.textContent = mod.name + ' · ' + mod.pattern;
+  ltUpdateDirCards();
+  const modal = document.getElementById('lt-dir-modal');
+  if(modal) modal.style.display = 'flex';
+}
+
+function ltPickDir(dir){
+  ltPickerDir = dir;
+  ltUpdateDirCards();
+}
+
+function ltUpdateDirCards(){
+  const en = document.getElementById('lt-dir-card-en');
+  const it = document.getElementById('lt-dir-card-it');
+  if(!en || !it) return;
+  const sel = ltPickerDir==='en' ? en : it;
+  const unsel = ltPickerDir==='en' ? it : en;
+  sel.style.border = '2px solid var(--fuji)';
+  sel.style.background = 'var(--fuji-light)';
+  sel.querySelectorAll('.lt-dir-label')[0].style.color = '#7B5EA7';
+  unsel.style.border = '1.5px solid var(--border)';
+  unsel.style.background = 'white';
+  unsel.querySelectorAll('.lt-dir-label')[0].style.color = 'var(--ink)';
+}
+
+function ltConfirmStart(){
+  if(!ltPickerModId) return;
+  localStorage.setItem('lt_flip_'+ltPickerModId, ltPickerDir);
+  const modal = document.getElementById('lt-dir-modal');
+  if(modal) modal.style.display = 'none';
+  const mid = ltPickerModId, mtype = ltPickerType;
+  ltPickerModId = null; ltPickerType = null;
+  ltStartSession(mid, mtype);
+}
+
+function ltCancelPicker(){
+  const modal = document.getElementById('lt-dir-modal');
+  if(modal) modal.style.display = 'none';
+  ltPickerModId = null;
+  ltPickerType = null;
+}
 
 function ltStartSession(modId, type){
   const mod = LT_MODULES.find(m=>m.id===modId);
@@ -6006,9 +6090,35 @@ function ltShowCard(){
   inner.style.transition='transform 0.45s';
   setTimeout(()=>{ if(backEl) backEl.style.visibility='visible'; },10);
 
-  const frontText = card.flip==='en' ? card.en : card.it;
-  const backText  = card.flip==='en' ? card.it : card.en;
-  const backSub   = card.flip==='en' && card.note ? card.note : '';
+  // === DUAL-FORM HANDLING (Module 4: clitic placement variants) ===
+  const hasDualForm = !!card.it2;
+  let activeIt = card.it;
+  let activePron = card.pron;
+
+  if(hasDualForm && card.flip === 'it'){
+    // IT→EN direction with dual form: alternate which form shown on front
+    const formKey = 'lt_lastform_' + ltSessionModId + '_' + card.en;
+    const lastForm = localStorage.getItem(formKey);
+    let nextForm;
+    if(lastForm === '1') nextForm = '2';
+    else if(lastForm === '2') nextForm = '1';
+    else nextForm = Math.random() < 0.5 ? '1' : '2'; // first time → random
+    localStorage.setItem(formKey, nextForm);
+    if(nextForm === '2'){
+      activeIt = card.it2;
+      activePron = card.pron2 || card.pron;
+    }
+  }
+
+  const frontText = card.flip==='en' ? card.en : activeIt;
+
+  // Back text: for EN→IT dual form show BOTH; otherwise normal
+  let backText;
+  if(card.flip === 'en'){
+    backText = hasDualForm ? (card.it + ' / ' + card.it2) : card.it;
+  } else {
+    backText = card.en;
+  }
 
   document.getElementById('lt-fc-front-lang').textContent = card.flip==='en' ? 'English → guess Italian' : 'Italian → guess English';
   document.getElementById('lt-fc-front-text').textContent = frontText;
@@ -6022,15 +6132,13 @@ function ltShowCard(){
 
   document.getElementById('lt-fc-back-text').textContent = backText;
 
-  // Pronunciation — show for both directions
+  // Pronunciation — show for both directions; for dual-form EN→IT show both
   const pronEl = document.getElementById('lt-fc-back-pron');
   if(pronEl){
-    if(card.flip==='en'){
-      // Front=EN, Back=IT: show pronunciation of IT word
-      pronEl.textContent = card.pron || '';
+    if(card.flip==='en' && hasDualForm){
+      pronEl.textContent = (card.pron||'') + ' / ' + (card.pron2||'');
     } else {
-      // Front=IT, Back=EN: show pronunciation of IT word (front word)
-      pronEl.textContent = card.pron || '';
+      pronEl.textContent = activePron || card.pron || '';
     }
   }
 
@@ -6085,9 +6193,106 @@ function ltRate(rating){
     if(rating==='easy') state.__stats.easy++;
     else state.__stats.hard++;
     ltSaveState(mod.lsKey,state);
+
+    // Auto-save word (not sentences) to My Cards in Italian deck
+    if(card.type !== 'sentence' && activeStudyLang === 'it'){
+      ltAddToMyCards(card, mod);
+    }
   }
   ltSessionIdx++;
   ltShowCard();
+}
+
+// Push an LT word to All Cards pool with PENDING tag.
+// Skip if already in IT_DECK (no need, already in All Cards via built-in deck).
+// Skip if already in flashcards (any tag — dedup by Italian text).
+function ltAddToMyCards(card, mod){
+  if(!card || !card.it) return;
+  const key = card.it.trim().toLowerCase();
+  if(!key) return;
+
+  // Already in IT_DECK? Skip flashcards push; deck card will be marked on module complete.
+  if(typeof IT_DECK !== 'undefined' && Array.isArray(IT_DECK)){
+    if(IT_DECK.find(c => c.front && c.front.trim().toLowerCase() === key)) return;
+  }
+
+  // Already in flashcards? Skip (could be pending from same module, promoted from earlier, or user-added).
+  if(flashcards.find(c => c.front && c.front.trim().toLowerCase() === key)) return;
+
+  flashcards.push({
+    id: Date.now() + Math.floor(Math.random()*1000),
+    front: card.it,
+    back: card.en,
+    read: card.pron || '',
+    note: card.note ? `${card.note} · from ${mod.name}` : `from ${mod.name} · ${mod.pattern}`,
+    tag: 'lt-pending-' + mod.id,
+    interval: 0, step: 0, nextReview: null, reviewCount: 0,
+    created: fcToday()
+  });
+  saveFC();
+}
+
+// On module completion: promote all pending cards of this module → My Cards.
+// Also mark IT_DECK overlap cards as addedToMyCards in itn5 state.
+function ltPromoteModuleCards(modId){
+  const mod = LT_MODULES.find(m => m.id === modId);
+  if(!mod) return;
+  const pendingTag = 'lt-pending-' + modId;
+  const promotedTag = 'lt-' + modId;
+  let changed = 0;
+
+  // 1. Flip pending → promoted in flashcards array
+  flashcards.forEach(c => {
+    if(c && c.tag === pendingTag){
+      c.tag = promotedTag;
+      changed++;
+    }
+  });
+  if(changed > 0) saveFC();
+
+  // 2. Mark IT_DECK overlap words (this module's words that exist in IT_DECK)
+  if(typeof IT_DECK !== 'undefined' && Array.isArray(IT_DECK)){
+    const stKey = 'itn5';
+    let st = {};
+    try { st = JSON.parse(localStorage.getItem(stKey)||'{}'); } catch(e){ st = {}; }
+    let deckChanged = 0;
+    mod.cards.forEach(card => {
+      if(card.type === 'sentence') return;
+      const key = (card.it||'').trim().toLowerCase();
+      if(!key) return;
+      const deckCard = IT_DECK.find(c => c.front && c.front.trim().toLowerCase() === key);
+      if(!deckCard) return;
+      if(!st[deckCard.id]) st[deckCard.id] = {interval:0,step:0,nextReview:null,reviewCount:0,lastRating:null};
+      if(!st[deckCard.id].addedToMyCards || st[deckCard.id].fromLT !== promotedTag){
+        st[deckCard.id].addedToMyCards = true;
+        st[deckCard.id].fromLT = promotedTag;
+        deckChanged++;
+      }
+    });
+    if(deckChanged > 0) localStorage.setItem(stKey, JSON.stringify(st));
+  }
+}
+
+// Count unique words learned via LT (promoted only, not pending).
+function ltCountLearnedWords(){
+  let count = 0;
+  if(Array.isArray(flashcards)){
+    count += flashcards.filter(c =>
+      c && typeof c.tag === 'string' &&
+      c.tag.indexOf('lt-') === 0 &&
+      c.tag.indexOf('lt-pending-') !== 0
+    ).length;
+  }
+  // Also count IT_DECK words marked as learned via LT
+  try {
+    const st = JSON.parse(localStorage.getItem('itn5')||'{}');
+    Object.values(st).forEach(s => {
+      if(s && s.addedToMyCards === true && typeof s.fromLT === 'string' && s.fromLT.indexOf('lt-') === 0){
+        count++;
+      }
+    });
+  } catch(e){}
+  return count;
 }
 function ltExitFC(){
   document.getElementById('lt-fc-card').style.display='none';
@@ -6173,6 +6378,11 @@ function ltSessionComplete(){
     state.__stats = {easy:0, hard:0};
     ltSaveState(mod.lsKey, state);
 
+    // Promote pending LT cards (from this module) into My Cards
+    if(activeStudyLang === 'it'){
+      ltPromoteModuleCards(mod.id);
+    }
+
     // Log time — always to active language log, same format as flashcard session
     const wordsReviewed = easy + hard;
     const autoNote = `📖 Grammar: ${mod.name} · ${wordsReviewed} cards · ${mins} min`;
@@ -6239,7 +6449,7 @@ function ltSessionComplete(){
         📅 Next review in <strong>${nextInterval} days</strong>
       </div>
       <div style="display:flex;gap:10px;justify-content:center;">
-        <button onclick="ltStartSession('${ltSessionModId}','review')" style="padding:10px 20px;border-radius:12px;border:2px solid var(--fuji);background:white;color:var(--fuji);font-size:13px;font-weight:700;cursor:pointer;">🔁 Study again</button>
+        <button onclick="ltShowDirectionPicker('${ltSessionModId}','review')" style="padding:10px 20px;border-radius:12px;border:2px solid var(--fuji);background:white;color:var(--fuji);font-size:13px;font-weight:700;cursor:pointer;">🔁 Study again</button>
         <button onclick="ltExitFC()" style="padding:10px 24px;border-radius:12px;border:none;background:var(--fuji);color:white;font-size:13px;font-weight:700;cursor:pointer;">← Back to Grammar</button>
       </div>
     </div>`;
@@ -6247,6 +6457,30 @@ function ltSessionComplete(){
 }
 
 </script>
+<!-- LT DIRECTION PICKER MODAL -->
+<div id="lt-dir-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:white;border-radius:18px;width:100%;max-width:420px;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.22);">
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:11px;color:var(--ink-soft);letter-spacing:.6px;margin-bottom:6px;font-weight:700;">CHỌN HƯỚNG HỌC</div>
+      <div id="lt-dir-mod-name" style="font-size:16px;font-weight:700;color:var(--ink);"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+      <div id="lt-dir-card-en" onclick="ltPickDir('en')" style="cursor:pointer;padding:20px 12px;border:2px solid var(--fuji);background:var(--fuji-light);border-radius:14px;text-align:center;transition:all .15s;">
+        <div style="font-size:26px;line-height:1;margin-bottom:10px;">🇬🇧 → 🇮🇹</div>
+        <div class="lt-dir-label" style="font-size:13px;font-weight:600;color:#7B5EA7;">English → Italiano</div>
+      </div>
+      <div id="lt-dir-card-it" onclick="ltPickDir('it')" style="cursor:pointer;padding:20px 12px;border:1.5px solid var(--border);background:white;border-radius:14px;text-align:center;transition:all .15s;">
+        <div style="font-size:26px;line-height:1;margin-bottom:10px;">🇮🇹 → 🇬🇧</div>
+        <div class="lt-dir-label" style="font-size:13px;font-weight:600;color:var(--ink);">Italiano → English</div>
+      </div>
+    </div>
+    <button onclick="ltConfirmStart()" style="width:100%;padding:12px;font-size:14px;font-weight:700;color:white;background:var(--fuji);border:none;border-radius:12px;cursor:pointer;">▶ Start session</button>
+    <div style="text-align:center;margin-top:10px;">
+      <button onclick="ltCancelPicker()" style="background:transparent;border:none;color:var(--ink-soft);font-size:13px;cursor:pointer;padding:4px 12px;">Hủy</button>
+    </div>
+  </div>
+</div>
+
 <!-- LOGIN OVERLAY -->
 <div id="login-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,var(--sakura-light),var(--fuji-light));z-index:9999;align-items:center;justify-content:center;">
   <div style="background:white;border-radius:24px;padding:40px 36px;max-width:380px;width:90%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.15);">
