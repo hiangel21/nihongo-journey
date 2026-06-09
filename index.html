@@ -3772,9 +3772,15 @@ function fcAddCard(){
     const ok = confirm(`⚠️ "${front}" already exists in your deck (${dup.front} = ${dup.back}).\n\nAdd anyway?`);
     if(!ok) return;
   }
-  flashcards.push({ id:Date.now(), front, back, read, note, tag,
-    interval:0, step:0, nextReview:null, reviewCount:0, created:fcToday() });
+  const newCard = { id:Date.now(), front, back, read, note, tag,
+    interval:0, step:0, nextReview:null, reviewCount:0, created:fcToday() };
+  flashcards.push(newCard);
   saveFC();
+  // Per-card cloud sync (immediate, avoids full-upload race conditions)
+  fcCloudUpsertCard(newCard).catch(e=>{
+    console.error('[Cloud] fcAddCard upsert failed — card may not persist on reload:', e);
+    showToast('⚠️ Cloud sync failed, card saved locally only. Check console.');
+  });
   ['fc-in-front','fc-in-back','fc-in-read','fc-in-note']
     .forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
   document.getElementById('fc-in-front')?.focus();
@@ -3786,6 +3792,11 @@ function fcDeleteCard(id){
   if(!confirm('Delete this card?')) return;
   flashcards = flashcards.filter(c=>String(c.id)!==String(id));
   saveFC(); fcRenderAll();
+  // Per-card cloud delete (prevents zombie card resurrection on next loadFromCloud)
+  fcCloudDeleteCard(id).catch(e=>{
+    console.error('[Cloud] fcDeleteCard failed — card may return on reload:', e);
+    showToast('⚠️ Cloud delete failed. Card may reappear on reload.');
+  });
 }
 
 function fcStartSession(){
@@ -4132,6 +4143,11 @@ function fcRate(rating){
   if(si>=0) Object.assign(fcSession[si],{step,interval:daysAhead,nextReview:fc.nextReview,reviewCount:fc.reviewCount,lastRating:rating,isHard:fc.isHard,lastReviewDate:fc.lastReviewDate});
 
   if(fc.isN5) saveN5State(fc); else saveFC();
+
+  // Per-card cloud sync for user cards (SRS state changes)
+  if(!fc.isN5){
+    fcCloudUpsertCard(fc).catch(e=>console.error('[Cloud] fcRate sync failed for', fc.front, e));
+  }
 
   fcIdx++;
   document.getElementById('fc-ratings').style.display='none';
@@ -5432,10 +5448,11 @@ async function migrateToCloud(userId){
   showToast('✅ Sync hoàn tất!');
 }
 
-// Load data from Supabase → localStorage
+// Load data from Supabase → localStorage (MERGE strategy to preserve local-only cards / tag field)
 async function loadFromCloud(userId){
   // JP Flashcards
-  const {data:fc} = await supa.from('flashcards').select('*').eq('user_id',userId);
+  const {data:fc, error: fcErr} = await supa.from('flashcards').select('*').eq('user_id',userId);
+  if(fcErr) console.error('[Cloud] JP flashcards load error:', fcErr);
   if(fc?.length){
     const cards = fc.map(c=>({
       id:c.card_id, front:c.front, back:c.back, backVi:c.back_vi,
@@ -5444,12 +5461,30 @@ async function loadFromCloud(userId){
       lastReviewDate:c.last_review_date, reviewCount:c.review_count,
       lastRating:c.last_rating, isHard:c.is_hard, created:c.created_at
     }));
-    localStorage.setItem('njfc', JSON.stringify(cards));
-    if(activeStudyLang==='jp') flashcards = cards;
+    if(activeStudyLang==='jp'){
+      // Merge: keep local-only cards (tag, unsynced LT-pending, etc.)
+      const localById = new Map(flashcards.map(c => [String(c.id), c]));
+      const merged = cards.map(cloudCard => {
+        const lc = localById.get(String(cloudCard.id));
+        return lc ? {...cloudCard, tag: lc.tag} : cloudCard;
+      });
+      const cloudIds = new Set(cards.map(c=>String(c.id)));
+      const localOnly = flashcards.filter(c => !cloudIds.has(String(c.id)));
+      flashcards = [...merged, ...localOnly];
+      localStorage.setItem('njfc', JSON.stringify(flashcards));
+      // Re-upload local-only ones so cloud catches up
+      if(localOnly.length > 0){
+        console.log(`[Cloud] Re-uploading ${localOnly.length} local-only JP cards`);
+        saveFC_cloud().catch(e=>console.error('[Cloud] Re-upload JP failed:',e));
+      }
+    } else {
+      localStorage.setItem('njfc', JSON.stringify(cards));
+    }
   }
 
   // IT Flashcards
-  const {data:itfc} = await supa.from('it_flashcards').select('*').eq('user_id',userId);
+  const {data:itfc, error: itErr} = await supa.from('it_flashcards').select('*').eq('user_id',userId);
+  if(itErr) console.error('[Cloud] IT flashcards load error:', itErr);
   if(itfc?.length){
     const itCards = itfc.map(c=>({
       id:c.card_id, front:c.front, back:c.back, backVi:c.back_vi,
@@ -5458,17 +5493,54 @@ async function loadFromCloud(userId){
       lastReviewDate:c.last_review_date, reviewCount:c.review_count,
       lastRating:c.last_rating, isHard:c.is_hard, created:c.created_at
     }));
-    localStorage.setItem('itfc', JSON.stringify(itCards));
-    if(activeStudyLang==='it') flashcards = itCards;
+    if(activeStudyLang==='it'){
+      // Merge: keep local-only cards (tag, unsynced LT-pending, etc.)
+      const localById = new Map(flashcards.map(c => [String(c.id), c]));
+      const merged = itCards.map(cloudCard => {
+        const lc = localById.get(String(cloudCard.id));
+        return lc ? {...cloudCard, tag: lc.tag} : cloudCard;
+      });
+      const cloudIds = new Set(itCards.map(c=>String(c.id)));
+      const localOnly = flashcards.filter(c => !cloudIds.has(String(c.id)));
+      flashcards = [...merged, ...localOnly];
+      localStorage.setItem('itfc', JSON.stringify(flashcards));
+      console.log(`[Cloud] IT load: ${itCards.length} cloud, ${localOnly.length} local-only`);
+      // Heal legacy untagged LT cards after cloud merge
+      if(typeof ltMigrateUntaggedCards === 'function') ltMigrateUntaggedCards();
+      // Re-upload local-only ones so cloud catches up
+      if(localOnly.length > 0){
+        console.log(`[Cloud] Re-uploading ${localOnly.length} local-only IT cards`);
+        saveFC_cloud().catch(e=>console.error('[Cloud] Re-upload IT failed:',e));
+      }
+    } else {
+      localStorage.setItem('itfc', JSON.stringify(itCards));
+    }
   }
 
   // N5 state (JP)
   const {data:n5d} = await supa.from('n5_state').select('state').eq('user_id',userId).single();
   if(n5d?.state) localStorage.setItem('njn5', JSON.stringify(n5d.state));
 
-  // IT state
-  const {data:itd} = await supa.from('it_state').select('state').eq('user_id',userId).single();
-  if(itd?.state) localStorage.setItem('itn5', JSON.stringify(itd.state));
+  // IT state — MERGE to preserve local-only markers (fromLT, addedToMyCards)
+  const {data:itd, error: itdErr} = await supa.from('it_state').select('state').eq('user_id',userId).single();
+  if(itdErr && itdErr.code !== 'PGRST116') console.error('[Cloud] IT state load error:', itdErr);
+  if(itd?.state){
+    const cloudState = itd.state || {};
+    const localState = JSON.parse(localStorage.getItem('itn5')||'{}');
+    const merged = {...cloudState};
+    // Preserve local-only fields per card-id (fromLT, addedToMyCards if set locally)
+    Object.keys(localState).forEach(cid => {
+      const lc = localState[cid] || {};
+      const cc = merged[cid] || {};
+      merged[cid] = {
+        ...cc,
+        // Preserve local LT markers if they exist
+        fromLT: lc.fromLT || cc.fromLT,
+        addedToMyCards: lc.addedToMyCards || cc.addedToMyCards || false
+      };
+    });
+    localStorage.setItem('itn5', JSON.stringify(merged));
+  }
 
   // Logs
   const {data:lg} = await supa.from('logs').select('*').eq('user_id',userId).order('date',{ascending:false});
@@ -5508,7 +5580,38 @@ async function saveFC_cloud(){
     is_hard:c.isHard||false,
     created_at:c.created||fcToday()
   }));
-  await supa.from(table).upsert(cards,{onConflict:'user_id,card_id'});
+  const {error} = await supa.from(table).upsert(cards,{onConflict:'user_id,card_id'});
+  if(error){ console.error('[Cloud] saveFC_cloud failed:', error, 'sample card:', cards[0]); throw error; }
+}
+
+// Per-card cloud sync — preferred over full-array upsert to avoid multi-device races
+// and zombie cards. Caller should `.catch()` to avoid unhandled rejections.
+async function fcCloudUpsertCard(card){
+  if(IS_LOCAL || !currentUser || !card) return;
+  const table = activeStudyLang === 'it' ? 'it_flashcards' : 'flashcards';
+  const payload = {
+    user_id: currentUser.id, card_id: String(card.id),
+    front: card.front, back: card.back, back_vi: card.backVi || '',
+    reading: card.read || '', note: card.note || '',
+    step: card.step || 0, interval: card.interval || 0,
+    next_review: card.nextReview || null,
+    last_review_date: card.lastReviewDate || null,
+    review_count: card.reviewCount || 0,
+    last_rating: card.lastRating || null,
+    is_hard: card.isHard || false,
+    created_at: card.created || fcToday()
+  };
+  const {error} = await supa.from(table).upsert(payload, {onConflict:'user_id,card_id'});
+  if(error){ console.error('[Cloud] upsert card failed:', error, {front:card.front, id:card.id}); throw error; }
+  return true;
+}
+
+async function fcCloudDeleteCard(cardId){
+  if(IS_LOCAL || !currentUser || cardId == null) return;
+  const table = activeStudyLang === 'it' ? 'it_flashcards' : 'flashcards';
+  const {error} = await supa.from(table).delete().eq('user_id', currentUser.id).eq('card_id', String(cardId));
+  if(error){ console.error('[Cloud] delete card failed:', error, {cardId}); throw error; }
+  return true;
 }
 
 // Save N5/IT state to cloud
@@ -5555,7 +5658,7 @@ const _origSaveFC = saveFC;
 const _origSaveN5State = saveN5State;
 const _origSaveLog = saveLog;
 
-window.saveFC = function(){ _origSaveFC(); if(!IS_LOCAL && currentUser) saveFC_cloud(); };
+window.saveFC = function(){ _origSaveFC(); if(!IS_LOCAL && currentUser) saveFC_cloud().catch(e=>console.error('[Cloud] saveFC fire-and-forget error:',e)); };
 window.saveN5State = function(fc){ _origSaveN5State(fc); if(!IS_LOCAL && currentUser) saveN5_cloud(); };
 window.saveLog = function(){ _origSaveLog(); if(!IS_LOCAL && currentUser) saveLogs_cloud(); };
 
@@ -5645,6 +5748,39 @@ const LT_MODULES = [
       {"en":"it's not possible to organize it","it":"non è possibile organizzarlo","type":"sentence","pron":"non è pos-SI-bi-le or-ga-niz-ZAR-lo"},
       {"en":"it's not possible to present it","it":"non è possibile presentarlo","type":"sentence","pron":"non è pos-SI-bi-le pre-zen-TAR-lo"}
     ]
+  },
+  {
+    id:'m5', name:'Module 5', tracks:'Track 9',
+    pattern:'2-verb · voglio/devo + clitic', lsKey:'lt_m5',
+    cards:[
+      {"en":"to demonstrate","it":"dimostrare","type":"word","pron":"di-mo-STRA-re","note":"prefix di- = of/from"},
+      {"en":"to show","it":"mostrare","type":"word","pron":"mo-STRA-re"},
+      {"en":"to warn","it":"avvertire","type":"word","pron":"av-ver-TI-re","note":"-ire verb (3rd group)"},
+      {"en":"to cooperate","it":"cooperare","type":"word","pron":"co-o-pe-RA-re"},
+      {"en":"to inform","it":"informare","type":"word","pron":"in-for-MA-re"},
+      {"en":"the monster","it":"il mostro","type":"word","pron":"il MO-stro"},
+      {"en":"the capital","it":"la capitale","type":"word","pron":"la ca-pi-TA-le"},
+      {"en":"mortal","it":"mortale","type":"word","pron":"mor-TA-le"},
+      {"en":"I have to / I must","it":"devo","type":"word","pron":"DE-vo","note":"from dovere (debt/duty)"},
+      {"en":"I want to show you","it":"ti voglio mostrare","it2":"voglio mostrarti","type":"sentence","pron":"ti VOL-yo mo-STRA-re","pron2":"VOL-yo mo-STRAR-ti"},
+      {"en":"I want to warn you","it":"ti voglio avvertire","it2":"voglio avvertirti","type":"sentence","pron":"ti VOL-yo av-ver-TI-re","pron2":"VOL-yo av-ver-TIR-ti"},
+      {"en":"I have to warn you","it":"ti devo avvertire","it2":"devo avvertirti","type":"sentence","pron":"ti DE-vo av-ver-TI-re","pron2":"DE-vo av-ver-TIR-ti"},
+      {"en":"I have to visit you","it":"ti devo visitare","it2":"devo visitarti","type":"sentence","pron":"ti DE-vo vi-zi-TA-re","pron2":"DE-vo vi-zi-TAR-ti"},
+      {"en":"I must inform myself","it":"mi devo informare","it2":"devo informarmi","type":"sentence","pron":"mi DE-vo in-for-MA-re","pron2":"DE-vo in-for-MAR-mi"},
+      {"en":"I want to demonstrate it","it":"lo voglio dimostrare","it2":"voglio dimostrarlo","type":"sentence","pron":"lo VOL-yo di-mo-STRA-re","pron2":"VOL-yo di-mo-STRAR-lo"},
+      {"en":"I have to cancel it","it":"lo devo cancellare","it2":"devo cancellarlo","type":"sentence","pron":"lo DE-vo kan-chel-LA-re","pron2":"DE-vo kan-chel-LAR-lo"},
+      {"en":"I have to prepare myself","it":"mi devo preparare","it2":"devo prepararmi","type":"sentence","pron":"mi DE-vo pre-pa-RA-re","pron2":"DE-vo pre-pa-RAR-mi"},
+      {"en":"I want to show you the capital","it":"ti voglio mostrare la capitale","it2":"voglio mostrarti la capitale","type":"sentence","pron":"ti VOL-yo mo-STRA-re la ca-pi-TA-le","pron2":"VOL-yo mo-STRAR-ti la ca-pi-TA-le"},
+      {"en":"I have to show you the capital","it":"ti devo mostrare la capitale","it2":"devo mostrarti la capitale","type":"sentence","pron":"ti DE-vo mo-STRA-re la ca-pi-TA-le","pron2":"DE-vo mo-STRAR-ti la ca-pi-TA-le"},
+      {"en":"I must cooperate","it":"devo cooperare","type":"sentence","pron":"DE-vo co-o-pe-RA-re"},
+      {"en":"it's not possible to demonstrate it","it":"non è possibile dimostrarlo","type":"sentence","pron":"non è pos-SI-bi-le di-mo-STRAR-lo"},
+      {"en":"I have to warn the monster","it":"devo avvertire il mostro","type":"sentence","pron":"DE-vo av-ver-TI-re il MO-stro"},
+      {"en":"I have to confirm myself","it":"mi devo confermare","it2":"devo confermarmi","type":"sentence","pron":"mi DE-vo con-fer-MA-re","pron2":"DE-vo con-fer-MAR-mi"},
+      {"en":"I have to create it","it":"lo devo creare","it2":"devo crearlo","type":"sentence","pron":"lo DE-vo cre-A-re","pron2":"DE-vo cre-AR-lo"},
+      {"en":"I have to invite you","it":"ti devo invitare","it2":"devo invitarti","type":"sentence","pron":"ti DE-vo in-vi-TA-re","pron2":"DE-vo in-vi-TAR-ti"},
+      {"en":"I have to organize it","it":"lo devo organizzare","it2":"devo organizzarlo","type":"sentence","pron":"lo DE-vo or-ga-niz-ZA-re","pron2":"DE-vo or-ga-niz-ZAR-lo"},
+      {"en":"I have to present it","it":"lo devo presentare","it2":"devo presentarlo","type":"sentence","pron":"lo DE-vo pre-zen-TA-re","pron2":"DE-vo pre-zen-TAR-lo"}
+    ]
   }
 ];
 
@@ -5714,6 +5850,8 @@ function ltFilterCards(query){
 function ltRenderMain(){
   const el = document.getElementById('lt-main-view');
   if(!el) return;
+  // Retroactively tag any untagged LT cards (heals legacy cloud round-trip data loss)
+  ltMigrateUntaggedCards();
   const today = fcToday();
 
   // Build today's plan
@@ -6216,10 +6354,18 @@ function ltAddToMyCards(card, mod){
     if(IT_DECK.find(c => c.front && c.front.trim().toLowerCase() === key)) return;
   }
 
-  // Already in flashcards? Skip (could be pending from same module, promoted from earlier, or user-added).
-  if(flashcards.find(c => c.front && c.front.trim().toLowerCase() === key)) return;
+  // Already in flashcards? If untagged (lost on cloud round-trip), retroactively add pending tag so promote works.
+  const existing = flashcards.find(c => c.front && c.front.trim().toLowerCase() === key);
+  if(existing){
+    if(!existing.tag || existing.tag === ''){
+      existing.tag = 'lt-pending-' + mod.id;
+      saveFC();
+      fcCloudUpsertCard(existing).catch(e=>console.error('[Cloud] LT re-tag sync failed:',e));
+    }
+    return;
+  }
 
-  flashcards.push({
+  const newCard = {
     id: Date.now() + Math.floor(Math.random()*1000),
     front: card.it,
     back: card.en,
@@ -6228,8 +6374,10 @@ function ltAddToMyCards(card, mod){
     tag: 'lt-pending-' + mod.id,
     interval: 0, step: 0, nextReview: null, reviewCount: 0,
     created: fcToday()
-  });
+  };
+  flashcards.push(newCard);
   saveFC();
+  fcCloudUpsertCard(newCard).catch(e=>console.error('[Cloud] LT add sync failed:',e));
 }
 
 // On module completion: promote all pending cards of this module → My Cards.
@@ -6242,13 +6390,21 @@ function ltPromoteModuleCards(modId){
   let changed = 0;
 
   // 1. Flip pending → promoted in flashcards array
+  const changedCards = [];
   flashcards.forEach(c => {
     if(c && c.tag === pendingTag){
       c.tag = promotedTag;
+      changedCards.push(c);
       changed++;
     }
   });
-  if(changed > 0) saveFC();
+  if(changed > 0){
+    saveFC();
+    // Per-card cloud sync for each promoted card
+    changedCards.forEach(c => {
+      fcCloudUpsertCard(c).catch(e=>console.error('[Cloud] LT promote sync failed for',c.front,e));
+    });
+  }
 
   // 2. Mark IT_DECK overlap words (this module's words that exist in IT_DECK)
   if(typeof IT_DECK !== 'undefined' && Array.isArray(IT_DECK)){
@@ -6269,12 +6425,58 @@ function ltPromoteModuleCards(modId){
         deckChanged++;
       }
     });
-    if(deckChanged > 0) localStorage.setItem(stKey, JSON.stringify(st));
+    if(deckChanged > 0){
+      localStorage.setItem(stKey, JSON.stringify(st));
+      // Sync itn5 to cloud so fromLT markers survive reload
+      if(typeof saveN5_cloud === 'function' && !IS_LOCAL && currentUser){
+        saveN5_cloud().catch(e=>console.error('[Cloud] itn5 sync after promote failed:',e));
+      }
+    }
   }
 }
 
 // Count unique words learned via LT (promoted only, not pending).
+// One-time migration: retroactively tag LT cards that lost their `tag` field
+// from earlier cloud round-trips (before the cloud-sync fix). Infers modId from
+// the `note` field, e.g. "from Module 4 · ..." → tag = "lt-m4".
+// Idempotent — safe to call repeatedly.
+function ltMigrateUntaggedCards(){
+  if(activeStudyLang !== 'it'){ console.log('[LT migration] skip — not IT mode (lang='+activeStudyLang+')'); return 0; }
+  if(!Array.isArray(flashcards)){ console.log('[LT migration] skip — flashcards not array'); return 0; }
+  let untagged = 0, matched = 0, changed = 0;
+  const samples = [];
+  const changedCards = [];
+  flashcards.forEach(c => {
+    if(!c) return;
+    if(c.tag && c.tag !== '') return;
+    untagged++;
+    if(samples.length < 3) samples.push({front:c.front, note:c.note, tag:c.tag});
+    if(typeof c.note !== 'string') return;
+    const m = c.note.match(/from Module (\d+)/i);
+    if(m){
+      matched++;
+      c.tag = 'lt-m' + m[1];
+      changedCards.push(c);
+      changed++;
+    }
+  });
+  console.log(`[LT migration] flashcards=${flashcards.length}, untagged=${untagged}, regex-matched=${matched}, tagged=${changed}`);
+  if(untagged > 0 && matched === 0){
+    console.log('[LT migration] sample untagged cards:', samples);
+  }
+  if(changed > 0){
+    saveFC();
+    // Per-card cloud sync for each migrated card
+    changedCards.forEach(c => {
+      fcCloudUpsertCard(c).catch(e=>console.error('[Cloud] migration sync failed for',c.front,e));
+    });
+  }
+  return changed;
+}
+
 function ltCountLearnedWords(){
+  // Always run migration first so counter reflects latest state
+  ltMigrateUntaggedCards();
   let count = 0;
   if(Array.isArray(flashcards)){
     count += flashcards.filter(c =>
