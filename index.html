@@ -3219,8 +3219,13 @@ function updStats(){
   set(['sm','ravg'],avgMin);
   set(['sc-hours','rh'],totalHours);
   // Words learned = My Cards + N5/IT deck cards reviewed at least once
+  // + LT promoted cards (learned via Grammar modules, even if not yet reviewed in flashcards)
   const {all: allForCount} = fcGetAllCards();
-  const wordsLearned = allForCount.filter(c=>c.reviewCount>0).length;
+  const wordsLearned = allForCount.filter(c =>
+    (c.reviewCount > 0) ||
+    (typeof c.tag === 'string' && c.tag.indexOf('lt-') === 0 && c.tag.indexOf('lt-pending-') !== 0) ||
+    (c.addedToMyCards === true && typeof c.fromLT === 'string')
+  ).length;
   const fc=document.getElementById('sc-cards');if(fc)fc.textContent=wordsLearned;
   const rwords=document.getElementById('r-words');if(rwords)rwords.textContent=wordsLearned;
 }
@@ -5459,14 +5464,15 @@ async function loadFromCloud(userId){
       read:c.reading, note:c.note,
       step:c.step, interval:c.interval, nextReview:c.next_review,
       lastReviewDate:c.last_review_date, reviewCount:c.review_count,
-      lastRating:c.last_rating, isHard:c.is_hard, created:c.created_at
+      lastRating:c.last_rating, isHard:c.is_hard, created:c.created_at,
+      tag:c.tag||''
     }));
     if(activeStudyLang==='jp'){
       // Merge: keep local-only cards (tag, unsynced LT-pending, etc.)
       const localById = new Map(flashcards.map(c => [String(c.id), c]));
       const merged = cards.map(cloudCard => {
         const lc = localById.get(String(cloudCard.id));
-        return lc ? {...cloudCard, tag: lc.tag} : cloudCard;
+        return lc ? {...cloudCard, tag: cloudCard.tag || lc.tag || ''} : cloudCard;
       });
       const cloudIds = new Set(cards.map(c=>String(c.id)));
       const localOnly = flashcards.filter(c => !cloudIds.has(String(c.id)));
@@ -5491,14 +5497,15 @@ async function loadFromCloud(userId){
       read:c.reading, note:c.note,
       step:c.step, interval:c.interval, nextReview:c.next_review,
       lastReviewDate:c.last_review_date, reviewCount:c.review_count,
-      lastRating:c.last_rating, isHard:c.is_hard, created:c.created_at
+      lastRating:c.last_rating, isHard:c.is_hard, created:c.created_at,
+      tag:c.tag||''
     }));
     if(activeStudyLang==='it'){
       // Merge: keep local-only cards (tag, unsynced LT-pending, etc.)
       const localById = new Map(flashcards.map(c => [String(c.id), c]));
       const merged = itCards.map(cloudCard => {
         const lc = localById.get(String(cloudCard.id));
-        return lc ? {...cloudCard, tag: lc.tag} : cloudCard;
+        return lc ? {...cloudCard, tag: cloudCard.tag || lc.tag || ''} : cloudCard;
       });
       const cloudIds = new Set(itCards.map(c=>String(c.id)));
       const localOnly = flashcards.filter(c => !cloudIds.has(String(c.id)));
@@ -5578,7 +5585,8 @@ async function saveFC_cloud(){
     review_count:c.reviewCount||0,
     last_rating:c.lastRating||null,
     is_hard:c.isHard||false,
-    created_at:c.created||fcToday()
+    created_at:c.created||fcToday(),
+    tag:c.tag||null
   }));
   const {error} = await supa.from(table).upsert(cards,{onConflict:'user_id,card_id'});
   if(error){ console.error('[Cloud] saveFC_cloud failed:', error, 'sample card:', cards[0]); throw error; }
@@ -5599,7 +5607,8 @@ async function fcCloudUpsertCard(card){
     review_count: card.reviewCount || 0,
     last_rating: card.lastRating || null,
     is_hard: card.isHard || false,
-    created_at: card.created || fcToday()
+    created_at: card.created || fcToday(),
+    tag: card.tag || null
   };
   const {error} = await supa.from(table).upsert(payload, {onConflict:'user_id,card_id'});
   if(error){ console.error('[Cloud] upsert card failed:', error, {front:card.front, id:card.id}); throw error; }
@@ -5713,12 +5722,12 @@ const LT_MODULES = [
   {
     id:'m1', name:'Module 1', tracks:'Tracks 1–3',
     pattern:'-al → -ale · -ly → -mente', lsKey:'lt_m1',
-    cards:[{"en": "normal", "it": "normale", "type": "word", "pron": "nor-MA-le"}, {"en": "general", "it": "generale", "type": "word", "pron": "dʒe-ne-RA-le"}, {"en": "legal", "it": "legale", "type": "word", "pron": "le-GA-le"}, {"en": "illegal", "it": "illegale", "type": "word", "pron": "il-le-GA-le"}, {"en": "global", "it": "globale", "type": "word", "pron": "glo-BA-le"}, {"en": "plural", "it": "plurale", "type": "word", "pron": "plu-RA-le"}, {"en": "royal", "it": "regale", "type": "word", "pron": "re-GA-le"}, {"en": "loyal", "it": "leale", "type": "word", "pron": "le-A-le"}, {"en": "ideal", "it": "ideale", "type": "word", "pron": "i-de-A-le"}, {"en": "original", "it": "originale", "type": "word", "pron": "o-ri-dʒi-NA-le"}, {"en": "real / true", "it": "reale", "type": "word", "pron": "re-A-le"}, {"en": "natural", "it": "naturale", "type": "word", "pron": "na-tu-RA-le"}, {"en": "digital", "it": "digitale", "type": "word", "pron": "di-dʒi-TA-le"}, {"en": "final", "it": "finale", "type": "word", "pron": "fi-NA-le"}, {"en": "normal (adv)", "it": "normalmente", "type": "word", "pron": "nor-mal-MEN-te"}, {"en": "generally", "it": "generalmente", "type": "word", "pron": "dʒe-ne-ral-MEN-te"}, {"en": "globally", "it": "globalmente", "type": "word", "pron": "glo-bal-MEN-te"}, {"en": "originally", "it": "originalmente", "type": "word", "pron": "o-ri-dʒi-nal-MEN-te"}, {"en": "really", "it": "realmente", "type": "word", "pron": "re-al-MEN-te"}, {"en": "naturally", "it": "naturalmente", "type": "word", "pron": "na-tu-ral-MEN-te"}, {"en": "personal", "it": "personale", "type": "ext", "pron": "per-so-NA-le"}, {"en": "national", "it": "nazionale", "type": "ext", "pron": "nat-syo-NA-le"}, {"en": "special", "it": "speciale", "type": "ext", "pron": "spe-CHA-le"}, {"en": "formal", "it": "formale", "type": "ext", "pron": "for-MA-le"}, {"en": "central", "it": "centrale", "type": "ext", "pron": "chen-TRA-le"}, {"en": "cultural", "it": "culturale", "type": "ext", "pron": "kul-tu-RA-le"}, {"en": "musical", "it": "musicale", "type": "ext", "pron": "mu-zi-KA-le"}, {"en": "officially", "it": "ufficialmente", "type": "ext", "pron": "uf-fi-chal-MEN-te"}, {"en": "practically", "it": "praticamente", "type": "ext", "pron": "pra-ti-ka-MEN-te"}, {"en": "physically", "it": "fisicamente", "type": "ext", "pron": "fi-zi-ka-MEN-te"}, {"en": "it is global", "it": "è globale", "type": "sentence", "pron": "è glo-BA-le"}, {"en": "it is normal", "it": "è normale", "type": "sentence", "pron": "è nor-MA-le"}, {"en": "it is natural", "it": "è naturale", "type": "sentence", "pron": "è na-tu-RA-le"}, {"en": "it is not ideal", "it": "non è ideale", "type": "sentence", "pron": "non è i-de-A-le"}, {"en": "it is original", "it": "è originale", "type": "sentence", "pron": "è o-ri-dʒi-NA-le"}, {"en": "it is not original", "it": "non è originale", "type": "sentence", "pron": "non è o-ri-dʒi-NA-le"}, {"en": "it is real and original", "it": "è reale e originale", "type": "sentence", "pron": "è re-A-le e o-ri-dʒi-NA-le"}, {"en": "it is normal and natural", "it": "è normale e naturale", "type": "sentence", "pron": "è nor-MA-le e na-tu-RA-le"}, {"en": "she is loyal", "it": "è leale", "type": "sentence", "pron": "è le-A-le"}, {"en": "normally he is loyal", "it": "normalmente è leale", "type": "sentence", "pron": "nor-mal-MEN-te è le-A-le"}, {"en": "generally it is legal", "it": "generalmente è legale", "type": "sentence", "pron": "dʒe-ne-ral-MEN-te è le-GA-le"}, {"en": "it is not global", "it": "non è globale", "type": "sentence", "pron": "non è glo-BA-le"}, {"en": "it is personal", "it": "è personale", "type": "sentence", "pron": "è per-so-NA-le"}, {"en": "it is not normal", "it": "non è normale", "type": "sentence", "pron": "non è nor-MA-le"}, {"en": "officially it is legal", "it": "ufficialmente è legale", "type": "sentence", "pron": "uf-fi-chal-MEN-te è le-GA-le"}, {"en": "it is practically natural", "it": "è praticamente naturale", "type": "sentence", "pron": "è pra-ti-ka-MEN-te na-tu-RA-le"}, {"en": "it is culturally special", "it": "è culturalmente speciale", "type": "sentence", "pron": "è kul-tu-ral-MEN-te spe-CHA-le"}, {"en": "it is not real", "it": "non è reale", "type": "sentence", "pron": "non è re-A-le"}, {"en": "it is practically ideal", "it": "è praticamente ideale", "type": "sentence", "pron": "è pra-ti-ka-MEN-te i-de-A-le"}]
+    cards:[{"en": "normal", "it": "normale", "type": "word", "pron": "nor-MA-le"}, {"en": "general", "it": "generale", "type": "word", "pron": "dʒe-ne-RA-le"}, {"en": "legal", "it": "legale", "type": "word", "pron": "le-GA-le"}, {"en": "illegal", "it": "illegale", "type": "word", "pron": "il-le-GA-le"}, {"en": "global", "it": "globale", "type": "word", "pron": "glo-BA-le"}, {"en": "plural", "it": "plurale", "type": "word", "pron": "plu-RA-le"}, {"en": "loyal", "it": "leale", "type": "word", "pron": "le-A-le"}, {"en": "ideal", "it": "ideale", "type": "word", "pron": "i-de-A-le"}, {"en": "original", "it": "originale", "type": "word", "pron": "o-ri-dʒi-NA-le"}, {"en": "real / true", "it": "reale", "type": "word", "pron": "re-A-le"}, {"en": "natural", "it": "naturale", "type": "word", "pron": "na-tu-RA-le"}, {"en": "digital", "it": "digitale", "type": "word", "pron": "di-dʒi-TA-le"}, {"en": "final", "it": "finale", "type": "word", "pron": "fi-NA-le"}, {"en": "normal (adv)", "it": "normalmente", "type": "word", "pron": "nor-mal-MEN-te"}, {"en": "generally", "it": "generalmente", "type": "word", "pron": "dʒe-ne-ral-MEN-te"}, {"en": "globally", "it": "globalmente", "type": "word", "pron": "glo-bal-MEN-te"}, {"en": "originally", "it": "originalmente", "type": "word", "pron": "o-ri-dʒi-nal-MEN-te"}, {"en": "really", "it": "realmente", "type": "word", "pron": "re-al-MEN-te"}, {"en": "naturally", "it": "naturalmente", "type": "word", "pron": "na-tu-ral-MEN-te"}, {"en": "personal", "it": "personale", "type": "ext", "pron": "per-so-NA-le"}, {"en": "national", "it": "nazionale", "type": "ext", "pron": "nat-syo-NA-le"}, {"en": "special", "it": "speciale", "type": "ext", "pron": "spe-CHA-le"}, {"en": "formal", "it": "formale", "type": "ext", "pron": "for-MA-le"}, {"en": "central", "it": "centrale", "type": "ext", "pron": "chen-TRA-le"}, {"en": "cultural", "it": "culturale", "type": "ext", "pron": "kul-tu-RA-le"}, {"en": "musical", "it": "musicale", "type": "ext", "pron": "mu-zi-KA-le"}, {"en": "officially", "it": "ufficialmente", "type": "ext", "pron": "uf-fi-chal-MEN-te"}, {"en": "practically", "it": "praticamente", "type": "ext", "pron": "pra-ti-ka-MEN-te"}, {"en": "physically", "it": "fisicamente", "type": "ext", "pron": "fi-zi-ka-MEN-te"}, {"en": "it is global", "it": "è globale", "type": "sentence", "pron": "è glo-BA-le"}, {"en": "it is normal", "it": "è normale", "type": "sentence", "pron": "è nor-MA-le"}, {"en": "it is natural", "it": "è naturale", "type": "sentence", "pron": "è na-tu-RA-le"}, {"en": "it is not ideal", "it": "non è ideale", "type": "sentence", "pron": "non è i-de-A-le"}, {"en": "it is original", "it": "è originale", "type": "sentence", "pron": "è o-ri-dʒi-NA-le"}, {"en": "it is not original", "it": "non è originale", "type": "sentence", "pron": "non è o-ri-dʒi-NA-le"}, {"en": "it is real and original", "it": "è reale e originale", "type": "sentence", "pron": "è re-A-le e o-ri-dʒi-NA-le"}, {"en": "it is normal and natural", "it": "è normale e naturale", "type": "sentence", "pron": "è nor-MA-le e na-tu-RA-le"}, {"en": "she is loyal", "it": "è leale", "type": "sentence", "pron": "è le-A-le"}, {"en": "normally he is loyal", "it": "normalmente è leale", "type": "sentence", "pron": "nor-mal-MEN-te è le-A-le"}, {"en": "generally it is legal", "it": "generalmente è legale", "type": "sentence", "pron": "dʒe-ne-ral-MEN-te è le-GA-le"}, {"en": "it is not global", "it": "non è globale", "type": "sentence", "pron": "non è glo-BA-le"}, {"en": "it is personal", "it": "è personale", "type": "sentence", "pron": "è per-so-NA-le"}, {"en": "it is not normal", "it": "non è normale", "type": "sentence", "pron": "non è nor-MA-le"}, {"en": "officially it is legal", "it": "ufficialmente è legale", "type": "sentence", "pron": "uf-fi-chal-MEN-te è le-GA-le"}, {"en": "it is practically natural", "it": "è praticamente naturale", "type": "sentence", "pron": "è pra-ti-ka-MEN-te na-tu-RA-le"}, {"en": "it is culturally special", "it": "è culturalmente speciale", "type": "sentence", "pron": "è kul-tu-ral-MEN-te spe-CHA-le"}, {"en": "it is not real", "it": "non è reale", "type": "sentence", "pron": "non è re-A-le"}, {"en": "it is practically ideal", "it": "è praticamente ideale", "type": "sentence", "pron": "è pra-ti-ka-MEN-te i-de-A-le"}]
   },
   {
     id:'m2', name:'Module 2', tracks:'Track 4',
     pattern:'-ible/-able → -ibile/-abile', lsKey:'lt_m2',
-    cards:[{"en": "possible", "it": "possibile", "type": "word", "pron": "pos-SI-bi-le"}, {"en": "probable", "it": "probabile", "type": "word", "pron": "pro-BA-bi-le"}, {"en": "incredible", "it": "incredibile", "type": "word", "pron": "in-kre-DI-bi-le"}, {"en": "impossible", "it": "impossibile", "type": "word", "pron": "im-pos-SI-bi-le"}, {"en": "believable", "it": "credibile", "type": "word", "pron": "kre-DI-bi-le"}, {"en": "probably", "it": "probabilmente", "type": "word", "pron": "pro-ba-bil-MEN-te"}, {"en": "possibly", "it": "possibilmente", "type": "word", "pron": "pos-si-bil-MEN-te"}, {"en": "of course / obviously", "it": "naturalmente", "type": "word", "pron": "na-tu-ral-MEN-te"}, {"en": "responsible", "it": "responsabile", "type": "word", "pron": "res-pon-SA-bi-le"}, {"en": "comfortable", "it": "comfortabile", "type": "ext", "pron": "kom-for-TA-bi-le"}, {"en": "comparable", "it": "comparabile", "type": "ext", "pron": "kom-pa-RA-bi-le"}, {"en": "acceptable", "it": "accettabile", "type": "ext", "pron": "a-chet-TA-bi-le"}, {"en": "visible", "it": "visibile", "type": "ext", "pron": "vi-ZI-bi-le"}, {"en": "flexible", "it": "flessibile", "type": "ext", "pron": "fles-SI-bi-le"}, {"en": "reasonable", "it": "ragionevole", "type": "ext", "pron": "ra-dʒo-NE-vo-le"}, {"en": "available", "it": "disponibile", "type": "ext", "pron": "dis-po-NI-bi-le"}, {"en": "adorable", "it": "adorabile", "type": "ext", "pron": "a-do-RA-bi-le"}, {"en": "predictable", "it": "prevedibile", "type": "ext", "pron": "pre-ve-DI-bi-le"}, {"en": "invincible", "it": "invincibile", "type": "ext", "pron": "in-vin-CHI-bi-le"}, {"en": "it is possible", "it": "è possibile", "type": "sentence", "pron": "è pos-SI-bi-le"}, {"en": "it is probable", "it": "è probabile", "type": "sentence", "pron": "è pro-BA-bi-le"}, {"en": "it is incredible", "it": "è incredibile", "type": "sentence", "pron": "è in-kre-DI-bi-le"}, {"en": "it is believable", "it": "è credibile", "type": "sentence", "pron": "è kre-DI-bi-le"}, {"en": "it is impossible", "it": "è impossibile", "type": "sentence", "pron": "è im-pos-SI-bi-le"}, {"en": "probably it is real", "it": "probabilmente è reale", "type": "sentence", "pron": "pro-ba-bil-MEN-te è re-A-le"}, {"en": "probably it is original", "it": "probabilmente è originale", "type": "sentence", "pron": "pro-ba-bil-MEN-te è o-ri-dʒi-NA-le"}, {"en": "obviously it is original", "it": "naturalmente è originale", "type": "sentence", "pron": "na-tu-ral-MEN-te è o-ri-dʒi-NA-le"}, {"en": "normally it is digital", "it": "normalmente è digitale", "type": "sentence", "pron": "nor-mal-MEN-te è di-dʒi-TA-le"}, {"en": "it is not possible", "it": "non è possibile", "type": "sentence", "pron": "non è pos-SI-bi-le"}, {"en": "it is not probable", "it": "non è probabile", "type": "sentence", "pron": "non è pro-BA-bi-le"}, {"en": "it is comfortable", "it": "è comfortabile", "type": "sentence", "pron": "è kom-for-TA-bi-le"}, {"en": "it is acceptable", "it": "è accettabile", "type": "sentence", "pron": "è a-chet-TA-bi-le"}, {"en": "it is not acceptable", "it": "non è accettabile", "type": "sentence", "pron": "non è a-chet-TA-bi-le"}, {"en": "it is visible", "it": "è visibile", "type": "sentence", "pron": "è vi-ZI-bi-le"}, {"en": "it is not visible", "it": "non è visibile", "type": "sentence", "pron": "non è vi-ZI-bi-le"}, {"en": "possibly it is original", "it": "possibilmente è originale", "type": "sentence", "pron": "pos-si-bil-MEN-te è o-ri-dʒi-NA-le"}, {"en": "it is probably responsible", "it": "è probabilmente responsabile", "type": "sentence", "pron": "è pro-ba-bil-MEN-te res-pon-SA-bi-le"}, {"en": "it is adorable", "it": "è adorabile", "type": "sentence", "pron": "è a-do-RA-bi-le"}, {"en": "it is not flexible", "it": "non è flessibile", "type": "sentence", "pron": "non è fles-SI-bi-le"}]
+    cards:[{"en": "possible", "it": "possibile", "type": "word", "pron": "pos-SI-bi-le"}, {"en": "probable", "it": "probabile", "type": "word", "pron": "pro-BA-bi-le"}, {"en": "incredible", "it": "incredibile", "type": "word", "pron": "in-kre-DI-bi-le"}, {"en": "impossible", "it": "impossibile", "type": "word", "pron": "im-pos-SI-bi-le"}, {"en": "believable", "it": "credibile", "type": "word", "pron": "kre-DI-bi-le"}, {"en": "probably", "it": "probabilmente", "type": "word", "pron": "pro-ba-bil-MEN-te"}, {"en": "possibly", "it": "possibilmente", "type": "word", "pron": "pos-si-bil-MEN-te"}, {"en": "of course / obviously", "it": "naturalmente", "type": "word", "pron": "na-tu-ral-MEN-te"}, {"en": "responsible", "it": "responsabile", "type": "word", "pron": "res-pon-SA-bi-le"}, {"en": "comparable", "it": "comparabile", "type": "ext", "pron": "kom-pa-RA-bi-le"}, {"en": "acceptable", "it": "accettabile", "type": "ext", "pron": "a-chet-TA-bi-le"}, {"en": "visible", "it": "visibile", "type": "ext", "pron": "vi-ZI-bi-le"}, {"en": "flexible", "it": "flessibile", "type": "ext", "pron": "fles-SI-bi-le"}, {"en": "reasonable", "it": "ragionevole", "type": "ext", "pron": "ra-dʒo-NE-vo-le"}, {"en": "available", "it": "disponibile", "type": "ext", "pron": "dis-po-NI-bi-le"}, {"en": "adorable", "it": "adorabile", "type": "ext", "pron": "a-do-RA-bi-le"}, {"en": "predictable", "it": "prevedibile", "type": "ext", "pron": "pre-ve-DI-bi-le"}, {"en": "invincible", "it": "invincibile", "type": "ext", "pron": "in-vin-CHI-bi-le"}, {"en": "it is possible", "it": "è possibile", "type": "sentence", "pron": "è pos-SI-bi-le"}, {"en": "it is probable", "it": "è probabile", "type": "sentence", "pron": "è pro-BA-bi-le"}, {"en": "it is incredible", "it": "è incredibile", "type": "sentence", "pron": "è in-kre-DI-bi-le"}, {"en": "it is believable", "it": "è credibile", "type": "sentence", "pron": "è kre-DI-bi-le"}, {"en": "it is impossible", "it": "è impossibile", "type": "sentence", "pron": "è im-pos-SI-bi-le"}, {"en": "probably it is real", "it": "probabilmente è reale", "type": "sentence", "pron": "pro-ba-bil-MEN-te è re-A-le"}, {"en": "probably it is original", "it": "probabilmente è originale", "type": "sentence", "pron": "pro-ba-bil-MEN-te è o-ri-dʒi-NA-le"}, {"en": "obviously it is original", "it": "naturalmente è originale", "type": "sentence", "pron": "na-tu-ral-MEN-te è o-ri-dʒi-NA-le"}, {"en": "normally it is digital", "it": "normalmente è digitale", "type": "sentence", "pron": "nor-mal-MEN-te è di-dʒi-TA-le"}, {"en": "it is not possible", "it": "non è possibile", "type": "sentence", "pron": "non è pos-SI-bi-le"}, {"en": "it is not probable", "it": "non è probabile", "type": "sentence", "pron": "non è pro-BA-bi-le"}, {"en": "it is acceptable", "it": "è accettabile", "type": "sentence", "pron": "è a-chet-TA-bi-le"}, {"en": "it is not acceptable", "it": "non è accettabile", "type": "sentence", "pron": "non è a-chet-TA-bi-le"}, {"en": "it is visible", "it": "è visibile", "type": "sentence", "pron": "è vi-ZI-bi-le"}, {"en": "it is not visible", "it": "non è visibile", "type": "sentence", "pron": "non è vi-ZI-bi-le"}, {"en": "possibly it is original", "it": "possibilmente è originale", "type": "sentence", "pron": "pos-si-bil-MEN-te è o-ri-dʒi-NA-le"}, {"en": "it is probably responsible", "it": "è probabilmente responsabile", "type": "sentence", "pron": "è pro-ba-bil-MEN-te res-pon-SA-bi-le"}, {"en": "it is adorable", "it": "è adorabile", "type": "sentence", "pron": "è a-do-RA-bi-le"}, {"en": "it is not flexible", "it": "non è flessibile", "type": "sentence", "pron": "non è fles-SI-bi-le"}]
   },
   {
     id:'m3', name:'Module 3', tracks:'Tracks 5–6',
@@ -5730,10 +5739,6 @@ const LT_MODULES = [
     pattern:'2-verb · clitic placement (lo, mi, ti)', lsKey:'lt_m4',
     cards:[
       {"en":"to confirm","it":"confermare","type":"word","pron":"con-fer-MA-re"},
-      {"en":"to cancel","it":"cancellare","type":"word","pron":"can-cel-LA-re"},
-      {"en":"to prepare","it":"preparare","type":"word","pron":"pre-pa-RA-re"},
-      {"en":"to invite","it":"invitare","type":"word","pron":"in-vi-TA-re"},
-      {"en":"to create","it":"creare","type":"word","pron":"cre-A-re"},
       {"en":"to complicate","it":"complicare","type":"word","pron":"com-pli-CA-re"},
       {"en":"to contact","it":"contattare","type":"word","pron":"con-tat-TA-re"},
       {"en":"to organize","it":"organizzare","type":"word","pron":"or-ga-niz-ZA-re"},
@@ -5780,6 +5785,45 @@ const LT_MODULES = [
       {"en":"I have to invite you","it":"ti devo invitare","it2":"devo invitarti","type":"sentence","pron":"ti DE-vo in-vi-TA-re","pron2":"DE-vo in-vi-TAR-ti"},
       {"en":"I have to organize it","it":"lo devo organizzare","it2":"devo organizzarlo","type":"sentence","pron":"lo DE-vo or-ga-niz-ZA-re","pron2":"DE-vo or-ga-niz-ZAR-lo"},
       {"en":"I have to present it","it":"lo devo presentare","it2":"devo presentarlo","type":"sentence","pron":"lo DE-vo pre-zen-TA-re","pron2":"DE-vo pre-zen-TAR-lo"}
+    ]
+  },
+  {
+    id:'m6', name:'Module 6', tracks:'Track 10',
+    pattern:'posso · plurals · io/li/le', lsKey:'lt_m6',
+    cards:[
+      {"en":"I","it":"io","type":"word","pron":"I-o","note":"subject pronoun, for emphasis"},
+      {"en":"I can / am able to","it":"posso","type":"word","pron":"POS-so","note":"same root as possibile"},
+      {"en":"them (masc/mixed)","it":"li","type":"word","pron":"li","note":"plural object pronoun"},
+      {"en":"them (feminine)","it":"le","type":"word","pron":"le","note":"plural object pronoun"},
+      {"en":"today","it":"oggi","type":"word","pron":"OD-dʒi"},
+      {"en":"to see","it":"vedere","type":"word","pron":"ve-DE-re","note":"-ere verb"},
+      {"en":"to stop","it":"fermare","type":"word","pron":"fer-MA-re"},
+      {"en":"to sign","it":"firmare","type":"word","pron":"fir-MA-re","note":"careful: ≠ fermare (to stop)!"},
+      {"en":"the monster","it":"il mostro","type":"word","pron":"il MO-stro"},
+      {"en":"the monsters","it":"i mostri","type":"word","pron":"i MO-stri","note":"plural: -o → -i"},
+      {"en":"the dog","it":"il cane","type":"word","pron":"il KA-ne"},
+      {"en":"the dogs","it":"i cani","type":"word","pron":"i KA-ni","note":"plural: -e → -i"},
+      {"en":"the concert","it":"il concerto","type":"word","pron":"il con-CHER-to"},
+      {"en":"the concerts","it":"i concerti","type":"word","pron":"i con-CHER-ti","note":"plural: -o → -i"},
+      {"en":"convertible","it":"convertibile","type":"word","pron":"con-ver-TI-bi-le","note":"-ible pattern"},
+      {"en":"I'm able to cancel it","it":"lo posso cancellare","it2":"posso cancellarlo","type":"sentence","pron":"lo POS-so kan-chel-LA-re","pron2":"POS-so kan-chel-LAR-lo"},
+      {"en":"I can cancel them","it":"li posso cancellare","it2":"posso cancellarli","type":"sentence","pron":"li POS-so kan-chel-LA-re","pron2":"POS-so kan-chel-LAR-li"},
+      {"en":"I have to organize it","it":"lo devo organizzare","it2":"devo organizzarlo","type":"sentence","pron":"lo DE-vo or-ga-niz-ZA-re","pron2":"DE-vo or-ga-niz-ZAR-lo"},
+      {"en":"I have to organize them","it":"li devo organizzare","it2":"devo organizzarli","type":"sentence","pron":"li DE-vo or-ga-niz-ZA-re","pron2":"DE-vo or-ga-niz-ZAR-li"},
+      {"en":"I want to see it","it":"lo voglio vedere","it2":"voglio vederlo","type":"sentence","pron":"lo VOL-yo ve-DE-re","pron2":"VOL-yo ve-DER-lo"},
+      {"en":"I want it","it":"io lo voglio","type":"sentence","pron":"I-o lo VOL-yo"},
+      {"en":"I don't want it","it":"io non lo voglio","type":"sentence","pron":"I-o non lo VOL-yo"},
+      {"en":"I'm not able to cancel it","it":"non lo posso cancellare","type":"sentence","pron":"non lo POS-so kan-chel-LA-re"},
+      {"en":"I want to see the concert","it":"voglio vedere il concerto","type":"sentence","pron":"VOL-yo ve-DE-re il con-CHER-to"},
+      {"en":"I want to see the concerts","it":"voglio vedere i concerti","type":"sentence","pron":"VOL-yo ve-DE-re i con-CHER-ti"},
+      {"en":"I can't confirm it today","it":"non posso confermarlo oggi","type":"sentence","pron":"non POS-so con-fer-MAR-lo OD-dʒi"},
+      {"en":"I can't sign it today","it":"non lo posso firmare oggi","it2":"non posso firmarlo oggi","type":"sentence","pron":"non lo POS-so fir-MA-re OD-dʒi","pron2":"non POS-so fir-MAR-lo OD-dʒi"},
+      {"en":"I can stop it","it":"lo posso fermare","it2":"posso fermarlo","type":"sentence","pron":"lo POS-so fer-MA-re","pron2":"POS-so fer-MAR-lo"},
+      {"en":"I want to see them","it":"li voglio vedere","it2":"voglio vederli","type":"sentence","pron":"li VOL-yo ve-DE-re","pron2":"VOL-yo ve-DER-li"},
+      {"en":"I can show them","it":"li posso mostrare","it2":"posso mostrarli","type":"sentence","pron":"li POS-so mo-STRA-re","pron2":"POS-so mo-STRAR-li"},
+      {"en":"I can't today","it":"non posso oggi","type":"sentence","pron":"non POS-so OD-dʒi"},
+      {"en":"I want to see the dogs","it":"voglio vedere i cani","type":"sentence","pron":"VOL-yo ve-DE-re i KA-ni"},
+      {"en":"I have to warn the monsters","it":"devo avvertire i mostri","type":"sentence","pron":"DE-vo av-ver-TI-re i MO-stri"}
     ]
   }
 ];
@@ -6034,14 +6078,6 @@ function ltRenderMain(){
   }).join('');
 
   el.innerHTML = `
-    <!-- Words learned counter — auto-saved from LT sessions -->
-    <div style="background:white;border:0.5px solid var(--border);border-radius:14px;padding:12px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div style="font-size:10px;color:var(--ink-soft);letter-spacing:.6px;text-transform:uppercase;font-weight:700;">Words learned</div>
-        <div style="font-size:26px;font-weight:800;color:var(--fuji);line-height:1.1;margin-top:2px;">${ltCountLearnedWords()}</div>
-      </div>
-      <div style="font-size:10px;color:var(--ink-soft);text-align:right;line-height:1.4;">Auto-saved to<br><span style="color:var(--fuji);font-weight:600;">My Cards</span></div>
-    </div>
     <!-- Today's plan — pink bg -->
     <div style="background:var(--sakura-light);border-radius:14px;padding:16px;margin-bottom:18px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -6569,25 +6605,52 @@ function ltSessionComplete(){
   const mins = Math.max(1, Math.round((Date.now()-ltSessionStartTime)/60000));
   const today = fcToday();
   let easy=0, hard=0;
+  let isEarlyReview = false;
+  let scheduledDueBefore = null;
 
   if(mod){
     const state = ltGetState(mod.lsKey);
-    if(!state.__firstSeen) state.__firstSeen = today;
-    state.__lastReview = today;
-    state.__reviewCount = (state.__reviewCount||0) + 1;
+    const isFirstTime = !state.__firstSeen;
+
+    // === COMPUTE scheduledDue BEFORE updating state ===
+    // (so we can detect if user is reviewing earlier than schedule)
+    if(!isFirstTime){
+      const interval = LT_SRS[Math.min(state.__reviewCount||0, LT_SRS.length-1)];
+      const base = state.__lastReview || state.__firstSeen;
+      const d = new Date(base);
+      d.setDate(d.getDate() + interval);
+      scheduledDueBefore = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    }
+    isEarlyReview = scheduledDueBefore && today < scheduledDueBefore;
+
+    if(isFirstTime) state.__firstSeen = today;
+
     easy = state.__stats?.easy||0;
     hard = state.__stats?.hard||0;
     state.__stats = {easy:0, hard:0};
+
+    if(isEarlyReview){
+      // Case 1: EARLY review — don't advance SRS, just log free study
+      state.__lastFreeStudy = today;
+      state.__freeStudyCount = (state.__freeStudyCount||0) + 1;
+      // KEEP __lastReview and __reviewCount unchanged → nextReview stays at scheduledDueBefore
+    } else {
+      // Case 2/3/4: on-time, late, or first-time → advance SRS normally
+      state.__lastReview = today;
+      state.__reviewCount = (state.__reviewCount||0) + 1;
+    }
+
     ltSaveState(mod.lsKey, state);
 
-    // Promote pending LT cards (from this module) into My Cards
+    // Promote pending LT cards (from this module) into My Cards — runs for ALL cases
     if(activeStudyLang === 'it'){
       ltPromoteModuleCards(mod.id);
     }
 
     // Log time — always to active language log, same format as flashcard session
     const wordsReviewed = easy + hard;
-    const autoNote = `📖 Grammar: ${mod.name} · ${wordsReviewed} cards · ${mins} min`;
+    const reviewLabel = isEarlyReview ? '📚 Free study' : '📖 Grammar';
+    const autoNote = `${reviewLabel}: ${mod.name} · ${wordsReviewed} cards · ${mins} min`;
     const logKey = lsKey('njl'); // use active lang log so it shows in history
     const logs = JSON.parse(localStorage.getItem(logKey)||'[]');
     const entry = logs.find(l=>l.date===today);
@@ -6616,8 +6679,24 @@ function ltSessionComplete(){
   }
 
   const s = ltGetModuleStatus(mod);
-  const nextInterval = LT_SRS[Math.min((s.reviewCount||1)-1, LT_SRS.length-1)];
   const pct = Math.round((easy/(easy+hard||1))*100);
+
+  // Banner content depends on which case fired
+  let scheduleBanner;
+  if(isEarlyReview){
+    scheduleBanner = `<div style="background:#FFF4E6;border:1.5px solid #FFB84D;border-radius:12px;padding:12px 16px;margin-bottom:24px;font-size:13px;color:#A85C00;">
+      📚 <strong>Free study</strong> — schedule kept at <strong>${scheduledDueBefore}</strong>. SRS not advanced (you reviewed early).
+    </div>`;
+  } else if(s.nextReview){
+    const nextInterval = LT_SRS[Math.min((s.reviewCount||1)-1, LT_SRS.length-1)];
+    scheduleBanner = `<div style="background:var(--fuji-light);border-radius:12px;padding:12px 16px;margin-bottom:24px;font-size:13px;color:var(--fuji);">
+      📅 Next review in <strong>${nextInterval} days</strong> · ${s.nextReview}
+    </div>`;
+  } else {
+    scheduleBanner = `<div style="background:var(--matcha-light);border-radius:12px;padding:12px 16px;margin-bottom:24px;font-size:13px;color:var(--matcha);">
+      🌱 First study complete — next review tomorrow
+    </div>`;
+  }
 
   document.getElementById('lt-fc-prog').style.width='100%';
   document.getElementById('lt-fc-counter').textContent='Complete!';
@@ -6630,8 +6709,8 @@ function ltSessionComplete(){
   if(doneEl){
     doneEl.style.display='block';
     doneEl.innerHTML = `<div style="text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;">
-      <div style="font-size:56px;margin-bottom:16px;">🎉</div>
-      <div style="font-size:24px;font-weight:700;color:var(--ink);margin-bottom:6px;">Session complete!</div>
+      <div style="font-size:56px;margin-bottom:16px;">${isEarlyReview ? '📚' : '🎉'}</div>
+      <div style="font-size:24px;font-weight:700;color:var(--ink);margin-bottom:6px;">${isEarlyReview ? 'Free study done!' : 'Session complete!'}</div>
       <div style="font-size:14px;color:var(--ink-soft);margin-bottom:24px;">${mod?.name||''} · ${ltSession.length} cards · ${mins} min</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;">
         <div style="background:var(--matcha-light);border-radius:14px;padding:16px 8px;">
@@ -6647,9 +6726,7 @@ function ltSessionComplete(){
           <div style="font-size:12px;color:var(--fuji);margin-top:2px;">✨ Score</div>
         </div>
       </div>
-      <div style="background:var(--fuji-light);border-radius:12px;padding:12px 16px;margin-bottom:24px;font-size:13px;color:var(--fuji);">
-        📅 Next review in <strong>${nextInterval} days</strong>
-      </div>
+      ${scheduleBanner}
       <div style="display:flex;gap:10px;justify-content:center;">
         <button onclick="ltShowDirectionPicker('${ltSessionModId}','review')" style="padding:10px 20px;border-radius:12px;border:2px solid var(--fuji);background:white;color:var(--fuji);font-size:13px;font-weight:700;cursor:pointer;">🔁 Study again</button>
         <button onclick="ltExitFC()" style="padding:10px 24px;border-radius:12px;border:none;background:var(--fuji);color:white;font-size:13px;font-weight:700;cursor:pointer;">← Back to Grammar</button>
