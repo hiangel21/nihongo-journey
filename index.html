@@ -5766,7 +5766,7 @@ const LT_MODULES = [
       {"en":"the monster","it":"il mostro","type":"word","pron":"il MO-stro"},
       {"en":"the capital","it":"la capitale","type":"word","pron":"la ca-pi-TA-le"},
       {"en":"mortal","it":"mortale","type":"word","pron":"mor-TA-le"},
-      {"en":"I have to / I must","it":"devo","type":"word","pron":"DE-vo","note":"from dovere (debt/duty)"},
+      {"en":"I have to / I must","it":"devo","type":"sentence","pron":"DE-vo","note":"from dovere (debt/duty)"},
       {"en":"I want to show you","it":"ti voglio mostrare","it2":"voglio mostrarti","type":"sentence","pron":"ti VOL-yo mo-STRA-re","pron2":"VOL-yo mo-STRAR-ti"},
       {"en":"I want to warn you","it":"ti voglio avvertire","it2":"voglio avvertirti","type":"sentence","pron":"ti VOL-yo av-ver-TI-re","pron2":"VOL-yo av-ver-TIR-ti"},
       {"en":"I have to warn you","it":"ti devo avvertire","it2":"devo avvertirti","type":"sentence","pron":"ti DE-vo av-ver-TI-re","pron2":"DE-vo av-ver-TIR-ti"},
@@ -5792,7 +5792,7 @@ const LT_MODULES = [
     pattern:'posso · plurals · io/li/le', lsKey:'lt_m6',
     cards:[
       {"en":"I","it":"io","type":"word","pron":"I-o","note":"subject pronoun, for emphasis"},
-      {"en":"I can / am able to","it":"posso","type":"word","pron":"POS-so","note":"same root as possibile"},
+      {"en":"I can / am able to","it":"posso","type":"sentence","pron":"POS-so","note":"same root as possibile"},
       {"en":"them (masc/mixed)","it":"li","type":"word","pron":"li","note":"plural object pronoun"},
       {"en":"them (feminine)","it":"le","type":"word","pron":"le","note":"plural object pronoun"},
       {"en":"today","it":"oggi","type":"word","pron":"OD-dʒi"},
@@ -5824,6 +5824,59 @@ const LT_MODULES = [
       {"en":"I can't today","it":"non posso oggi","type":"sentence","pron":"non POS-so OD-dʒi"},
       {"en":"I want to see the dogs","it":"voglio vedere i cani","type":"sentence","pron":"VOL-yo ve-DE-re i KA-ni"},
       {"en":"I have to warn the monsters","it":"devo avvertire i mostri","type":"sentence","pron":"DE-vo av-ver-TI-re i MO-stri"}
+    ]
+  },
+  {
+    id:'m7', name:'Module 7', tracks:'Track 11',
+    pattern:'1st person present · io-form -o', lsKey:'lt_m7',
+    cards:[
+      {"en":"to work","it":"lavorare","type":"word","pron":"la-vo-RA-re"},
+      {"en":"I work","it":"lavoro","type":"sentence","pron":"la-VO-ro","note":"1st person: lavorare → lavoro"},
+      {"en":"to collaborate","it":"collaborare","type":"word","pron":"col-la-bo-RA-re","note":"col- + lavorare"},
+      {"en":"to elaborate","it":"elaborare","type":"word","pron":"e-la-bo-RA-re","note":"e- + lavorare"},
+      {"en":"to try / to prove","it":"provare","type":"word","pron":"pro-VA-re"},
+      {"en":"I try","it":"provo","type":"sentence","pron":"PRO-vo","note":"1st person: provare → provo"},
+      {"en":"to approve","it":"approvare","type":"word","pron":"ap-pro-VA-re","note":"ap- + provare"},
+      {"en":"to improve","it":"migliorare","type":"word","pron":"mi-lyo-RA-re"},
+      {"en":"I see","it":"vedo","type":"sentence","pron":"VE-do","note":"1st person: vedere → vedo"},
+      {"en":"to sell","it":"vendere","type":"word","pron":"VEN-de-re","note":"-ere verb"},
+      {"en":"I sell","it":"vendo","type":"sentence","pron":"VEN-do","note":"1st person: vendere → vendo"},
+      {"en":"I cancel","it":"cancello","type":"sentence","pron":"kan-CHEL-lo","note":"1st person: cancellare → cancello"},
+      {"en":"I organize","it":"organizzo","type":"sentence","pron":"or-ga-NID-zo","note":"1st person: organizzare → organizzo"},
+      {"en":"I confirm","it":"confermo","type":"sentence","pron":"con-FER-mo","note":"1st person: confermare → confermo"},
+      {"en":"I demonstrate","it":"dimostro","type":"sentence","pron":"di-MO-stro","note":"1st person: dimostrare → dimostro"},
+      {"en":"I prepare","it":"preparo","type":"sentence","pron":"pre-PA-ro","note":"1st person: preparare → preparo"},
+      {"en":"I want to try it","it":"lo voglio provare","it2":"voglio provarlo","type":"sentence","pron":"lo VOL-yo pro-VA-re","pron2":"VOL-yo pro-VAR-lo"},
+      {"en":"I want to see it","it":"lo voglio vedere","it2":"voglio vederlo","type":"sentence","pron":"lo VOL-yo ve-DE-re","pron2":"VOL-yo ve-DER-lo"},
+      {"en":"I want to sell it","it":"lo voglio vendere","it2":"voglio venderlo","type":"sentence","pron":"lo VOL-yo VEN-de-re","pron2":"VOL-yo ven-DER-lo"},
+      {"en":"I want to cancel it","it":"lo voglio cancellare","it2":"voglio cancellarlo","type":"sentence","pron":"lo VOL-yo kan-chel-LA-re","pron2":"VOL-yo kan-chel-LAR-lo"},
+      {"en":"I want to confirm it","it":"lo voglio confermare","it2":"voglio confermarlo","type":"sentence","pron":"lo VOL-yo con-fer-MA-re","pron2":"VOL-yo con-fer-MAR-lo"},
+      {"en":"I want to prepare myself","it":"mi voglio preparare","it2":"voglio prepararmi","type":"sentence","pron":"mi VOL-yo pre-pa-RA-re","pron2":"VOL-yo pre-pa-RAR-mi"},
+      {"en":"I work today","it":"lavoro oggi","type":"sentence","pron":"la-VO-ro OD-dʒi"},
+      {"en":"I don't work today","it":"non lavoro oggi","type":"sentence","pron":"non la-VO-ro OD-dʒi"},
+      {"en":"I want to work","it":"voglio lavorare","type":"sentence","pron":"VOL-yo la-vo-RA-re"},
+      {"en":"I try it","it":"lo provo","type":"sentence","pron":"lo PRO-vo"},
+      {"en":"I don't try it","it":"non lo provo","type":"sentence","pron":"non lo PRO-vo"},
+      {"en":"I see it today","it":"lo vedo oggi","type":"sentence","pron":"lo VE-do OD-dʒi"},
+      {"en":"I don't see it","it":"non lo vedo","type":"sentence","pron":"non lo VE-do"},
+      {"en":"I sell it","it":"lo vendo","type":"sentence","pron":"lo VEN-do"},
+      {"en":"I don't sell it","it":"non lo vendo","type":"sentence","pron":"non lo VEN-do"},
+      {"en":"I cancel it","it":"lo cancello","type":"sentence","pron":"lo kan-CHEL-lo"},
+      {"en":"I don't cancel it","it":"non lo cancello","type":"sentence","pron":"non lo kan-CHEL-lo"},
+      {"en":"I organize it today","it":"lo organizzo oggi","type":"sentence","pron":"lo or-ga-NID-zo OD-dʒi"},
+      {"en":"I confirm it","it":"lo confermo","type":"sentence","pron":"lo con-FER-mo"},
+      {"en":"I demonstrate it","it":"lo dimostro","type":"sentence","pron":"lo di-MO-stro"},
+      {"en":"I prepare it","it":"lo preparo","type":"sentence","pron":"lo pre-PA-ro"},
+      {"en":"I prepare myself","it":"mi preparo","type":"sentence","pron":"mi pre-PA-ro"},
+      {"en":"I have to work today","it":"devo lavorare oggi","type":"sentence","pron":"DE-vo la-vo-RA-re OD-dʒi"},
+      {"en":"I can work today","it":"posso lavorare oggi","type":"sentence","pron":"POS-so la-vo-RA-re OD-dʒi"},
+      {"en":"I have to try it","it":"devo provarlo","type":"sentence","pron":"DE-vo pro-VAR-lo"},
+      {"en":"I can see it today","it":"posso vederlo oggi","type":"sentence","pron":"POS-so ve-DER-lo OD-dʒi"},
+      {"en":"I have to sell it","it":"devo venderlo","type":"sentence","pron":"DE-vo ven-DER-lo"},
+      {"en":"I can confirm it","it":"posso confermarlo","type":"sentence","pron":"POS-so con-fer-MAR-lo"},
+      {"en":"I have to demonstrate it","it":"devo dimostrarlo","type":"sentence","pron":"DE-vo di-mo-STRAR-lo"},
+      {"en":"I can prepare it","it":"posso prepararlo","type":"sentence","pron":"POS-so pre-pa-RAR-lo"},
+      {"en":"I can try it","it":"posso provarlo","type":"sentence","pron":"POS-so pro-VAR-lo"}
     ]
   }
 ];
@@ -6203,10 +6256,11 @@ function ltStartSession(modId, type){
   ltSessionFlipped = false;
 
   const flip = localStorage.getItem('lt_flip_'+modId)||'en';
-  const learned = mod.cards.filter(c=>c.type!=='ext');
-  const ext = mod.cards.filter(c=>c.type==='ext');
-  ltSession = [...learned.sort(()=>Math.random()-.5), ...ext.sort(()=>Math.random()-.5)];
-  ltSession = ltSession.map(c=>({...c, flip}));
+  const words = mod.cards.filter(c=>c.type==='word').sort(()=>Math.random()-.5);
+  const exts  = mod.cards.filter(c=>c.type==='ext').sort(()=>Math.random()-.5);
+  const sents = mod.cards.filter(c=>c.type==='sentence').sort(()=>Math.random()-.5);
+  // Words first (random), then ext words, then sentences (random) — never show sentence before all words
+  ltSession = [...words, ...exts, ...sents].map(c=>({...c, flip}));
   ltSessionIdx = 0;
 
   // Show fc card, hide main card
