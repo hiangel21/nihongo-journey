@@ -314,6 +314,7 @@ textarea{resize:vertical;min-height:70px;}
   <button class="nav-btn" onclick="showSec('report',this)">📊 Report</button>
   <button id="nav-board-btn" class="nav-btn" onclick="showSec('board',this)">🔤 Character Board</button>
   <button class="nav-btn" onclick="showSec('ranking',this)">🏆 Ranking</button>
+  <button id="pin-toggle-btn" onclick="togglePinnedSidebar()" title="Hide/show goals sidebar" style="margin-left:auto;opacity:0.6;font-size:13px;" class="nav-btn">📌</button>
 </div>
 
 
@@ -6141,6 +6142,52 @@ const LT_MODULES = [
       {"en":"What should I do when I can't work?","it":"cosa devo fare quando non posso lavorare?","type":"sentence","pron":"KO-za DE-vo FA-re KWA-ndo non POS-so la-vo-RA-re"},
       {"en":"What do you see when you're at home?","it":"cosa vedi quando sei a casa?","type":"sentence","pron":"KO-za VE-di KWA-ndo sei a KA-za"}
     ]
+  },
+  {
+    id:'m12', name:'Module 12', tracks:'Track 16',
+    pattern:'fare vedere · pronoun position · venire', lsKey:'lt_m12',
+    summary:[
+      {type:'rule', label:'CẤU TRÚC MỚI QUAN TRỌNG NHẤT', title:'fare + pronoun + infinitive', body:'"Make someone do something" — rất thông dụng trong spoken Italian.'},
+      {type:'table', label:'VÍ DỤ FARE + PRONOUN', rows:[
+        ['voglio farti vedere','I want to make you see / show you'],
+        ['voglio farmi vedere','I want to make myself seen'],
+        ['voglio farlo vedere','I want to show it'],
+      ]},
+      {type:'note', label:'2 CÁCH NÓI "SHOW"', body:'**mostrare** = to show (trực tiếp)\n**fare vedere** = to make see (indirect, rất thông dụng spoken)\nCả 2 đều đúng — người Ý dùng interchangeably:\nvoglio mostrarti una cosa = voglio farti vedere una cosa'},
+      {type:'pairs', label:'PRONOUN VỊ TRÍ TRƯỚC VERB CHIA', items:[
+        ['mi vedi?','Do you see me? (mi trước vedi)'],
+        ['ti vedo','I see you (ti trước vedo)'],
+        ['tu ti vedi?','Do you see yourself? (reflexive)'],
+      ], note:'Pronoun đứng trước verb khi verb đã chia (vedi, vedo). Đứng sau khi gắn vào infinitive (vederti, vedermi).'},
+      {type:'words', label:'VENIRE + A CASA', items:[
+        ['venire','to come'],
+        ['a casa','home / at home (không cần article)'],
+        ['a casa mia','at my house (possessive sau noun)'],
+      ], example:['vuoi venire a casa mia?','Do you want to come to my house?']},
+      {type:'note', label:'UNA COSA = A THING / SOMETHING', body:'**cosa** = thing / what (đã học)\n**una cosa** = a thing / something\nvoglio mostrarti **una cosa** = I want to show you something\n\nKhi dùng như question word: **cosa** fai? = What are you doing?\nKhi dùng như noun: voglio vedere **una cosa** = I want to see a thing'},
+    ],
+    cards:[
+      {"en":"to come","it":"venire","type":"word","pron":"ve-NI-re"},
+      {"en":"a thing / something","it":"una cosa","type":"word","pron":"U-na KO-za","note":"cosa = thing; una cosa = a thing/something"},
+      {"en":"at my house","it":"a casa mia","type":"word","pron":"a KA-za MI-a","note":"possessive comes after noun"},
+      {"en":"to show (lit. make see)","it":"fare vedere","type":"word","pron":"FA-re ve-DE-re","note":"fare + vedere; also: mostrare"},
+      {"en":"at home (fixed expression)","it":"a casa","type":"word","pron":"a KA-za","note":"no article: vado a casa (not a la casa)"},
+      {"en":"I want to show you a thing","it":"voglio mostrarti una cosa","type":"sentence","pron":"VOL-yo mo-STRAR-ti U-na KO-za"},
+      {"en":"I want to make you see a thing","it":"voglio farti vedere una cosa","type":"sentence","pron":"VOL-yo FAR-ti ve-DE-re U-na KO-za"},
+      {"en":"Do you see me?","it":"mi vedi?","type":"sentence","pron":"mi VE-di"},
+      {"en":"I see you","it":"ti vedo","type":"sentence","pron":"ti VE-do"},
+      {"en":"Do you see yourself?","it":"tu ti vedi?","type":"sentence","pron":"tu ti VE-di"},
+      {"en":"Do you want it?","it":"lo vuoi?","type":"sentence","pron":"lo vwoi"},
+      {"en":"Don't you want to do it?","it":"non vuoi farlo?","type":"sentence","pron":"non vwoi FAR-lo"},
+      {"en":"What do you want to do?","it":"che cosa vuoi fare?","type":"sentence","pron":"ke KO-za vwoi FA-re"},
+      {"en":"Why don't you want to do it?","it":"perché non vuoi farlo?","type":"sentence","pron":"per-KÉ non vwoi FAR-lo"},
+      {"en":"Why don't you want to show me?","it":"perché non vuoi farmi vedere?","type":"sentence","pron":"per-KÉ non vwoi FAR-mi ve-DE-re"},
+      {"en":"Do you want to come?","it":"vuoi venire?","type":"sentence","pron":"vwoi ve-NI-re"},
+      {"en":"Why don't you want to come?","it":"perché non vuoi venire?","type":"sentence","pron":"per-KÉ non vwoi ve-NI-re"},
+      {"en":"Do you want to come home later?","it":"vuoi venire a casa più tardi?","type":"sentence","pron":"vwoi ve-NI-re a KA-za pyù TAR-di"},
+      {"en":"Can you come to my house?","it":"puoi venire a casa?","type":"sentence","pron":"pwoi ve-NI-re a KA-za"},
+      {"en":"When do you want to come to my house?","it":"quando vuoi venire a casa mia?","type":"sentence","pron":"KWA-ndo vwoi ve-NI-re a KA-za MI-a"}
+    ]
   }
 ];
 
@@ -6513,6 +6560,32 @@ function ltCancelPicker(){
 }
 
 // Show summary modal for a module
+function togglePinnedSidebar(){
+  const sidebar = document.getElementById('pinned-sidebar');
+  const layout = document.querySelector('.top-layout');
+  const btn = document.getElementById('pin-toggle-btn');
+  if(!sidebar||!layout||!btn) return;
+  const hidden = sidebar.style.display === 'none';
+  sidebar.style.display = hidden ? '' : 'none';
+  layout.style.gridTemplateColumns = hidden ? '' : '1fr';
+  btn.textContent = hidden ? '📌' : '📌';
+  btn.title = hidden ? 'Hide sidebar' : 'Show sidebar';
+  btn.style.opacity = hidden ? '1' : '0.5';
+  localStorage.setItem('pinSidebarHidden', hidden ? '0' : '1');
+}
+
+// Restore sidebar state on load
+(function(){
+  if(localStorage.getItem('pinSidebarHidden')==='1'){
+    const sidebar=document.getElementById('pinned-sidebar');
+    const layout=document.querySelector('.top-layout');
+    const btn=document.getElementById('pin-toggle-btn');
+    if(sidebar) sidebar.style.display='none';
+    if(layout) layout.style.gridTemplateColumns='1fr';
+    if(btn){ btn.title='Show sidebar'; btn.style.opacity='0.5'; }
+  }
+})();
+
 function ltShowSummary(modId){
   const mod = LT_MODULES.find(m=>m.id===modId);
   if(!mod||!mod.summary) return;
@@ -7171,7 +7244,7 @@ function ltSessionComplete(){
 </div>
 
 <!-- LT SUMMARY MODAL -->
-<div id="lt-summary-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;align-items:center;justify-content:center;padding:24px;" onclick="if(event.target===this)ltCloseSummary()">
+<div id="lt-summary-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9100;align-items:center;justify-content:center;padding:24px;" onclick="if(event.target===this)ltCloseSummary()">
   <div style="background:white;border-radius:18px;width:100%;max-width:560px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.22);">
     <div style="padding:20px 24px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div>
